@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>DanceMap AI</title>
 
 <style>
@@ -27,6 +27,7 @@
         padding: 0 16px;
         font-size: 20px;
         font-weight: 600;
+        letter-spacing: 1px;
         box-shadow: 0 0 10px #00000070;
     }
 
@@ -43,43 +44,41 @@
         padding: 20px;
     }
 
-    .row {
-        display: flex;
+    .bot-row, .user-row {
         margin-bottom: 14px;
+        display: flex;
         align-items: flex-start;
-        gap: 10px;
     }
 
-    .row.bot { flex-direction: row; }
-    .row.user { flex-direction: row-reverse; }
-
-    .icon {
+    .bot-row img {
         width: 32px;
         height: 32px;
         border-radius: 50%;
-    }
-
-    .bot-bubble, .user-bubble {
-        padding: 12px 14px;
-        border-radius: 10px;
-        max-width: 70%;
-        line-height: 1.5;
-        white-space: pre-line;
-        animation: fadeIn 0.25s ease-in;
+        margin-right: 10px;
     }
 
     .bot-bubble {
         background: #0d2433;
+        border-radius: 10px;
+        padding: 12px 14px;
+        max-width: 70%;
+        line-height: 1.5;
     }
 
     .user-bubble {
         background: #1f8bff;
+        border-radius: 10px;
+        padding: 12px 14px;
+        max-width: 70%;
+        margin-left: auto;
         color: #fff;
+        line-height: 1.5;
     }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(6px); }
-        to { opacity: 1; transform: translateY(0); }
+    .typing-row {
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
     }
 
     .typing-bubble {
@@ -87,7 +86,8 @@
         padding: 10px 14px;
         border-radius: 10px;
         display: flex;
-        gap: 4px;
+        align-items: center;
+        gap: 6px;
     }
 
     .dot {
@@ -97,6 +97,8 @@
         border-radius: 50%;
         animation: blink 1.4s infinite ease-in-out;
     }
+
+    .dot:nth-child(1) { animation-delay: 0s; }
     .dot:nth-child(2) { animation-delay: 0.2s; }
     .dot:nth-child(3) { animation-delay: 0.4s; }
 
@@ -118,6 +120,7 @@
         padding: 12px;
         font-size: 16px;
         border-radius: 8px;
+        outline: none;
     }
 
     #sendBtn {
@@ -137,28 +140,41 @@
 <div class="app">
 
     <div class="topbar">
-        <img src="dancemap-icon.png" alt="icon">
+        <img src="dancemap-icon.png" alt="icon" />
         DanceMap AI
     </div>
 
     <div id="chat"></div>
 
     <div class="input-area">
-        <input id="userInput" type="text" placeholder="Skriv din besked…">
+        <input id="userInput" type="text" placeholder="Skriv en besked..." />
         <button id="sendBtn" onclick="sendMessage()">➤</button>
     </div>
 
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxmz2FZvl1uVI9Ixz-O-8DNGppNeLGegH2gUmpDLuoK4g_fq4zBM53ERt0uN0i0sdSM/exec";
+// ---------------- BACKEND URL ----------------
+const API_URL = "https://script.google.com/macros/s/AKfycbxV51Egbj0XC4NvtQ3OmoABXSqi3kanLHTn-SMLgyNl-0AEPpRFMtjKQ4fcqrkRP0de/exec";
+// ---------------------------------------------
 
-function addBotMessage(text) {
+const chat = document.getElementById("chat");
+
+// ------------ BOT FILTER (kun dans) -------------
+function onlyDanceQuestions(text) {
+    const allowed = ["salsa", "bachata", "kizomba", "event", "dans", "dance"];
+    text = text.toLowerCase();
+    return allowed.some(word => text.includes(word));
+}
+// ------------------------------------------------
+
+// ---------------- MESSAGE FUNCTIONS --------------
+function addBotMessage(text){
     const row = document.createElement("div");
-    row.className = "row bot";
+    row.className = "bot-row";
 
     row.innerHTML = `
-        <img src="dancemap-icon.png" class="icon">
+        <img src="dancemap-icon.png" />
         <div class="bot-bubble">${text}</div>
     `;
 
@@ -166,40 +182,14 @@ function addBotMessage(text) {
     chat.scrollTop = chat.scrollHeight;
 }
 
-function addUserMessage(text) {
+function addUserMessage(text){
     const row = document.createElement("div");
-    row.className = "row user";
-
-    row.innerHTML = `
-        <div class="user-bubble">${text}</div>
-        <img src="user.png" class="icon" style="display:none">
-    `;
-
+    row.className = "user-row";
+    row.innerHTML = `<div class="user-bubble">${text}</div>`;
     chat.appendChild(row);
     chat.scrollTop = chat.scrollHeight;
 }
-
-function showTyping() {
-    const row = document.createElement("div");
-    row.className = "row bot typing";
-    row.innerHTML = `
-        <img src="dancemap-icon.png" class="icon">
-        <div class="typing-bubble">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
-        </div>
-    `;
-    chat.appendChild(row);
-    chat.scrollTop = chat.scrollHeight;
-    return row;
-}
-
-function onlyDance(text) {
-    const ok = ["salsa","bachata","dans","event","dance","kizomba"];
-    text = text.toLowerCase();
-    return ok.some(w => text.includes(w));
-}
+// ------------------------------------------------
 
 function sendMessage(){
     const input = document.getElementById("userInput");
@@ -209,12 +199,24 @@ function sendMessage(){
     addUserMessage(text);
     input.value = "";
 
-    if (!onlyDance(text)) {
-        addBotMessage("Jeg svarer kun på spørgsmål om salsa og bachata events.");
+    // Filter: kun dansespørgsmål
+    if (!onlyDanceQuestions(text)) {
+        addBotMessage("Jeg svarer kun på spørgsmål om salsa og bachata events i København. Prøv igen.");
         return;
     }
 
-    const typing = showTyping();
+    // typing animation
+    const typing = document.createElement("div");
+    typing.className = "typing-row";
+    typing.innerHTML = `
+        <img src="dancemap-icon.png" />
+        <div class="typing-bubble">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>`;
+    chat.appendChild(typing);
+    chat.scrollTop = chat.scrollHeight;
 
     fetch(API_URL, {
         method: "POST",
@@ -224,22 +226,17 @@ function sendMessage(){
     .then(r => r.json())
     .then(data => {
         typing.remove();
-        if (!data.reply) {
-            addBotMessage("Der skete en fejl.");
-            return;
-        }
-
-        data.reply.split("\n").forEach((line,i)=>{
-            setTimeout(()=>addBotMessage(line), i*200);
-        });
+        addBotMessage(data.reply || "Der skete en fejl.");
     })
-    .catch(()=>{
+    .catch(() => {
         typing.remove();
         addBotMessage("Der skete en fejl med forbindelsen.");
     });
 }
 
+// første besked
 addBotMessage("Velkommen til DanceMap AI! Spørg efter salsa og bachata events.");
+
 </script>
 
 </body>
