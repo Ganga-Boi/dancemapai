@@ -1,186 +1,193 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DanceMap AI</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DanceMap AI</title>
 
-<style>
+  <style>
     body {
-        margin: 0;
-        background: linear-gradient(180deg, #022033, #01131f);
-        font-family: "Segoe UI", sans-serif;
-        color: #fff;
+      margin: 0;
+      background: linear-gradient(180deg,#011825,#022739,#01324c);
+      font-family: "Segoe UI", sans-serif;
+      color: #fff;
     }
 
     .app {
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
     .topbar {
-        height: 64px;
-        background: #011e30;
-        display: flex;
-        align-items: center;
-        padding: 0 20px;
-        font-size: 22px;
-        font-weight: bold;
-        box-shadow: 0 2px 10px #0007;
+      height: 64px;
+      background: #011e30;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      box-shadow: 0 2px 10px #00000055;
+      font-size: 22px;
+      font-weight: 600;
+      gap: 10px;
+    }
+
+    .topbar img {
+      width: 34px;
+      height: 34px;
     }
 
     .chat {
-        flex: 1;
-        padding: 20px;
-        overflow-y: auto;
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
     }
 
     .msg {
-        max-width: 80%;
-        padding: 12px 16px;
-        margin-bottom: 16px;
-        border-radius: 12px;
-        line-height: 1.4;
-        display: flex;
-        gap: 10px;
-        align-items: flex-start;
+      max-width: 80%;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      border-radius: 12px;
+      line-height: 1.5;
+      display: flex;
+      align-items: flex-start;
     }
 
-    .msg.user {
-        background: #0088ff;
-        margin-left: auto;
+    .msg-user {
+      margin-left: auto;
+      background: #1e88ff;
+      border-top-right-radius: 0;
     }
 
-    .msg.bot {
-        background: #0a2536;
-        border: 1px solid #0f3a51;
+    .msg-bot {
+      background: #0f2538;
+      border-top-left-radius: 0;
     }
 
-    /* BOT AVATAR */
-    .bot-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: #1e90ff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 20px;
-        color: white;
-        flex-shrink: 0;
-        box-shadow: 0 0 10px #0008;
+    .msg img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 10px;
     }
 
-    /* Input bar */
-    .inputBar {
-        display: flex;
-        padding: 15px;
-        background: #011e30;
-        gap: 10px;
+    .msg span {
+      display: block;
+      white-space: pre-wrap;
     }
 
-    #userInput {
-        flex: 1;
-        padding: 14px;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        outline: none;
+    .input-area {
+      padding: 14px;
+      background: #011e30;
+      display: flex;
+      gap: 10px;
+      border-top: 1px solid #093047;
     }
 
-    #sendBtn {
-        width: 48px;
-        height: 48px;
-        background: #0088ff;
-        color: #fff;
-        border: none;
-        border-radius: 50%;
-        cursor: pointer;
-        font-size: 18px;
+    input {
+      flex: 1;
+      padding: 14px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 16px;
     }
-</style>
+
+    button {
+      background: #1ea0ff;
+      color: #fff;
+      border: none;
+      padding: 0 22px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 
 <body>
 <div class="app">
-    <div class="topbar">DanceMap AI</div>
 
-    <div id="chat" class="chat"></div>
+  <div class="topbar">
+    <img src="dancemap-icon.png" alt="icon" />
+    DanceMap AI
+  </div>
 
-    <div class="inputBar">
-        <input id="userInput" type="text" placeholder="Skriv en besked..." />
-        <button id="sendBtn" onclick="sendMessage()">➤</button>
-    </div>
+  <div id="chat" class="chat"></div>
+
+  <div class="input-area">
+    <input id="userInput" type="text" placeholder="Skriv en besked..." />
+    <button onclick="sendMessage()">➤</button>
+  </div>
 </div>
 
 <script>
 const backendURL = "https://script.google.com/macros/s/AKfycbzmyLKzaezYgeNH1fuoJQHhdl2EAuVhhRg8xePwjw00aucUwMSxpBSylx3gIOYsBZco/exec";
 
-/* ADD MESSAGE */
-function addMessage(text, who, skipType = false) {
-    const chat = document.getElementById("chat");
+/* Add message bubble */
+function addMessage(text, who, skipTyping = false) {
+  const box = document.createElement("div");
+  box.className = "msg msg-" + who;
 
-    const box = document.createElement("div");
-    box.className = "msg " + who;
+  if (who === "bot") {
+    const avatar = document.createElement("img");
+    avatar.src = "dancemap-icon.png";
+    box.appendChild(avatar);
+  }
 
-    if (who === "bot") {
-        const icon = document.createElement("div");
-        icon.className = "bot-icon";
-        icon.textContent = "A";
-        box.appendChild(icon);
-    }
+  const span = document.createElement("span");
 
-    const span = document.createElement("div");
-    box.appendChild(span);
+  if (!skipTyping && who === "bot") {
+    typeText(text, span);
+  } else {
+    span.textContent = text;
+  }
 
-    chat.appendChild(box);
-    chat.scrollTop = 999999;
+  box.appendChild(span);
+  document.getElementById("chat").appendChild(box);
 
-    if (skipType) {
-        span.textContent = text;
-        return;
-    }
-
-    let i = 0;
-    function type() {
-        if (i < text.length) {
-            span.textContent += text.charAt(i);
-            i++;
-            setTimeout(type, 20);
-        }
-    }
-    type();
+  document.getElementById("chat").scrollTop = 999999;
 }
 
-/* FIRST MESSAGE */
+/* Typing animation */
+function typeText(text, span) {
+  let i = 0;
+  function tick() {
+    if (i < text.length) {
+      span.textContent += text[i];
+      i++;
+      setTimeout(tick, 18);
+    }
+  }
+  tick();
+}
+
+/* FIRST MESSAGE ON LOAD */
 window.onload = () => {
-    addMessage("Hej Allan! Jeg er klar til at finde salsa og bachata events.", "bot", true);
+  addMessage("Hej Allan! Jeg er klar til at finde salsa og bachata events.", "bot", true);
 };
 
-/* SEND MESSAGE */
+/* SEND MESSAGE FUNCTION */
 function sendMessage() {
-    const input = document.getElementById("userInput");
-    const text = input.value.trim();
-    if (!text) return;
+  const input = document.getElementById("userInput");
+  const text = input.value.trim();
+  if (!text) return;
 
-    addMessage(text, "user");
-    input.value = "";
+  addMessage(text, "user");
+  input.value = "";
 
-    const formData = new FormData();
-    formData.append("text", text);
+  const formData = new FormData();
+  formData.append("text", text);
 
-    fetch(backendURL, {
-        method: "POST",
-        body: formData
-    })
+  fetch(backendURL, {
+    method: "POST",
+    body: formData
+  })
     .then(res => res.json())
     .then(data => {
-        addMessage(data.reply || "Intet svar modtaget.", "bot");
+      addMessage(data.reply || "Intet svar modtaget.", "bot");
     })
     .catch(err => {
-        addMessage("Der skete en fejl.", "bot");
+      addMessage("Der skete en fejl.", "bot");
     });
 }
 </script>
