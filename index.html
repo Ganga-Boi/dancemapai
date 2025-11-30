@@ -44,62 +44,51 @@
         padding: 20px;
     }
 
-    .bot-row, .user-row {
-        margin-bottom: 16px;
+    .row {
         display: flex;
-        gap: 10px;
         align-items: flex-start;
-    }
-
-    .bot-row img {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-    }
-
-    .bot-bubble {
-        background: #0d2433;
-        border-radius: 10px;
-        padding: 12px 14px;
-        max-width: 70%;
-        line-height: 1.5;
-    }
-
-    .user-bubble {
-        background: #1f8bff;
-        border-radius: 10px;
-        padding: 12px 14px;
-        max-width: 70%;
-        margin-left: auto;
-        color: #fff;
-        line-height: 1.5;
-    }
-
-    .typing-row {
-        display: flex;
-        align-items: center;
+        margin-bottom: 14px;
         gap: 10px;
-        margin-bottom: 16px;
     }
 
-    .typing-row img {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
+    .row.bot { flex-direction: row; }
+    .row.user { flex-direction: row-reverse; }
+
+    .bubble {
+        padding: 12px 14px;
+        border-radius: 10px;
+        max-width: 70%;
+        line-height: 1.5;
+    }
+
+    .bubble.bot {
+        background: #0d2433;
+    }
+
+    .bubble.user {
+        background: #1f8bff;
+        color: #fff;
+    }
+
+    .icon {
+        width: 40px;
+        height: 40px;
     }
 
     .typing-bubble {
-        width: 50px;
-        height: 20px;
         display: flex;
-        align-items: center;
-        gap: 4px;
+        gap: 5px;
+        padding: 10px 14px;
+        background: #0d2433;
+        border-radius: 10px;
+        width: 60px;
+        justify-content: center;
     }
 
     .dot {
         width: 7px;
         height: 7px;
-        background: #fff;
+        background: white;
         border-radius: 50%;
         animation: blink 1.4s infinite ease-in-out;
     }
@@ -114,7 +103,6 @@
     }
 
     .input-area {
-        margin: 0;
         padding: 14px;
         background: #00000040;
         display: flex;
@@ -140,10 +128,9 @@
         font-size: 16px;
     }
 </style>
-
 </head>
-<body>
 
+<body>
 <div class="app">
 
     <div class="topbar">
@@ -161,84 +148,96 @@
 </div>
 
 <script>
-// ---------------- BACKEND URL ----------------
-const API_URL = "https://script.google.com/macros/s/AKfycbxV51Egbj0XC4NvtQ3OmoABXSqi3kanLHTn-SMLgyNl-0AEPpRFMtjKQ4fcqrkRP0de/exec";
-// ---------------------------------------------
+// BACKEND URL – din nye funktionerende URL
+const API_URL = "https://script.google.com/macros/s/AKfycbzEDCs7STzaLB01ZTRID5Cqylp4EfIalhALTlTjypdDVF7_rJfP0D19jh7En4AprEj0/exec";
 
 const chat = document.getElementById("chat");
 
-// ------------ BOT FILTER (kun dans) -------------
-function onlyDanceQuestions(text) {
-    const allowed = ["salsa", "bachata", "kizomba", "event", "dans", "dance"];
+// kun dansespørgsmål
+function onlyDance(text) {
+    const allowed = ["salsa", "bachata", "kizomba", "dans", "dance", "event"];
     text = text.toLowerCase();
-    return allowed.some(word => text.includes(word));
+    return allowed.some(w => text.includes(w));
 }
-// ------------------------------------------------
 
-// ------------ MESSAGE FUNCTIONS --------------
-function addBotMessage(text){
+function addMessage(text, who) {
     const row = document.createElement("div");
-    row.className = "bot-row";
-    row.innerHTML = `
-        <img src="dancemap-icon.png" />
-        <div class="bot-bubble">${text}</div>
-    `;
+    row.className = "row " + who;
+
+    const img = document.createElement("img");
+    img.className = "icon";
+
+    img.src = who === "bot" ? "dancemap-icon.png" : "user-icon.png";
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble " + who;
+    bubble.textContent = text;
+
+    row.appendChild(img);
+    row.appendChild(bubble);
+
     chat.appendChild(row);
     chat.scrollTop = chat.scrollHeight;
 }
 
-function addUserMessage(text){
+function addTyping() {
     const row = document.createElement("div");
-    row.className = "user-row";
-    row.innerHTML = `<div class="user-bubble">${text}</div>`;
+    row.className = "row bot";
+    row.id = "typing";
+
+    const img = document.createElement("img");
+    img.src = "dancemap-icon.png";
+    img.className = "icon";
+
+    const bubble = document.createElement("div");
+    bubble.className = "typing-bubble";
+    bubble.innerHTML = `<div class="dot"></div><div class="dot"></div><div class="dot"></div>`;
+
+    row.appendChild(img);
+    row.appendChild(bubble);
+
     chat.appendChild(row);
     chat.scrollTop = chat.scrollHeight;
 }
-// ------------------------------------------------
 
+function removeTyping() {
+    const t = document.getElementById("typing");
+    if (t) t.remove();
+}
 
-function sendMessage(){
+function sendMessage() {
     const input = document.getElementById("userInput");
     const text = input.value.trim();
     if (!text) return;
 
-    addUserMessage(text);
+    addMessage(text, "user");
     input.value = "";
 
-    if (!onlyDanceQuestions(text)) {
-        addBotMessage("Jeg svarer kun på spørgsmål om salsa og bachata events i København.");
+    if (!onlyDance(text)) {
+        addMessage("Jeg svarer kun på spørgsmål om salsa og bachata events i København. Prøv igen.", "bot");
         return;
     }
 
-    const typing = document.createElement("div");
-    typing.className = "typing-row";
-    typing.innerHTML = `
-        <img src="dancemap-icon.png" />
-        <div class="typing-bubble">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
-        </div>`;
-    chat.appendChild(typing);
-    chat.scrollTop = chat.scrollHeight;
+    addTyping();
 
     fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text })
+        body: JSON.stringify({ message: text }),
+        headers: { "Content-Type": "application/json" }
     })
     .then(r => r.json())
     .then(data => {
-        typing.remove();
-        addBotMessage(data.reply || "Der skete en fejl.");
+        removeTyping();
+        addMessage(data.reply || "Der skete en fejl.", "bot");
     })
     .catch(() => {
-        typing.remove();
-        addBotMessage("Der skete en fejl med forbindelsen.");
+        removeTyping();
+        addMessage("Der skete en fejl med forbindelsen.", "bot");
     });
 }
 
-addBotMessage("Velkommen til DanceMap AI! Spørg efter salsa og bachata events.");
+// Første besked
+addMessage("Velkommen til DanceMap AI! Spørg efter salsa og bachata events.", "bot");
 </script>
 
 </body>
