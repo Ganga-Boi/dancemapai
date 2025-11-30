@@ -148,26 +148,22 @@ body {
 </div>
 
 <script>
-// --------------- SETTINGS -------------------
-const API_URL = "https://script.google.com/macros/s/AKfycbwD-2JRimeYJHLHAbDIccOsxQBXwTm_9pkQIYzU95F8r6iDJpPAY0R8sn127fKyzdNE/exec";
-// ---------------------------------------------
+// BACKEND URL (ændres efter hvor du uploader backend)
+const API_URL = "/chatbot.php"; 
 
 const chat = document.getElementById("chat");
+
 function addBotMessage(text){
     const row = document.createElement("div");
     row.className = "bot-row";
-    row.innerHTML = `
-        <div class="bot-bubble">${text}</div>
-    `;
+    row.innerHTML = `<div class="bot-bubble">${text}</div>`;
     chat.appendChild(row);
     chat.scrollTop = chat.scrollHeight;
 }
 
 function addUserMessage(text){
     const row = document.createElement("div");
-    row.innerHTML = `
-        <div class="user-bubble">${text}</div>
-    `;
+    row.innerHTML = `<div class="user-bubble">${text}</div>`;
     chat.appendChild(row);
     chat.scrollTop = chat.scrollHeight;
 }
@@ -180,21 +176,26 @@ function sendMessage(){
     addUserMessage(text);
     input.value = "";
 
-    // bot "typing"
     const typing = document.createElement("div");
     typing.className = "typing-row";
-    typing.innerHTML = `<div class="typing-bubble"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+    typing.innerHTML = `
+        <div class="typing-bubble">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>`;
     chat.appendChild(typing);
     chat.scrollTop = chat.scrollHeight;
 
     fetch(API_URL,{
         method:"POST",
-        body: JSON.stringify({message:text})
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message:text })
     })
     .then(r=>r.json())
     .then(data=>{
         typing.remove();
-        addBotMessage(data.reply || "Der skete en fejl");
+        addBotMessage(data.reply || "Der skete en fejl.");
     })
     .catch(()=>{
         typing.remove();
@@ -202,7 +203,7 @@ function sendMessage(){
     });
 }
 
-// start message
+// Welcome message
 addBotMessage("Hej Allan! Jeg er klar til at finde salsa og bachata events.");
 </script>
 
