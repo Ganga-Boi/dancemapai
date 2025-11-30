@@ -12,11 +12,13 @@
       font-family: "Segoe UI", sans-serif;
       color: #fff;
     }
+
     .app {
       height: 100vh;
       display: flex;
       flex-direction: column;
     }
+
     .topbar {
       height: 64px;
       background: #011c2b;
@@ -24,12 +26,16 @@
       align-items: center;
       padding: 0 16px;
       box-shadow: 0 2px 10px #00000055;
+      font-size: 20px;
+      font-weight: bold;
     }
+
     .chat {
       flex: 1;
       padding: 20px;
       overflow-y: auto;
     }
+
     .msg {
       max-width: 80%;
       padding: 12px 16px;
@@ -37,18 +43,46 @@
       border-radius: 14px;
       line-height: 1.4;
       white-space: pre-line;
+      display: flex;
+      gap: 10px;
+      opacity: 0;
+      animation: fadeIn 0.4s forwards;
     }
-    .bot { background: #0f2740; }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    .bot {
+      background: #0f2740;
+    }
+
     .user {
       background: #1e90ff;
       margin-left: auto;
     }
+
+    /* BOT ICON */
+    .bot-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #1e90ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
     .inputbar {
       display: flex;
       padding: 12px;
       background: #01121d;
       box-shadow: 0 -2px 10px #00000055;
     }
+
     input {
       flex: 1;
       border: none;
@@ -57,6 +91,7 @@
       outline: none;
       font-size: 16px;
     }
+
     button {
       margin-left: 10px;
       width: 48px;
@@ -71,13 +106,9 @@
 
 <body>
 <div class="app">
-  <div class="topbar">
-    <h2>DanceMap AI</h2>
-  </div>
+  <div class="topbar">DanceMap AI</div>
 
-  <div class="chat" id="chat">
-    <div class="msg bot">Hej Allan! Jeg er klar til at finde salsa og bachata events.</div>
-  </div>
+  <div class="chat" id="chat"></div>
 
   <div class="inputbar">
     <input id="userInput" placeholder="Skriv en besked..." />
@@ -86,20 +117,53 @@
 </div>
 
 <script>
+/* ---------------------- BACKEND URL ---------------------- */
 const backendURL = "https://script.google.com/macros/s/AKfycbzmyLKzaezYgeNH1fuoJQHhdl2EAuVhhRg8xePwjw00aucUwMSxpBSylx3gIOYsBZco/exec";
 
-function addMessage(text, who) {
-  const box = document.createElement("div");
-  box.className = "msg " + who;
-  box.textContent = text;
-  document.getElementById("chat").appendChild(box);
-  document.getElementById("chat").scrollTop = 999999;
+/* ---------------------- TYPEWRITER EFFECT ---------------------- */
+function typeWriter(msg, i, element) {
+  if (i < msg.length) {
+    element.textContent += msg.charAt(i);
+    setTimeout(() => typeWriter(msg, i + 1, element), 20);
+  }
 }
 
+/* ---------------------- ADD MESSAGE ---------------------- */
+function addMessage(text, who, typing=false) {
+  const box = document.createElement("div");
+  box.className = "msg " + who;
+
+  if (who === "bot") {
+    const icon = document.createElement("div");
+    icon.className = "bot-icon";
+    icon.textContent = "A";
+    box.appendChild(icon);
+  }
+
+  const span = document.createElement("div");
+  box.appendChild(span);
+
+  document.getElementById("chat").appendChild(box);
+  document.getElementById("chat").scrollTop = 999999;
+
+  if (typing) {
+    typeWriter(text, 0, span);
+  } else {
+    span.textContent = text;
+  }
+}
+
+/* ---------------------- FIRST MESSAGE ---------------------- */
+window.onload = () => {
+  addMessage("Hej Allan! Jeg er klar til at finde salsa og bachata events.", "bot", true);
+};
+
+/* ---------------------- SEND MESSAGE ---------------------- */
 function sendMessage() {
   const input = document.getElementById("userInput");
   const text = input.value.trim();
   if (!text) return;
+
   addMessage(text, "user");
   input.value = "";
 
@@ -112,10 +176,10 @@ function sendMessage() {
   })
   .then(res => res.json())
   .then(data => {
-    addMessage(data.reply || "Intet svar modtaget.", "bot");
+    addMessage(data.reply || "Intet svar modtaget.", "bot", true);
   })
   .catch(err => {
-    addMessage("Der skete en fejl.", "bot");
+    addMessage("Der skete en fejl.", "bot", true);
   });
 }
 </script>
