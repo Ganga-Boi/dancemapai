@@ -43,31 +43,38 @@
         padding: 20px;
     }
 
-    .bot-row, .user-row {
-        margin-bottom: 14px;
+    .row {
         display: flex;
+        margin-bottom: 14px;
         align-items: flex-start;
+        gap: 10px;
     }
 
-    .bot-bubble {
-        background: #0d2433;
-        border-radius: 10px;
+    .row.bot { flex-direction: row; }
+    .row.user { flex-direction: row-reverse; }
+
+    .icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+    }
+
+    .bot-bubble, .user-bubble {
         padding: 12px 14px;
-        max-width: 75%;
+        border-radius: 10px;
+        max-width: 70%;
         line-height: 1.5;
         white-space: pre-line;
         animation: fadeIn 0.25s ease-in;
     }
 
+    .bot-bubble {
+        background: #0d2433;
+    }
+
     .user-bubble {
         background: #1f8bff;
-        border-radius: 10px;
-        padding: 12px 14px;
-        max-width: 75%;
-        margin-left: auto;
         color: #fff;
-        line-height: 1.5;
-        animation: fadeIn 0.25s ease-in;
     }
 
     @keyframes fadeIn {
@@ -75,15 +82,11 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
-    .typing-row {
-        margin-bottom: 14px;
-    }
-
     .typing-bubble {
-        width: 50px;
-        height: 20px;
+        background: #0d2433;
+        padding: 10px 14px;
+        border-radius: 10px;
         display: flex;
-        align-items: center;
         gap: 4px;
     }
 
@@ -94,8 +97,6 @@
         border-radius: 50%;
         animation: blink 1.4s infinite ease-in-out;
     }
-
-    .dot:nth-child(1) { animation-delay: 0s; }
     .dot:nth-child(2) { animation-delay: 0.2s; }
     .dot:nth-child(3) { animation-delay: 0.4s; }
 
@@ -117,7 +118,6 @@
         padding: 12px;
         font-size: 16px;
         border-radius: 8px;
-        outline: none;
     }
 
     #sendBtn {
@@ -151,70 +151,70 @@
 </div>
 
 <script>
-// --- BACKEND URL ---
 const API_URL = "https://script.google.com/macros/s/AKfycbxmz2FZvl1uVI9Ixz-O-8DNGppNeLGegH2gUmpDLuoK4g_fq4zBM53ERt0uN0i0sdSM/exec";
 
-// --- Dance filter ---
-function onlyDanceQuestions(text) {
-    const allowed = ["salsa", "bachata", "kizomba", "danse", "event", "dans", "dance"];
-    text = text.toLowerCase();
-    return allowed.some(w => text.includes(w));
-}
-
-// --- Messenger-style bot message ---
-function addBotMessage(msg) {
+function addBotMessage(text) {
     const row = document.createElement("div");
-    row.className = "bot-row";
+    row.className = "row bot";
 
-    const bubble = document.createElement("div");
-    bubble.className = "bot-bubble";
-    bubble.textContent = msg;
+    row.innerHTML = `
+        <img src="dancemap-icon.png" class="icon">
+        <div class="bot-bubble">${text}</div>
+    `;
 
-    row.appendChild(bubble);
     chat.appendChild(row);
     chat.scrollTop = chat.scrollHeight;
-}
-
-// --- One message per line ---
-function addBotMessagesMulti(text) {
-    const lines = text.split("\n");
-    lines.forEach((line, i) => {
-        setTimeout(() => addBotMessage(line), i * 250);
-    });
 }
 
 function addUserMessage(text) {
     const row = document.createElement("div");
-    row.className = "user-row";
-    row.innerHTML = `<div class="user-bubble">${text}</div>`;
+    row.className = "row user";
+
+    row.innerHTML = `
+        <div class="user-bubble">${text}</div>
+        <img src="user.png" class="icon" style="display:none">
+    `;
+
     chat.appendChild(row);
     chat.scrollTop = chat.scrollHeight;
 }
 
-function sendMessage() {
-    const input = document.getElementById("userInput");
-    const text = input.value.trim();
-    if (!text) return;
-    addUserMessage(text);
-    input.value = "";
-
-    // filter
-    if (!onlyDanceQuestions(text)) {
-        addBotMessage("Jeg svarer kun på spørgsmål om salsa og bachata events.");
-        return;
-    }
-
-    // typing animation
-    const typing = document.createElement("div");
-    typing.className = "typing-row";
-    typing.innerHTML = `
+function showTyping() {
+    const row = document.createElement("div");
+    row.className = "row bot typing";
+    row.innerHTML = `
+        <img src="dancemap-icon.png" class="icon">
         <div class="typing-bubble">
             <div class="dot"></div>
             <div class="dot"></div>
             <div class="dot"></div>
-        </div>`;
-    chat.appendChild(typing);
+        </div>
+    `;
+    chat.appendChild(row);
     chat.scrollTop = chat.scrollHeight;
+    return row;
+}
+
+function onlyDance(text) {
+    const ok = ["salsa","bachata","dans","event","dance","kizomba"];
+    text = text.toLowerCase();
+    return ok.some(w => text.includes(w));
+}
+
+function sendMessage(){
+    const input = document.getElementById("userInput");
+    const text = input.value.trim();
+    if (!text) return;
+
+    addUserMessage(text);
+    input.value = "";
+
+    if (!onlyDance(text)) {
+        addBotMessage("Jeg svarer kun på spørgsmål om salsa og bachata events.");
+        return;
+    }
+
+    const typing = showTyping();
 
     fetch(API_URL, {
         method: "POST",
@@ -224,21 +224,21 @@ function sendMessage() {
     .then(r => r.json())
     .then(data => {
         typing.remove();
-
         if (!data.reply) {
             addBotMessage("Der skete en fejl.");
             return;
         }
 
-        addBotMessagesMulti(data.reply);
+        data.reply.split("\n").forEach((line,i)=>{
+            setTimeout(()=>addBotMessage(line), i*200);
+        });
     })
-    .catch(() => {
+    .catch(()=>{
         typing.remove();
         addBotMessage("Der skete en fejl med forbindelsen.");
     });
 }
 
-// Start message
 addBotMessage("Velkommen til DanceMap AI! Spørg efter salsa og bachata events.");
 </script>
 
