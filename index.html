@@ -47,7 +47,6 @@
         margin-right: 10px;
         border-radius: 50%;
         object-fit: cover;
-        mix-blend-mode: multiply;
     }
 
     #chat {
@@ -88,7 +87,8 @@
         height: 40px;
         border-radius: 50%;
         object-fit: cover;
-        mix-blend-mode: multiply;
+        background: #ffffff22;
+        padding: 3px;
     }
 
     .typing-bubble {
@@ -227,7 +227,6 @@ async function sendMessage() {
 
     addMessage(text, "user");
 
-    // Analytics event
     if (typeof gtag !== "undefined") {
         gtag("event", "search", { search_term: text });
     }
