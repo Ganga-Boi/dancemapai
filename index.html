@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>DanceMap AI</title>
 
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-XXXXXXXXXX'); // Erstat med din ID
+</script>
+
 <style>
     body {
         margin: 0;
@@ -59,6 +68,7 @@
         border-radius: 10px;
         max-width: 70%;
         line-height: 1.5;
+        white-space: pre-wrap;
     }
 
     .bubble.bot {
@@ -73,7 +83,6 @@
     .icon {
         width: 40px;
         height: 40px;
-        border-radius: 50%;
     }
 
     .typing-bubble {
@@ -127,16 +136,6 @@
         border-radius: 8px;
         cursor: pointer;
         font-size: 16px;
-        transition: opacity 0.2s;
-    }
-
-    #sendBtn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    #sendBtn:hover:not(:disabled) {
-        background: #1a7ae6;
     }
 </style>
 </head>
@@ -145,7 +144,7 @@
 <div class="app">
 
     <div class="topbar">
-        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231f8bff'/%3E%3Ctext x='50' y='50' text-anchor='middle' dominant-baseline='central' font-size='40' fill='white'%3E💃%3C/text%3E%3C/svg%3E" alt="icon" />
+        <img src="robot-icon.png" alt="DanceMap AI" />
         DanceMap AI
     </div>
 
@@ -162,33 +161,6 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzEDCs7STzaLB01ZTRID5Cqylp4EfIalhALTlTjypdDVF7_rJfP0D19jh7En4AprEj0/exec";
 
 const chat = document.getElementById("chat");
-const input = document.getElementById("userInput");
-const sendBtn = document.getElementById("sendBtn");
-
-// AI-simuleret svar (demo mode)
-const demoResponses = {
-    "salsa": "🎉 Der er salsa i København hver torsdag på Sabor Latino kl. 20:00! Derudover er der også salsa på Huset hver fredag.",
-    "bachata": "💃 Bachata events finder du på La Noche hver onsdag kl. 19:30. Der er også workshop på Dansescenen hver lørdag.",
-    "weekend": "📅 I weekenden er der:\n- Fredag: Salsa Night på Huset kl. 21:00\n- Lørdag: Bachata Workshop på Dansescenen kl. 15:00\n- Søndag: Social Dance på Sabor Latino kl. 18:00",
-    "i dag": "🕺 I dag er der salsa workshop kl. 18:00 på Kulturhuset og social dance kl. 21:00 på La Noche!",
-    "default": "Jeg har fundet flere dans events i København! Spørg mig om salsa, bachata, eller hvad der sker i weekenden."
-};
-
-function getAIResponse(text) {
-    text = text.toLowerCase();
-    for (let key in demoResponses) {
-        if (text.includes(key)) {
-            return demoResponses[key];
-        }
-    }
-    return demoResponses.default;
-}
-
-function onlyDance(text) {
-    const blocked = ["vejr", "politik", "fodbold", "aktiemarked"];
-    text = text.toLowerCase();
-    return !blocked.some(w => text.includes(w));
-}
 
 function addMessage(text, who) {
     const row = document.createElement("div");
@@ -198,7 +170,7 @@ function addMessage(text, who) {
     img.className = "icon";
 
     if (who === "bot") {
-        img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231f8bff'/%3E%3Ctext x='50' y='50' text-anchor='middle' dominant-baseline='central' font-size='40' fill='white'%3E💃%3C/text%3E%3C/svg%3E";
+        img.src = "robot-icon.png";
     } else {
         img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23666'/%3E%3Ctext x='50' y='50' text-anchor='middle' dominant-baseline='central' font-size='40' fill='white'%3E👤%3C/text%3E%3C/svg%3E";
     }
@@ -220,7 +192,7 @@ function addTyping() {
     row.id = "typing";
 
     const img = document.createElement("img");
-    img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231f8bff'/%3E%3Ctext x='50' y='50' text-anchor='middle' dominant-baseline='central' font-size='40' fill='white'%3E💃%3C/text%3E%3C/svg%3E";
+    img.src = "robot-icon.png";
     img.className = "icon";
 
     const bubble = document.createElement("div");
@@ -240,22 +212,25 @@ function removeTyping() {
 }
 
 async function sendMessage() {
+    const input = document.getElementById("userInput");
     const text = input.value.trim();
     if (!text) return;
 
     addMessage(text, "user");
-    input.value = "";
-
-    if (!onlyDance(text)) {
-        addMessage("Jeg svarer kun på spørgsmål om salsa og bachata events i København. Prøv igen.", "bot");
-        return;
+    
+    // Track søgning i Google Analytics
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'search', {
+            'search_term': text
+        });
     }
+    
+    input.value = "";
 
     sendBtn.disabled = true;
     input.disabled = true;
     addTyping();
 
-    // Prøv først rigtig API
     try {
         const response = await fetch(API_URL + "?message=" + encodeURIComponent(text), {
             method: "GET"
@@ -267,17 +242,15 @@ async function sendMessage() {
         if (data.reply) {
             addMessage(data.reply, "bot");
         } else {
-            // Fallback til demo hvis API ikke returnerer reply
             setTimeout(() => {
-                addMessage(getAIResponse(text), "bot");
+                addMessage("Jeg forstod ikke helt. Prøv at spørge om salsa eller bachata events!", "bot");
             }, 800);
         }
     } catch (err) {
-        // Hvis API fejler, brug demo mode
-        console.log("API unavailable, using demo mode");
+        console.log("API unavailable, using fallback");
         setTimeout(() => {
             removeTyping();
-            addMessage(getAIResponse(text), "bot");
+            addMessage("Der skete en fejl. Prøv igen om lidt!", "bot");
         }, 1200);
     } finally {
         sendBtn.disabled = false;
@@ -287,7 +260,7 @@ async function sendMessage() {
 }
 
 // Enter-tast support
-input.addEventListener("keypress", function(e) {
+document.getElementById("userInput").addEventListener("keypress", function(e) {
     if (e.key === "Enter" && !sendBtn.disabled) {
         sendMessage();
     }
@@ -295,7 +268,7 @@ input.addEventListener("keypress", function(e) {
 
 // Første besked
 addMessage("Velkommen til DanceMap AI! Spørg efter salsa og bachata events. 💃🕺", "bot");
-input.focus();
+document.getElementById("userInput").focus();
 </script>
 
 </body>
