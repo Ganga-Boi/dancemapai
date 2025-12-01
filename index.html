@@ -2,29 +2,18 @@
 <html lang="da">
 <head>
 
-<!-- Google tag (gtag.js) -->
+<!-- Google tag (gtag.js) – KUN DETTE ER KORREKT -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-WYGJJJV2E6"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-WYGJJJV2E6');
 </script>
 
-	
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>DanceMap AI</title>
-
-<!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-<script>
-	window.dataLayer = window.dataLayer || [];
-	function gtag(){dataLayer.push(arguments);}
-	gtag('js', new Date());
-	gtag('config', 'G-XXXXXXXXXX'); // Erstat med din ID
-</script>
 
 <style>
     body {
@@ -191,7 +180,8 @@ function addMessage(text, who) {
     if (who === "bot") {
         img.src = "dancemap-icon.png";
     } else {
-        img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23666'/%3E%3Ctext x='50' y='50' text-anchor='middle' dominant-baseline='central' font-size='40' fill='white'%3E👤%3C/text%3E%3C/svg%3E";
+        img.src =
+        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23666'/%3E%3Ctext x='50' y='50' text-anchor='middle' dominant-baseline='central' font-size='40' fill='white'%3E👤%3C/text%3E%3C/svg%3E";
     }
 
     const bubble = document.createElement("div");
@@ -216,7 +206,8 @@ function addTyping() {
 
     const bubble = document.createElement("div");
     bubble.className = "typing-bubble";
-    bubble.innerHTML = `<div class="dot"></div><div class="dot"></div><div class="dot"></div>`;
+    bubble.innerHTML =
+        `<div class="dot"></div><div class="dot"></div><div class="dot"></div>`;
 
     row.appendChild(img);
     row.appendChild(bubble);
@@ -235,28 +226,23 @@ async function sendMessage() {
     if (!text) return;
 
     addMessage(text, "user");
-    
-    // Track søgning i Google Analytics
-    if (typeof gtag !== 'undefined') {
-        gtag('event', 'search', {
-            'search_term': text
-        });
-    }
-    
-    input.value = "";
 
+    // Analytics event
+    if (typeof gtag !== "undefined") {
+        gtag("event", "search", { search_term: text });
+    }
+
+    input.value = "";
     sendBtn.disabled = true;
     input.disabled = true;
     addTyping();
 
     try {
-        const response = await fetch(API_URL + "?message=" + encodeURIComponent(text), {
-            method: "GET"
-        });
-        
+        const response = await fetch(API_URL + "?message=" + encodeURIComponent(text));
         const data = await response.json();
-        
+
         removeTyping();
+
         if (data.reply) {
             addMessage(data.reply, "bot");
         } else {
@@ -273,14 +259,10 @@ async function sendMessage() {
     }
 }
 
-// Enter-tast support
 input.addEventListener("keypress", function(e) {
-    if (e.key === "Enter" && !sendBtn.disabled) {
-        sendMessage();
-    }
+    if (e.key === "Enter" && !sendBtn.disabled) sendMessage();
 });
 
-// Første besked
 addMessage("Velkommen til DanceMap AI! Spørg efter salsa og bachata events. 💃🕺", "bot");
 input.focus();
 </script>
