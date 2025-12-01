@@ -1,0 +1,16 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Baggrund -->
+  <circle cx="256" cy="256" r="256" fill="#022237"></circle>
+
+  <!-- Ydre glow -->
+  <circle cx="256" cy="256" r="230" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="35"></circle>
+
+  <!-- Hoved-ring -->
+  <circle cx="256" cy="256" r="200" fill="none" stroke="white" stroke-width="22"></circle>
+
+  <!-- Indre blå ring (samme stil som bot-ikonet) -->
+  <circle cx="256" cy="256" r="170" fill="none" stroke="#0d3f67" stroke-width="18"></circle>
+
+  <!-- User-ikon figur -->
+  <path d="M256 150c30 0 55 25 55 55s-25 55-55 55-55-25-55-55 25-55 55-55zm0 140c60 0 140 30 140 90v20H116v-20c0-60 80-90 140-90z" fill="white"></path>
+</svg>
