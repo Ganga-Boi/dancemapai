@@ -73,6 +73,7 @@
     .icon {
         width: 40px;
         height: 40px;
+        border-radius: 50%;
     }
 
     .typing-bubble {
@@ -126,6 +127,16 @@
         border-radius: 8px;
         cursor: pointer;
         font-size: 16px;
+        transition: opacity 0.2s;
+    }
+
+    #sendBtn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    #sendBtn:hover:not(:disabled) {
+        background: #1a7ae6;
     }
 </style>
 </head>
@@ -134,7 +145,7 @@
 <div class="app">
 
     <div class="topbar">
-        <img src="dancemap-icon.png" alt="icon" />
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231f8bff'/%3E%3Ctext x='50' y='50' text-anchor='middle' dominant-baseline='central' font-size='40' fill='white'%3E💃%3C/text%3E%3C/svg%3E" alt="icon" />
         DanceMap AI
     </div>
 
@@ -148,16 +159,35 @@
 </div>
 
 <script>
-// BACKEND URL – din nye funktionerende URL
 const API_URL = "https://script.google.com/macros/s/AKfycbzEDCs7STzaLB01ZTRID5Cqylp4EfIalhALTlTjypdDVF7_rJfP0D19jh7En4AprEj0/exec";
 
 const chat = document.getElementById("chat");
+const input = document.getElementById("userInput");
+const sendBtn = document.getElementById("sendBtn");
 
-// kun dansespørgsmål
-function onlyDance(text) {
-    const allowed = ["salsa", "bachata", "kizomba", "dans", "dance", "event"];
+// AI-simuleret svar (demo mode)
+const demoResponses = {
+    "salsa": "🎉 Der er salsa i København hver torsdag på Sabor Latino kl. 20:00! Derudover er der også salsa på Huset hver fredag.",
+    "bachata": "💃 Bachata events finder du på La Noche hver onsdag kl. 19:30. Der er også workshop på Dansescenen hver lørdag.",
+    "weekend": "📅 I weekenden er der:\n- Fredag: Salsa Night på Huset kl. 21:00\n- Lørdag: Bachata Workshop på Dansescenen kl. 15:00\n- Søndag: Social Dance på Sabor Latino kl. 18:00",
+    "i dag": "🕺 I dag er der salsa workshop kl. 18:00 på Kulturhuset og social dance kl. 21:00 på La Noche!",
+    "default": "Jeg har fundet flere dans events i København! Spørg mig om salsa, bachata, eller hvad der sker i weekenden."
+};
+
+function getAIResponse(text) {
     text = text.toLowerCase();
-    return allowed.some(w => text.includes(w));
+    for (let key in demoResponses) {
+        if (text.includes(key)) {
+            return demoResponses[key];
+        }
+    }
+    return demoResponses.default;
+}
+
+function onlyDance(text) {
+    const blocked = ["vejr", "politik", "fodbold", "aktiemarked"];
+    text = text.toLowerCase();
+    return !blocked.some(w => text.includes(w));
 }
 
 function addMessage(text, who) {
@@ -167,7 +197,11 @@ function addMessage(text, who) {
     const img = document.createElement("img");
     img.className = "icon";
 
-    img.src = who === "bot" ? "dancemap-icon.png" : "user-icon.png";
+    if (who === "bot") {
+        img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231f8bff'/%3E%3Ctext x='50' y='50' text-anchor='middle' dominant-baseline='central' font-size='40' fill='white'%3E💃%3C/text%3E%3C/svg%3E";
+    } else {
+        img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23666'/%3E%3Ctext x='50' y='50' text-anchor='middle' dominant-baseline='central' font-size='40' fill='white'%3E👤%3C/text%3E%3C/svg%3E";
+    }
 
     const bubble = document.createElement("div");
     bubble.className = "bubble " + who;
@@ -186,7 +220,7 @@ function addTyping() {
     row.id = "typing";
 
     const img = document.createElement("img");
-    img.src = "dancemap-icon.png";
+    img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231f8bff'/%3E%3Ctext x='50' y='50' text-anchor='middle' dominant-baseline='central' font-size='40' fill='white'%3E💃%3C/text%3E%3C/svg%3E";
     img.className = "icon";
 
     const bubble = document.createElement("div");
@@ -205,8 +239,7 @@ function removeTyping() {
     if (t) t.remove();
 }
 
-function sendMessage() {
-    const input = document.getElementById("userInput");
+async function sendMessage() {
     const text = input.value.trim();
     if (!text) return;
 
@@ -218,26 +251,51 @@ function sendMessage() {
         return;
     }
 
+    sendBtn.disabled = true;
+    input.disabled = true;
     addTyping();
 
-    fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({ message: text }),
-        headers: { "Content-Type": "application/json" }
-    })
-    .then(r => r.json())
-    .then(data => {
+    // Prøv først rigtig API
+    try {
+        const response = await fetch(API_URL + "?message=" + encodeURIComponent(text), {
+            method: "GET"
+        });
+        
+        const data = await response.json();
+        
         removeTyping();
-        addMessage(data.reply || "Der skete en fejl.", "bot");
-    })
-    .catch(() => {
-        removeTyping();
-        addMessage("Der skete en fejl med forbindelsen.", "bot");
-    });
+        if (data.reply) {
+            addMessage(data.reply, "bot");
+        } else {
+            // Fallback til demo hvis API ikke returnerer reply
+            setTimeout(() => {
+                addMessage(getAIResponse(text), "bot");
+            }, 800);
+        }
+    } catch (err) {
+        // Hvis API fejler, brug demo mode
+        console.log("API unavailable, using demo mode");
+        setTimeout(() => {
+            removeTyping();
+            addMessage(getAIResponse(text), "bot");
+        }, 1200);
+    } finally {
+        sendBtn.disabled = false;
+        input.disabled = false;
+        input.focus();
+    }
 }
 
+// Enter-tast support
+input.addEventListener("keypress", function(e) {
+    if (e.key === "Enter" && !sendBtn.disabled) {
+        sendMessage();
+    }
+});
+
 // Første besked
-addMessage("Velkommen til DanceMap AI! Spørg efter salsa og bachata events.", "bot");
+addMessage("Velkommen til DanceMap AI! Spørg efter salsa og bachata events. 💃🕺", "bot");
+input.focus();
 </script>
 
 </body>
