@@ -44,7 +44,6 @@
         width: 38px;
         height: 38px;
         margin-right: 10px;
-        background: transparent;
     }
 
     #chat {
@@ -83,7 +82,6 @@
     .icon {
         width: 40px;
         height: 40px;
-        background: transparent;
     }
 
     .typing-bubble {
@@ -162,6 +160,8 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzEDCs7STzaLB01ZTRID5Cqylp4EfIalhALTlTjypdDVF7_rJfP0D19jh7En4AprEj0/exec";
 
 const chat = document.getElementById("chat");
+const input = document.getElementById("userInput");
+const sendBtn = document.getElementById("sendBtn");
 
 function addMessage(text, who) {
     const row = document.createElement("div");
@@ -213,7 +213,6 @@ function removeTyping() {
 }
 
 async function sendMessage() {
-    const input = document.getElementById("userInput");
     const text = input.value.trim();
     if (!text) return;
 
@@ -243,16 +242,12 @@ async function sendMessage() {
         if (data.reply) {
             addMessage(data.reply, "bot");
         } else {
-            setTimeout(() => {
-                addMessage("Jeg forstod ikke helt. Prøv at spørge om salsa eller bachata events!", "bot");
-            }, 800);
+            addMessage("Jeg forstod ikke helt. Prøv at spørge om salsa eller bachata events!", "bot");
         }
     } catch (err) {
-        console.log("API unavailable, using fallback");
-        setTimeout(() => {
-            removeTyping();
-            addMessage("Der skete en fejl. Prøv igen om lidt!", "bot");
-        }, 1200);
+        console.log("API error:", err);
+        removeTyping();
+        addMessage("Der skete en fejl. Prøv igen om lidt!", "bot");
     } finally {
         sendBtn.disabled = false;
         input.disabled = false;
@@ -261,7 +256,7 @@ async function sendMessage() {
 }
 
 // Enter-tast support
-document.getElementById("userInput").addEventListener("keypress", function(e) {
+input.addEventListener("keypress", function(e) {
     if (e.key === "Enter" && !sendBtn.disabled) {
         sendMessage();
     }
@@ -269,7 +264,7 @@ document.getElementById("userInput").addEventListener("keypress", function(e) {
 
 // Første besked
 addMessage("Velkommen til DanceMap AI! Spørg efter salsa og bachata events. 💃🕺", "bot");
-document.getElementById("userInput").focus();
+input.focus();
 </script>
 
 </body>
