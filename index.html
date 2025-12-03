@@ -181,6 +181,37 @@
             text-decoration: underline;
         }
 
+        /* FAB Button - Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #4a90e2;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .fab:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(74, 144, 226, 0.6);
+            background: #357abd;
+        }
+
+        .fab:active {
+            transform: translateY(-1px);
+        }
+
         /* Mobile optimering */
         @media (max-width: 768px) {
             #chat {
@@ -207,6 +238,13 @@
                 width: 36px;
                 height: 36px;
             }
+
+            .fab {
+                bottom: 80px;
+                right: 16px;
+                width: 52px;
+                height: 52px;
+            }
         }
     </style>
 </head>
@@ -220,7 +258,14 @@
         <div id="chat">
             <div class="message bot">
                 <img src="dancemap-icon.png" alt="Bot" />
-                <div class="bubble">Velkommen til DanceMap AI! Spørg efter salsa og bachata events. 💃🕺</div>
+                <div class="bubble">Velkommen til DanceMap AI! 💃
+
+Find salsa, bachata, kizomba og andre dance events i Danmark!
+
+🔍 Søg: "salsa i københavn" eller "events i weekenden"
+📝 Tilføj manglende event: Skriv "tilføj event"
+
+Hvad leder du efter? 😊</div>
             </div>
         </div>
 
@@ -232,6 +277,11 @@
                 <span></span>
             </div>
         </div>
+
+        <!-- FAB Button -->
+        <button class="fab" onclick="startEventSubmission()" title="Tilføj event">
+            📝
+        </button>
 
         <div class="input-area">
             <input
@@ -247,9 +297,28 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwLZ-irHmdb-Fqj71-bjByWeocCtx0aWOq3l-fOy3g1nb7hMgINivHm8qpdy8v_bsVM/exec";
         let sessionId = generateSessionId();
+        
+        // Guided submission state
+        let submissionState = {
+            active: false,
+            step: 0,
+            data: {}
+        };
 
         function generateSessionId() {
             return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Start guided event submission from FAB button
+        function startEventSubmission() {
+            submissionState = {
+                active: true,
+                step: 1,
+                data: {}
+            };
+            
+            addMessage("📝 Lad os tilføje et event!\n\nHvilken dato er eventet?\n(fx '6. december' eller '2024-12-06')", "bot");
+            document.getElementById("userInput").focus();
         }
 
         document.getElementById("userInput").addEventListener("keypress", function(e) {
@@ -267,6 +336,13 @@
 
             addMessage(message, "user");
             input.value = "";
+            
+            // Handle guided submission flow
+            if (submissionState.active) {
+                handleGuidedSubmission(message);
+                return;
+            }
+            
             showTyping(true);
 
             try {
@@ -280,6 +356,80 @@
                 showTyping(false);
                 addMessage("Beklager, jeg kunne ikke forbinde til serveren. Prøv igen! 🔄", "bot");
                 console.error("Error:", error);
+            }
+        }
+        
+        function handleGuidedSubmission(message) {
+            const step = submissionState.step;
+            
+            if (step === 1) {
+                // Dato
+                submissionState.data.dato = message;
+                submissionState.step = 2;
+                addMessage(`✅ ${message}\n\nHvilket tidspunkt starter det?\n(fx '20:00' eller '19.30')`, "bot");
+            }
+            else if (step === 2) {
+                // Tid
+                submissionState.data.tid = message;
+                submissionState.step = 3;
+                addMessage(`✅ ${message}\n\nHvilken type event?\n• Salsa\n• Bachata\n• Kizomba\n• Salsa Bachata\n• Andet`, "bot");
+            }
+            else if (step === 3) {
+                // Type
+                submissionState.data.type = message;
+                submissionState.step = 4;
+                addMessage(`✅ ${message}\n\nHvad hedder stedet?\n(fx 'Nordhus' eller 'Kedelhallen')`, "bot");
+            }
+            else if (step === 4) {
+                // Sted
+                submissionState.data.sted = message;
+                submissionState.step = 5;
+                addMessage(`✅ ${message}\n\nHvilken by?\n(fx 'København' eller 'Aarhus')`, "bot");
+            }
+            else if (step === 5) {
+                // By
+                submissionState.data.by = message;
+                submissionState.step = 6;
+                
+                const summary = `✅ ${message}\n\nPerfekt! Her er hvad jeg har:\n\n` +
+                               `📅 ${submissionState.data.dato} kl. ${submissionState.data.tid}\n` +
+                               `💃 ${submissionState.data.type}\n` +
+                               `📍 ${submissionState.data.sted}\n` +
+                               `🏙️ ${submissionState.data.by}\n\n` +
+                               `Er det korrekt? (ja/nej)`;
+                addMessage(summary, "bot");
+            }
+            else if (step === 6) {
+                // Bekræftelse
+                if (message.toLowerCase() === 'ja' || message.toLowerCase() === 'yes') {
+                    submitEvent();
+                } else {
+                    submissionState = { active: false, step: 0, data: {} };
+                    addMessage("❌ Annulleret. Skriv 'tilføj event' for at prøve igen! 😊", "bot");
+                }
+            }
+        }
+        
+        async function submitEvent() {
+            showTyping(true);
+            
+            const submissionText = `${submissionState.data.dato}, ${submissionState.data.tid}, ${submissionState.data.type}, ${submissionState.data.sted}, ${submissionState.data.by}`;
+            
+            try {
+                const response = await fetch(`${SCRIPT_URL}?message=${encodeURIComponent(submissionText)}&sessionId=${sessionId}`);
+                const data = await response.json();
+                
+                showTyping(false);
+                addMessage(data.reply, "bot");
+                
+                // Reset state
+                submissionState = { active: false, step: 0, data: {} };
+                
+            } catch (error) {
+                showTyping(false);
+                addMessage("❌ Der skete en fejl. Prøv igen! 😊", "bot");
+                console.error("Error:", error);
+                submissionState = { active: false, step: 0, data: {} };
             }
         }
 
