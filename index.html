@@ -415,9 +415,17 @@ Hvad leder du efter? 😊</div>
             
             const submissionText = `${submissionState.data.dato}, ${submissionState.data.tid}, ${submissionState.data.type}, ${submissionState.data.sted}, ${submissionState.data.by}`;
             
+            console.log("📤 Sender submission:", submissionText);
+            
             try {
                 const response = await fetch(`${SCRIPT_URL}?message=${encodeURIComponent(submissionText)}&sessionId=${sessionId}`);
+                
+                console.log("📥 Response status:", response.status);
+                
                 const data = await response.json();
+                
+                console.log("📥 Response data:", data);
+                console.log("📥 Reply text:", data.reply);
                 
                 showTyping(false);
                 addMessage(data.reply, "bot");
@@ -427,8 +435,8 @@ Hvad leder du efter? 😊</div>
                 
             } catch (error) {
                 showTyping(false);
+                console.error("❌ Submission error:", error);
                 addMessage("❌ Der skete en fejl. Prøv igen! 😊", "bot");
-                console.error("Error:", error);
                 submissionState = { active: false, step: 0, data: {} };
             }
         }
