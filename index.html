@@ -1,30 +1,56 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WYGJJJV2E6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-WYGJJJV2E6');
+  </script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DanceMap AI</title>
   <style>
-    body { margin: 0; background: #011520; color: #fff; font-family: "Segoe UI", sans-serif; }
+    body { margin: 0; background: linear-gradient(180deg, #022237, #011520); font-family: "Segoe UI", sans-serif; color: #fff; }
     .app { height: 100vh; display: flex; flex-direction: column; }
-    .topbar { height: 64px; background: #011c2b; display: flex; align-items: center;
-              padding: 0 16px; font-size: 20px; font-weight: 600; letter-spacing: 1px; }
-    .topbar img { width: 38px; height: 38px; margin-right: 10px; border-radius: 50%; }
+    .topbar { height: 64px; background: #011c2b; display: flex; align-items: center; padding: 0 16px; font-size: 20px; font-weight: 600; letter-spacing: 1px; box-shadow: 0 0 10px #00000070; }
+    .topbar img { width: 38px; height: 38px; margin-right: 10px; border-radius: 50%; object-fit: cover; }
     #chat { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; }
     .message { display: flex; align-items: flex-start; margin-bottom: 20px; gap: 12px; }
     .message img { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; }
-    .bubble { background: rgba(255,255,255,0.08); padding: 14px 18px; border-radius: 16px;
-              max-width: 70%; line-height: 1.6; white-space: pre-wrap; }
+    .bubble { background: rgba(255, 255, 255, 0.08); padding: 14px 18px; border-radius: 16px; max-width: 70%; line-height: 1.6; white-space: pre-wrap; }
     .message.user { flex-direction: row-reverse; }
     .message.user .bubble { background: #2a5a7a; }
-    .input-area { position: fixed; bottom: 0; left: 0; right: 0; background: #011c2b;
-                  padding: 16px; display: flex; gap: 10px; box-shadow: 0 -2px 10px #00000070; }
-    #userInput { flex: 1; padding: 12px 16px; border-radius: 24px; border: 1px solid #2a5a7a;
-                 background: rgba(255,255,255,0.05); color: white; font-size: 15px; outline: none; }
-    #userInput::placeholder { color: rgba(255,255,255,0.4); }
-    #sendBtn { width: 48px; height: 48px; border-radius: 50%; background: #4a90e2;
-               border: none; color: white; cursor: pointer; font-size: 20px; }
+    .input-area { position: fixed; bottom: 0; left: 0; right: 0; background: #011c2b; padding: 16px; display: flex; gap: 10px; box-shadow: 0 -2px 10px #00000070; }
+    #userInput { flex: 1; padding: 12px 16px; border-radius: 24px; border: 1px solid #2a5a7a; background: rgba(255, 255, 255, 0.05); color: white; font-size: 15px; outline: none; }
+    #userInput::placeholder { color: rgba(255, 255, 255, 0.4); }
+    #sendBtn { width: 48px; height: 48px; border-radius: 50%; background: #4a90e2; border: none; color: white; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
     #sendBtn:hover { background: #357abd; }
+    .typing { display: none; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .typing.active { display: flex; }
+    .typing img { width: 40px; height: 40px; border-radius: 50%; }
+    .typing-dots { background: rgba(255, 255, 255, 0.08); padding: 14px 18px; border-radius: 16px; display: flex; gap: 6px; }
+    .typing-dots span { width: 8px; height: 8px; background: white; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
+    .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes bounce { 0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+    a { color: #4a90e2; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    /* FAB Button - Floating Action Button */
+    .fab { position: fixed; bottom: 90px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: #4a90e2; border: none; color: white; font-size: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; z-index: 1000; }
+    .fab:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(74, 144, 226, 0.6); background: #357abd; }
+    .fab:active { transform: translateY(-1px); }
+    @media (max-width: 768px) {
+      #chat { padding: 15px; padding-bottom: 90px; }
+      .bubble { max-width: 85%; font-size: 14px; }
+      .topbar { height: 56px; font-size: 18px; }
+      .topbar img { width: 32px; height: 32px; }
+      .message img { width: 36px; height: 36px; }
+      .fab { bottom: 80px; right: 16px; width: 52px; height: 52px; }
+    }
   </style>
 </head>
 <body>
@@ -36,14 +62,19 @@
     <div id="chat">
       <div class="message bot">
         <img src="dancemap-icon.png" alt="Bot" />
-        <div class="bubble">Velkommen til DanceMap AI! 💃
-
-Skriv fx:
-• 'Salsa i København' 
-• 'Bachata denne weekend'
-• 'Events i Aarhus'</div>
+        <div class="bubble">
+          Velkommen til DanceMap AI! 💃 Find salsa, bachata, kizomba og andre dance events i Danmark! 🔍
+          Søg: "salsa i københavn" eller "events i weekenden" 📝 Tilføj manglende event: Skriv "tilføj event" Hvad leder du efter? 😊
+        </div>
       </div>
     </div>
+    <div class="typing" id="typing">
+      <img src="dancemap-icon.png" alt="Bot" />
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+    </div>
+
+    <!-- FAB Button -->
+    <button class="fab" onclick="startEventSubmission()" title="Tilføj event">📝</button>
     <div class="input-area">
       <input type="text" id="userInput" placeholder="Skriv en besked..." autocomplete="off" />
       <button id="sendBtn" onclick="sendMessage()">➤</button>
@@ -51,49 +82,82 @@ Skriv fx:
   </div>
 
   <script>
-    async function sendMessage() {
-      const input = document.getElementById("userInput");
-      const message = input.value.trim();
-      if (!message) return;
+    const SCRIPT_URL = "<DIN‑WEBAPP‑URL‑HER>";  // Husk at ændre til din deployede Web App URL
+    let sessionId = generateSessionId();
+    let submissionState = { active: false, step: 0, data: {} };
 
-      addMessage(message, "user");
-      input.value = "";
-
-      try {
-        const resp = await fetch("?message=" + encodeURIComponent(message));
-        const data = await resp.json();
-        addMessage(data.reply, "bot");
-      } catch (e) {
-        addMessage("Beklager — noget gik galt 😕", "bot");
-        console.error(e);
-      }
+    function generateSessionId() {
+      return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2,9);
     }
 
-    function addMessage(text, sender) {
-      const chat = document.getElementById("chat");
-      const div = document.createElement("div");
-      div.className = "message " + sender;
-
-      const img = document.createElement("img");
-      img.src = sender === "user" ? "user-icon.svg" : "dancemap-icon.png";
-      img.alt = sender === "user" ? "User" : "Bot";
-
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      bubble.innerText = text;
-
-      div.appendChild(img);
-      div.appendChild(bubble);
-      chat.appendChild(div);
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    document.getElementById("userInput").addEventListener("keypress", e => {
+    document.getElementById("userInput").addEventListener("keypress", function(e) {
       if (e.key === "Enter") {
         e.preventDefault();
         sendMessage();
       }
     });
+
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const message = input.value.trim();
+      if (!message) return;
+      addMessage(message, "user");
+      input.value = "";
+
+      if (submissionState.active) {
+        handleGuidedSubmission(message);
+        return;
+      }
+
+      showTyping(true);
+      try {
+        const response = await fetch(`${SCRIPT_URL}?message=${encodeURIComponent(message)}&sessionId=${sessionId}`);
+        const data = await response.json();
+        showTyping(false);
+        addMessage(data.reply, "bot");
+      } catch (error) {
+        showTyping(false);
+        addMessage("Beklager, jeg kunne ikke forbinde til serveren. Prøv igen! 🔄", "bot");
+        console.error("Error:", error);
+      }
+    }
+
+    function handleGuidedSubmission(message) {
+      const step = submissionState.step;
+      // Her kan du genbruge din guided submission flow logik fra din kode
+      // ...
+    }
+
+    function addMessage(text, sender) {
+      const chat = document.getElementById("chat");
+      const messageDiv = document.createElement("div");
+      messageDiv.className = "message " + sender;
+      const img = document.createElement("img");
+      img.src = sender === "user" ? "user-icon.svg" : "dancemap-icon.png";
+      img.alt = sender === "user" ? "User" : "Bot";
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      const textWithLinks = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+      bubble.innerHTML = textWithLinks.replace(/\n/g, "<br>");
+      messageDiv.appendChild(img);
+      messageDiv.appendChild(bubble);
+      chat.appendChild(messageDiv);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function showTyping(show) {
+      const typing = document.getElementById("typing");
+      const chat = document.getElementById("chat");
+      if (show) {
+        typing.classList.add("active");
+        chat.appendChild(typing);
+        chat.scrollTop = chat.scrollHeight;
+      } else {
+        typing.classList.remove("active");
+      }
+    }
+
+    // Her kan du indsætte resten af din frontend‑JS (guided submission, FAB etc.)
   </script>
 </body>
 </html>
