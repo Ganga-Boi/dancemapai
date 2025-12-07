@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="da" id="app-root">
 <head>
+    <!-- Enhanced Security Headers -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://script.google.com https://www.google-analytics.com; frame-src 'none';">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    
     <!-- Google Analytics with enhanced event tracking -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WYGJJJV2E6"></script>
     <script>
@@ -9,20 +15,50 @@
         gtag('js', new Date());
         gtag('config', 'G-WYGJJJV2E6');
         
-        // Enhanced event tracking
+        // Enhanced event tracking with performance monitoring
         function trackEvent(action, category = 'user_interaction', label = '', value = 0) {
             gtag('event', action, {
                 event_category: category,
                 event_label: label,
-                value: value
+                value: value,
+                custom_map: {
+                    'session_id': getSessionId(),
+                    'user_agent': navigator.userAgent.substring(0, 100)
+                }
+            });
+        }
+        
+        // Performance monitoring
+        function trackPerformance(metric, value, label = '') {
+            gtag('event', 'performance_metric', {
+                event_category: 'performance',
+                event_label: `${metric}_${label}`,
+                value: Math.round(value),
+                custom_map: {
+                    'connection': navigator.connection ? navigator.connection.effectiveType : 'unknown'
+                }
             });
         }
     </script>
 
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- DOMPurify for Enhanced XSS Protection -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
+
     <title>DanceMap AI - Find Dance Events in Denmark</title>
     <meta name="description" content="Find salsa, bachata, kizomba and other dance events in Denmark. AI-powered event discovery for the Danish dance community." />
+    
+    <!-- Social Media Meta Tags -->
+    <meta property="og:title" content="DanceMap AI - Find Dance Events in Denmark" />
+    <meta property="og:description" content="Discover salsa, bachata, kizomba and other dance events across Denmark with our AI-powered platform." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://dancemap.maharaj.dk" />
+    <meta property="og:image" content="https://dancemap.maharaj.dk/og-image.png" />
+    <meta property="og:site_name" content="DanceMap AI" />
+    
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="DanceMap AI - Find Dance Events in Denmark" />
+    <meta name="twitter:description" content="Discover salsa, bachata, kizomba and other dance events across Denmark with our AI-powered platform." />
+    <meta name="twitter:image" content="https://dancemap.maharaj.dk/twitter-card.png" />
 
     <style>
         :root {
@@ -37,6 +73,10 @@
             --success: #4caf50;
             --warning: #ff9800;
             --error: #f44336;
+            --share-facebook: #1877f2;
+            --share-twitter: #1da1f2;
+            --share-whatsapp: #25d366;
+            --share-linkedin: #0a66c2;
         }
 
         * {
@@ -58,7 +98,7 @@
             position: relative;
         }
 
-        /* Language Switcher */
+        /* Enhanced Language Switcher */
         .language-switcher {
             position: fixed;
             top: 16px;
@@ -77,57 +117,131 @@
             font-size: 12px;
             cursor: pointer;
             transition: all 0.2s;
+            backdrop-filter: blur(10px);
         }
 
         .lang-btn.active {
             background: var(--primary);
             color: white;
+            box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
         }
 
         .lang-btn:hover {
             background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
         }
 
-        /* Debug Panel */
+        /* Enhanced Debug Panel */
         .debug-panel {
             position: fixed;
             top: 60px;
             right: 16px;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
-            min-width: 300px;
-            max-height: 400px;
+            border-radius: 12px;
+            padding: 20px;
+            min-width: 350px;
+            max-height: 500px;
             overflow-y: auto;
             z-index: 1000;
             display: none;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
 
         .debug-panel.active {
             display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .debug-section {
+            margin-bottom: 16px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .debug-section h5 {
+            margin: 0 0 8px 0;
+            color: var(--primary);
+            font-size: 12px;
+            text-transform: uppercase;
         }
 
         .debug-input {
             width: 100%;
-            padding: 8px;
+            padding: 8px 12px;
             margin: 8px 0;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid var(--border);
-            border-radius: 4px;
+            border-radius: 6px;
             color: var(--text);
             font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .debug-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+        .debug-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+            margin-right: 8px;
+        }
+
+        .debug-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
         }
 
         .debug-result {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px;
-            border-radius: 4px;
-            font-family: monospace;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
             font-size: 11px;
             white-space: pre-wrap;
             max-height: 200px;
             overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .metric {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: var(--text-muted);
         }
 
         .topbar {
@@ -141,6 +255,7 @@
             font-weight: 600;
             letter-spacing: 1px;
             box-shadow: 0 0 10px rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
         }
 
         .topbar-left {
@@ -184,6 +299,7 @@
             align-items: flex-start;
             margin-bottom: 20px;
             gap: 12px;
+            position: relative;
         }
 
         .message img {
@@ -201,6 +317,7 @@
             line-height: 1.6;
             white-space: pre-wrap;
             word-wrap: break-word;
+            position: relative;
         }
 
         .message.user {
@@ -209,6 +326,50 @@
 
         .message.user .bubble {
             background: var(--secondary);
+        }
+
+        /* Enhanced Event Sharing */
+        .event-actions {
+            display: none;
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .message.bot:hover .event-actions,
+        .event-actions.active {
+            display: flex;
+            gap: 4px;
+        }
+
+        .share-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s;
+            color: white;
+        }
+
+        .share-btn.facebook { background: var(--share-facebook); }
+        .share-btn.twitter { background: var(--share-twitter); }
+        .share-btn.whatsapp { background: var(--share-whatsapp); }
+        .share-btn.linkedin { background: var(--share-linkedin); }
+        .share-btn.copy { background: #666; }
+
+        .share-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         /* Loading Animation */
@@ -253,7 +414,7 @@
             40% { opacity: 1; transform: scale(1); }
         }
 
-        /* Enhanced Loading Indicator for Guided Submission */
+        /* Enhanced Loading Indicator */
         .guided-loading {
             display: none;
             align-items: center;
@@ -263,6 +424,7 @@
             border-radius: 20px;
             font-size: 12px;
             color: var(--text-muted);
+            backdrop-filter: blur(5px);
         }
 
         .guided-loading.active {
@@ -294,6 +456,7 @@
             flex-direction: column;
             gap: 10px;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.7);
+            backdrop-filter: blur(15px);
         }
 
         .input-controls {
@@ -302,6 +465,7 @@
             align-items: center;
         }
 
+        /* Enhanced Input with Security Features */
         #userInput {
             flex: 1;
             padding: 12px 16px;
@@ -312,11 +476,13 @@
             font-size: 15px;
             outline: none;
             transition: all 0.2s;
+            resize: none;
         }
 
         #userInput:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         #userInput::placeholder {
@@ -326,6 +492,47 @@
         #userInput:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+
+        .input-security {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .char-counter {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .char-counter.warning {
+            color: var(--warning);
+        }
+
+        .char-counter.error {
+            color: var(--error);
+        }
+
+        .security-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .security-badge {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 9px;
+            background: var(--success);
+            color: white;
+        }
+
+        .security-badge.warning {
+            background: var(--warning);
         }
 
         #sendBtn {
@@ -347,6 +554,7 @@
         #sendBtn:hover:not(:disabled) {
             background: var(--primary-hover);
             transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
         }
 
         #sendBtn:disabled {
@@ -373,7 +581,7 @@
             display: none;
         }
 
-        /* FAB Button */
+        /* Enhanced FAB Button */
         .fab {
             position: fixed;
             bottom: 90px;
@@ -392,6 +600,7 @@
             justify-content: center;
             transition: all 0.3s ease;
             z-index: 1000;
+            backdrop-filter: blur(10px);
         }
 
         .fab:hover {
@@ -409,16 +618,23 @@
             display: none;
             background: var(--warning);
             color: white;
-            padding: 8px 16px;
+            padding: 12px 16px;
             text-align: center;
             font-size: 14px;
+            backdrop-filter: blur(10px);
         }
 
         .rate-limit-notice.active {
             display: block;
+            animation: slideDown 0.3s ease-out;
         }
 
-        /* Toast Notifications */
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        /* Enhanced Toast Notifications */
         .toast {
             position: fixed;
             top: 80px;
@@ -432,6 +648,10 @@
             transition: transform 0.3s ease;
             z-index: 1002;
             max-width: 300px;
+            backdrop-filter: blur(15px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .toast.show {
@@ -444,6 +664,32 @@
 
         .toast.warning {
             background: var(--warning);
+        }
+
+        .toast-icon {
+            font-size: 16px;
+        }
+
+        /* Copy Success Animation */
+        .copy-success {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--success);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            pointer-events: none;
+            animation: copyFade 1.5s ease-out;
+        }
+
+        @keyframes copyFade {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
         }
 
         /* Responsive Design */
@@ -484,34 +730,77 @@
                 right: 8px;
                 left: 8px;
                 top: 80px;
+                min-width: unset;
             }
 
             .language-switcher {
                 top: 8px;
                 right: 8px;
             }
+
+            .event-actions {
+                right: -5px;
+                top: -5px;
+            }
+
+            .share-btn {
+                width: 24px;
+                height: 24px;
+                font-size: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="app">
-        <!-- Language Switcher -->
+        <!-- Enhanced Language Switcher -->
         <div class="language-switcher">
-            <button class="lang-btn active" onclick="setLanguage('da')" data-lang="da">DA</button>
-            <button class="lang-btn" onclick="setLanguage('en')" data-lang="en">EN</button>
+            <button class="lang-btn active" onclick="setLanguage('da')" data-lang="da">🇩🇰 DA</button>
+            <button class="lang-btn" onclick="setLanguage('en')" data-lang="en">🇬🇧 EN</button>
         </div>
 
-        <!-- Debug Panel -->
+        <!-- Enhanced Debug Panel -->
         <div class="debug-panel" id="debugPanel">
-            <h4>🔍 Query Parser Debug</h4>
-            <input type="text" class="debug-input" id="debugInput" placeholder="Test query..." />
-            <button onclick="testParser()" style="background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Parse</button>
-            <div class="debug-result" id="debugResult">Enter a query above to test the parser...</div>
+            <div class="debug-section">
+                <h5>🔍 NLP Parser Test</h5>
+                <input type="text" class="debug-input" id="debugInput" placeholder="Test search query..." />
+                <button class="debug-btn" onclick="testParser()">Parse Query</button>
+                <button class="debug-btn" onclick="clearDebugResult()">Clear</button>
+                <div class="debug-result" id="debugResult">Enter a query above to test the NLP parser...</div>
+            </div>
+
+            <div class="debug-section">
+                <h5>📊 Performance Metrics</h5>
+                <div class="performance-metrics" id="performanceMetrics">
+                    <div class="metric">
+                        <div class="metric-value" id="avgResponseTime">-</div>
+                        <div class="metric-label">Avg Response</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="totalRequests">0</div>
+                        <div class="metric-label">Total Requests</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="successRate">-</div>
+                        <div class="metric-label">Success Rate</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="cacheHitRate">-</div>
+                        <div class="metric-label">Cache Hit Rate</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="debug-section">
+                <h5>🛠️ Debug Actions</h5>
+                <button class="debug-btn" onclick="exportDebugData()">Export Debug Data</button>
+                <button class="debug-btn" onclick="clearPerformanceData()">Reset Metrics</button>
+            </div>
         </div>
 
         <!-- Rate Limit Notice -->
         <div class="rate-limit-notice" id="rateLimitNotice">
-            <span data-lang-key="rate_limit_warning">You're sending messages too quickly. Please wait a moment.</span>
+            <span data-lang-key="rate_limit_warning">⚠️ You're sending messages too quickly. Please wait a moment.</span>
         </div>
 
         <div class="topbar">
@@ -535,6 +824,15 @@ Find salsa, bachata, kizomba og andre dance events i Danmark!
 📝 Tilføj manglende event: Skriv "tilføj event"
 
 Hvad leder du efter?</div>
+                
+                <!-- Event Sharing Actions -->
+                <div class="event-actions">
+                    <button class="share-btn facebook" onclick="shareToSocial('facebook', this)" title="Share on Facebook">📘</button>
+                    <button class="share-btn twitter" onclick="shareToSocial('twitter', this)" title="Share on Twitter">🐦</button>
+                    <button class="share-btn whatsapp" onclick="shareToSocial('whatsapp', this)" title="Share on WhatsApp">📱</button>
+                    <button class="share-btn linkedin" onclick="shareToSocial('linkedin', this)" title="Share on LinkedIn">💼</button>
+                    <button class="share-btn copy" onclick="copyEventToClipboard(this)" title="Copy Link">🔗</button>
+                </div>
             </div>
         </div>
 
@@ -547,8 +845,8 @@ Hvad leder du efter?</div>
             </div>
         </div>
 
-        <!-- FAB Button -->
-        <button class="fab" onclick="startEventSubmission()" title="Tilføj event" data-lang-key="add_event_title">
+        <!-- Enhanced FAB Button -->
+        <button class="fab" onclick="startEventSubmission()" data-lang-key="add_event_title" title="Add Event">
             📝
         </button>
 
@@ -565,11 +863,20 @@ Hvad leder du efter?</div>
                     placeholder="Skriv en besked..."
                     autocomplete="off"
                     maxlength="500"
+                    spellcheck="false"
                 />
                 <button id="sendBtn" onclick="sendMessage()" aria-label="Send message">
                     <span class="send-icon">➤</span>
                     <div class="spinner"></div>
                 </button>
+            </div>
+            <div class="input-security">
+                <div class="char-counter" id="charCounter">
+                    <span id="charCount">0</span>/500
+                </div>
+                <div class="security-indicator">
+                    <span class="security-badge" id="securityBadge">🔒 Secure</span>
+                </div>
             </div>
         </div>
     </div>
@@ -578,17 +885,174 @@ Hvad leder du efter?</div>
     <div id="toastContainer"></div>
 
     <script>
-        // Enhanced Configuration
+        // Enhanced Configuration with Security Features
         const CONFIG = {
             SCRIPT_URL: "https://script.google.com/macros/s/AKfycby3UJHM83amA1WpVV3Tp4e4GxkEYxMEDTJpwTn1NACJ0nQFQ_D0wRJcDGcIWRs7LKvA/exec",
-            REQUEST_TIMEOUT: 30000, // 30 seconds
-            RATE_LIMIT_WINDOW: 60000, // 1 minute
+            REQUEST_TIMEOUT: 30000,
+            RATE_LIMIT_WINDOW: 60000,
             MAX_REQUESTS_PER_WINDOW: 20,
             SESSION_STORAGE_KEY: 'dancemap_session_id',
-            LANGUAGE_KEY: 'dancemap_language'
+            LANGUAGE_KEY: 'dancemap_language',
+            PERFORMANCE_KEY: 'dancemap_performance',
+            MAX_MESSAGE_LENGTH: 500,
+            SECURITY_PATTERNS: [
+                /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+                /javascript:/gi,
+                /on\w+\s*=/gi,
+                /<iframe/gi,
+                /<object/gi,
+                /<embed/gi
+            ],
+            SHARE_BASE_URL: 'https://dancemap.maharaj.dk'
         };
 
-        // Enhanced Session Management with localStorage
+        // Performance Monitoring
+        class PerformanceMonitor {
+            constructor() {
+                this.data = JSON.parse(localStorage.getItem(CONFIG.PERFORMANCE_KEY)) || {
+                    requests: [],
+                    totalRequests: 0,
+                    successfulRequests: 0,
+                    responseTimes: [],
+                    cacheHits: 0,
+                    sessionStart: Date.now()
+                };
+                this.updateUI();
+            }
+
+            recordRequest(success, responseTime, cached = false) {
+                this.data.totalRequests++;
+                if (success) this.data.successfulRequests++;
+                if (cached) this.data.cacheHits++;
+                
+                this.data.responseTimes.push(responseTime);
+                if (this.data.responseTimes.length > 100) {
+                    this.data.responseTimes = this.data.responseTimes.slice(-50);
+                }
+
+                this.save();
+                this.updateUI();
+                
+                trackPerformance('response_time', responseTime, success ? 'success' : 'error');
+            }
+
+            getAverageResponseTime() {
+                if (this.data.responseTimes.length === 0) return 0;
+                return this.data.responseTimes.reduce((a, b) => a + b, 0) / this.data.responseTimes.length;
+            }
+
+            getSuccessRate() {
+                if (this.data.totalRequests === 0) return 100;
+                return Math.round((this.data.successfulRequests / this.data.totalRequests) * 100);
+            }
+
+            getCacheHitRate() {
+                if (this.data.totalRequests === 0) return 0;
+                return Math.round((this.data.cacheHits / this.data.totalRequests) * 100);
+            }
+
+            updateUI() {
+                document.getElementById('avgResponseTime').textContent = `${Math.round(this.getAverageResponseTime())}ms`;
+                document.getElementById('totalRequests').textContent = this.data.totalRequests;
+                document.getElementById('successRate').textContent = `${this.getSuccessRate()}%`;
+                document.getElementById('cacheHitRate').textContent = `${this.getCacheHitRate()}%`;
+            }
+
+            save() {
+                localStorage.setItem(CONFIG.PERFORMANCE_KEY, JSON.stringify(this.data));
+            }
+
+            clear() {
+                this.data = {
+                    requests: [],
+                    totalRequests: 0,
+                    successfulRequests: 0,
+                    responseTimes: [],
+                    cacheHits: 0,
+                    sessionStart: Date.now()
+                };
+                this.save();
+                this.updateUI();
+            }
+
+            export() {
+                return {
+                    ...this.data,
+                    averageResponseTime: this.getAverageResponseTime(),
+                    successRate: this.getSuccessRate(),
+                    cacheHitRate: this.getCacheHitRate(),
+                    sessionDuration: Date.now() - this.data.sessionStart,
+                    userAgent: navigator.userAgent,
+                    timestamp: new Date().toISOString()
+                };
+            }
+        }
+
+        const performanceMonitor = new PerformanceMonitor();
+
+        // Enhanced Security Input Sanitization
+        class SecurityValidator {
+            constructor() {
+                this.patterns = CONFIG.SECURITY_PATTERNS;
+            }
+
+            sanitizeInput(input) {
+                if (!input || typeof input !== 'string') return '';
+                
+                // Use DOMPurify for comprehensive sanitization
+                let sanitized = DOMPurify.sanitize(input, {
+                    ALLOWED_TAGS: [],
+                    ALLOWED_ATTR: [],
+                    KEEP_CONTENT: true
+                });
+
+                // Additional custom patterns
+                this.patterns.forEach(pattern => {
+                    sanitized = sanitized.replace(pattern, '');
+                });
+
+                return sanitized.trim().substring(0, CONFIG.MAX_MESSAGE_LENGTH);
+            }
+
+            validateInput(input) {
+                const original = input;
+                const sanitized = this.sanitizeInput(input);
+                
+                const isSafe = original === sanitized;
+                const isEmpty = !sanitized.length;
+                const tooLong = original.length > CONFIG.MAX_MESSAGE_LENGTH;
+
+                return {
+                    isSafe,
+                    isEmpty,
+                    tooLong,
+                    sanitized,
+                    threatLevel: this.getThreatLevel(original, sanitized)
+                };
+            }
+
+            getThreatLevel(original, sanitized) {
+                if (original === sanitized) return 'safe';
+                
+                const dangerousPatterns = [
+                    /<script/i,
+                    /javascript:/i,
+                    /<iframe/i,
+                    /eval\(/i,
+                    /document\./i
+                ];
+
+                for (let pattern of dangerousPatterns) {
+                    if (pattern.test(original)) return 'high';
+                }
+
+                return 'medium';
+            }
+        }
+
+        const securityValidator = new SecurityValidator();
+
+        // Enhanced Session Management
         function getSessionId() {
             let sessionId = localStorage.getItem(CONFIG.SESSION_STORAGE_KEY);
             if (!sessionId) {
@@ -605,7 +1069,7 @@ Hvad leder du efter?</div>
 
         let sessionId = getSessionId();
 
-        // Rate Limiting
+        // Enhanced Rate Limiting
         class RateLimiter {
             constructor() {
                 this.requests = [];
@@ -613,7 +1077,6 @@ Hvad leder du efter?</div>
 
             canMakeRequest() {
                 const now = Date.now();
-                // Remove old requests outside the window
                 this.requests = this.requests.filter(time => now - time < CONFIG.RATE_LIMIT_WINDOW);
                 
                 if (this.requests.length >= CONFIG.MAX_REQUESTS_PER_WINDOW) {
@@ -628,17 +1091,144 @@ Hvad leder du efter?</div>
             showRateLimit() {
                 const notice = document.getElementById('rateLimitNotice');
                 notice.classList.add('active');
-                setTimeout(() => notice.classList.remove('active'), 3000);
-                showToast('Too many requests. Please wait a moment.', 'warning');
+                setTimeout(() => notice.classList.remove('active'), 5000);
+                showToast('⚠️ Too many requests. Please wait a moment.', 'warning');
+                trackEvent('rate_limit_triggered', 'security');
             }
         }
 
         const rateLimiter = new RateLimiter();
 
-        // Guided submission state with enhanced modular design
+        // Enhanced Social Sharing
+        function shareToSocial(platform, buttonElement) {
+            const messageElement = buttonElement.closest('.message').querySelector('.bubble');
+            const text = messageElement.textContent.trim();
+            
+            // Extract event information
+            const eventInfo = extractEventFromMessage(text);
+            const shareText = formatShareText(eventInfo);
+            const shareUrl = `${CONFIG.SHARE_BASE_URL}?ref=${platform}`;
+            
+            let url;
+            switch (platform) {
+                case 'facebook':
+                    url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
+                    break;
+                case 'twitter':
+                    url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}&hashtags=dance,salsa,bachata,denmark`;
+                    break;
+                case 'linkedin':
+                    url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+                    break;
+                case 'whatsapp':
+                    url = `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`;
+                    break;
+            }
+
+            if (url) {
+                window.open(url, '_blank', 'width=600,height=400');
+                trackEvent('social_share', 'engagement', platform);
+                showToast(`🎉 Shared to ${platform}!`, 'success');
+            }
+        }
+
+        function copyEventToClipboard(buttonElement) {
+            const messageElement = buttonElement.closest('.message').querySelector('.bubble');
+            const text = messageElement.textContent.trim();
+            
+            const eventInfo = extractEventFromMessage(text);
+            const shareText = formatShareText(eventInfo);
+            const fullText = `${shareText}\n\nFind more events: ${CONFIG.SHARE_BASE_URL}`;
+
+            navigator.clipboard.writeText(fullText).then(() => {
+                showCopySuccess(buttonElement);
+                trackEvent('copy_event', 'engagement');
+                showToast('📋 Copied to clipboard!', 'success');
+            }).catch(err => {
+                console.error('Copy failed:', err);
+                showToast('❌ Copy failed. Please try again.', 'error');
+            });
+        }
+
+        function extractEventFromMessage(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            
+            // Try to identify event information
+            const eventInfo = {
+                title: '',
+                date: '',
+                venue: '',
+                price: ''
+            };
+
+            lines.forEach(line => {
+                if (line.includes('kl.') && !eventInfo.date) {
+                    eventInfo.date = line.trim();
+                } else if (line.includes('kr') && !eventInfo.price) {
+                    eventInfo.price = line.trim();
+                } else if (!eventInfo.title && !line.includes('🔍') && !line.includes('📝') && line.length > 5) {
+                    if (!line.startsWith('Find ') && !line.startsWith('Hvad ')) {
+                        eventInfo.title = line.trim();
+                    }
+                }
+            });
+
+            return eventInfo;
+        }
+
+        function formatShareText(eventInfo) {
+            if (eventInfo.title && eventInfo.date) {
+                return `🎉 Check out this dance event: ${eventInfo.title}\n📅 ${eventInfo.date}${eventInfo.price ? '\n💰 ' + eventInfo.price : ''}`;
+            }
+            return '💃 Discover amazing dance events in Denmark with DanceMap AI!';
+        }
+
+        function showCopySuccess(buttonElement) {
+            const successElement = document.createElement('div');
+            successElement.className = 'copy-success';
+            successElement.textContent = 'Copied!';
+            
+            buttonElement.style.position = 'relative';
+            buttonElement.appendChild(successElement);
+            
+            setTimeout(() => {
+                if (buttonElement.contains(successElement)) {
+                    buttonElement.removeChild(successElement);
+                }
+            }, 1500);
+        }
+
+        // Enhanced Guided Submission with Modular Design
         class GuidedSubmission {
             constructor() {
                 this.reset();
+                this.steps = [
+                    {
+                        key: 'guided_start',
+                        field: 'dato',
+                        nextKey: 'guided_time'
+                    },
+                    {
+                        key: 'guided_time',
+                        field: 'tid', 
+                        nextKey: 'guided_type'
+                    },
+                    {
+                        key: 'guided_type',
+                        field: 'type',
+                        nextKey: 'guided_venue'
+                    },
+                    {
+                        key: 'guided_venue',
+                        field: 'sted',
+                        nextKey: 'guided_city'
+                    },
+                    {
+                        key: 'guided_city',
+                        field: 'by',
+                        nextKey: 'guided_confirm'
+                    }
+                ];
             }
 
             reset() {
@@ -668,45 +1258,44 @@ Hvad leder du efter?</div>
             }
 
             async handleInput(message) {
+                const validation = securityValidator.validateInput(message);
+                
+                if (!validation.isSafe) {
+                    showToast('⚠️ Input contains unsafe content', 'warning');
+                    trackEvent('unsafe_input_detected', 'security', validation.threatLevel);
+                    return;
+                }
+
+                if (validation.isEmpty) {
+                    showToast('Please enter a valid response', 'warning');
+                    return;
+                }
+
                 this.showLoading();
-                await new Promise(resolve => setTimeout(resolve, 500)); // Simulate processing
+                await new Promise(resolve => setTimeout(resolve, 500));
                 
-                const step = this.step;
+                const stepIndex = this.step - 1;
                 
-                if (step === 1) {
-                    this.data.dato = message;
-                    this.step = 2;
-                    addMessage(`✅ ${message}\n\n${getTranslation('guided_time')}`, "bot");
-                }
-                else if (step === 2) {
-                    this.data.tid = message;
-                    this.step = 3;
-                    addMessage(`✅ ${message}\n\n${getTranslation('guided_type')}`, "bot");
-                }
-                else if (step === 3) {
-                    this.data.type = message;
-                    this.step = 4;
-                    addMessage(`✅ ${message}\n\n${getTranslation('guided_venue')}`, "bot");
-                }
-                else if (step === 4) {
-                    this.data.sted = message;
-                    this.step = 5;
-                    addMessage(`✅ ${message}\n\n${getTranslation('guided_city')}`, "bot");
-                }
-                else if (step === 5) {
-                    this.data.by = message;
-                    this.step = 6;
+                if (stepIndex < this.steps.length) {
+                    const currentStep = this.steps[stepIndex];
+                    this.data[currentStep.field] = validation.sanitized;
+                    this.step++;
                     
-                    const summary = `✅ ${message}\n\n${getTranslation('guided_confirm')}\n\n` +
-                                   `📅 ${this.data.dato} kl. ${this.data.tid}\n` +
-                                   `💃 ${this.data.type}\n` +
-                                   `📍 ${this.data.sted}\n` +
-                                   `🏙️ ${this.data.by}\n\n` +
-                                   `${getTranslation('guided_confirm_question')}`;
-                    addMessage(summary, "bot");
-                }
-                else if (step === 6) {
-                    if (message.toLowerCase() === 'ja' || message.toLowerCase() === 'yes') {
+                    if (stepIndex === this.steps.length - 1) {
+                        // Final step - show confirmation
+                        const summary = `✅ ${validation.sanitized}\n\n${getTranslation('guided_confirm')}\n\n` +
+                                       `📅 ${this.data.dato} kl. ${this.data.tid}\n` +
+                                       `💃 ${this.data.type}\n` +
+                                       `📍 ${this.data.sted}\n` +
+                                       `🏙️ ${this.data.by}\n\n` +
+                                       `${getTranslation('guided_confirm_question')}`;
+                        addMessage(summary, "bot");
+                    } else {
+                        addMessage(`✅ ${validation.sanitized}\n\n${getTranslation(this.steps[stepIndex].nextKey)}`, "bot");
+                    }
+                } else {
+                    // Confirmation step
+                    if (validation.sanitized.toLowerCase() === 'ja' || validation.sanitized.toLowerCase() === 'yes') {
                         await this.submitEvent();
                     } else {
                         this.reset();
@@ -725,12 +1314,18 @@ Hvad leder du efter?</div>
                 addMessage(submissionText, "user");
                 
                 try {
+                    const startTime = performance.now();
                     const data = await makeApiCall(submissionText);
+                    const responseTime = performance.now() - startTime;
+                    
+                    performanceMonitor.recordRequest(true, responseTime);
                     addMessage(data.reply, "bot");
-                    showToast('Event submitted successfully!', 'success');
+                    showToast('🎉 Event submitted successfully!', 'success');
                 } catch (error) {
+                    const responseTime = performance.now() - startTime;
+                    performanceMonitor.recordRequest(false, responseTime);
                     addMessage(getTranslation('submission_error'), "bot");
-                    showToast('Submission failed. Please try again.', 'error');
+                    showToast('❌ Submission failed. Please try again.', 'error');
                 }
                 
                 this.reset();
@@ -747,7 +1342,7 @@ Hvad leder du efter?</div>
                 input_placeholder: "Skriv en besked...",
                 add_event_title: "Tilføj event",
                 processing: "Behandler...",
-                rate_limit_warning: "Du sender beskeder for hurtigt. Vent venligst et øjeblik.",
+                rate_limit_warning: "⚠️ Du sender beskeder for hurtigt. Vent venligst et øjeblik.",
                 guided_start: "📝 Lad os tilføje et event!\n\nHvilken dato er eventet?\n(fx '6. december' eller '2024-12-06')",
                 guided_time: "Hvilket tidspunkt starter det?\n(fx '20:00' eller '19.30')",
                 guided_type: "Hvilken type event?\n• Salsa\n• Bachata\n• Kizomba\n• Salsa Bachata\n• Andet",
@@ -765,7 +1360,7 @@ Hvad leder du efter?</div>
                 input_placeholder: "Type a message...",
                 add_event_title: "Add event",
                 processing: "Processing...",
-                rate_limit_warning: "You're sending messages too quickly. Please wait a moment.",
+                rate_limit_warning: "⚠️ You're sending messages too quickly. Please wait a moment.",
                 guided_start: "📝 Let's add an event!\n\nWhat date is the event?\n(e.g. 'December 6th' or '2024-12-06')",
                 guided_time: "What time does it start?\n(e.g. '8:00 PM' or '20:00')",
                 guided_type: "What type of event?\n• Salsa\n• Bachata\n• Kizomba\n• Salsa Bachata\n• Other",
@@ -787,12 +1382,10 @@ Hvad leder du efter?</div>
             localStorage.setItem(CONFIG.LANGUAGE_KEY, lang);
             trackEvent('language_changed', 'ui_interaction', lang);
             
-            // Update UI
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
             });
             
-            // Update all translated elements
             updateTranslations();
         }
 
@@ -814,34 +1407,46 @@ Hvad leder du efter?</div>
             });
         }
 
-        // Enhanced API calls with timeout and retry
+        // Enhanced API calls with performance monitoring
         async function makeApiCall(message, retries = 2) {
             if (!rateLimiter.canMakeRequest()) {
                 throw new Error('Rate limited');
             }
 
+            const startTime = performance.now();
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), CONFIG.REQUEST_TIMEOUT);
 
             try {
                 const response = await fetch(`${CONFIG.SCRIPT_URL}?message=${encodeURIComponent(message)}&sessionId=${sessionId}`, {
-                    signal: controller.signal
+                    signal: controller.signal,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
                 });
 
                 clearTimeout(timeoutId);
+                const responseTime = performance.now() - startTime;
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 const data = await response.json();
+                
+                const cached = response.headers.get('x-cache') === 'HIT';
+                performanceMonitor.recordRequest(true, responseTime, cached);
+                
                 trackEvent('api_call_success', 'api_interaction');
                 return data;
 
             } catch (error) {
                 clearTimeout(timeoutId);
+                const responseTime = performance.now() - startTime;
                 
                 if (error.name === 'AbortError') {
+                    performanceMonitor.recordRequest(false, responseTime);
                     trackEvent('api_call_timeout', 'api_error');
                     throw new Error('Request timeout');
                 }
@@ -852,12 +1457,42 @@ Hvad leder du efter?</div>
                     return makeApiCall(message, retries - 1);
                 }
                 
+                performanceMonitor.recordRequest(false, responseTime);
                 trackEvent('api_call_failed', 'api_error', error.message);
                 throw error;
             }
         }
 
-        // Enhanced UI Management
+        // Enhanced Input Management with Security
+        function updateSecurityIndicators() {
+            const input = document.getElementById('userInput');
+            const charCount = document.getElementById('charCount');
+            const charCounter = document.getElementById('charCounter');
+            const securityBadge = document.getElementById('securityBadge');
+            
+            const validation = securityValidator.validateInput(input.value);
+            
+            // Update character counter
+            charCount.textContent = input.value.length;
+            charCounter.className = 'char-counter';
+            
+            if (input.value.length > 400) {
+                charCounter.classList.add('warning');
+            }
+            if (input.value.length >= 500) {
+                charCounter.classList.add('error');
+            }
+
+            // Update security indicator
+            if (!validation.isSafe) {
+                securityBadge.textContent = '⚠️ Unsafe';
+                securityBadge.className = 'security-badge warning';
+            } else {
+                securityBadge.textContent = '🔒 Secure';
+                securityBadge.className = 'security-badge';
+            }
+        }
+
         function setInputState(disabled) {
             const input = document.getElementById('userInput');
             const sendBtn = document.getElementById('sendBtn');
@@ -889,24 +1524,34 @@ Hvad leder du efter?</div>
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.textContent = message;
             
+            const icon = document.createElement('span');
+            icon.className = 'toast-icon';
+            icon.textContent = type === 'success' ? '✅' : type === 'warning' ? '⚠️' : '❌';
+            
+            const text = document.createElement('span');
+            text.textContent = message;
+            
+            toast.appendChild(icon);
+            toast.appendChild(text);
             container.appendChild(toast);
             
-            // Show toast
             requestAnimationFrame(() => {
                 toast.classList.add('show');
             });
             
-            // Auto remove
             setTimeout(() => {
                 toast.classList.remove('show');
-                setTimeout(() => container.removeChild(toast), 300);
-            }, 3000);
+                setTimeout(() => {
+                    if (container.contains(toast)) {
+                        container.removeChild(toast);
+                    }
+                }, 300);
+            }, 4000);
         }
 
-        // Enhanced message handling with XSS protection
-        function addMessage(text, sender) {
+        // Enhanced message handling with XSS protection and sharing
+        function addMessage(text, sender, enableSharing = true) {
             const chat = document.getElementById("chat");
             const messageDiv = document.createElement("div");
             messageDiv.className = `message ${sender}`;
@@ -918,9 +1563,14 @@ Hvad leder du efter?</div>
             const bubble = document.createElement("div");
             bubble.className = "bubble";
             
-            // XSS Protection: Escape HTML but preserve line breaks and links
-            const escapedText = escapeHtml(text);
-            const textWithLinks = escapedText.replace(
+            // Enhanced XSS Protection using DOMPurify
+            const sanitized = DOMPurify.sanitize(text, {
+                ALLOWED_TAGS: ['br', 'a'],
+                ALLOWED_ATTR: ['href', 'target', 'rel'],
+                KEEP_CONTENT: true
+            });
+            
+            const textWithLinks = sanitized.replace(
                 /(https?:\/\/[^\s]+)/g,
                 '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
             );
@@ -929,32 +1579,81 @@ Hvad leder du efter?</div>
 
             messageDiv.appendChild(img);
             messageDiv.appendChild(bubble);
-            chat.appendChild(messageDiv);
 
+            // Add sharing actions for bot messages with event content
+            if (sender === "bot" && enableSharing && isEventMessage(text)) {
+                const actionsDiv = document.createElement("div");
+                actionsDiv.className = "event-actions";
+                
+                const shareButtons = [
+                    { platform: 'facebook', icon: '📘', title: 'Share on Facebook' },
+                    { platform: 'twitter', icon: '🐦', title: 'Share on Twitter' },
+                    { platform: 'whatsapp', icon: '📱', title: 'Share on WhatsApp' },
+                    { platform: 'linkedin', icon: '💼', title: 'Share on LinkedIn' },
+                    { platform: 'copy', icon: '🔗', title: 'Copy Link' }
+                ];
+
+                shareButtons.forEach(btn => {
+                    const button = document.createElement('button');
+                    button.className = `share-btn ${btn.platform}`;
+                    button.title = btn.title;
+                    button.textContent = btn.icon;
+                    
+                    if (btn.platform === 'copy') {
+                        button.onclick = () => copyEventToClipboard(button);
+                    } else {
+                        button.onclick = () => shareToSocial(btn.platform, button);
+                    }
+                    
+                    actionsDiv.appendChild(button);
+                });
+
+                messageDiv.appendChild(actionsDiv);
+            }
+
+            chat.appendChild(messageDiv);
             chat.scrollTop = chat.scrollHeight;
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        function isEventMessage(text) {
+            // Check if message contains event-like information
+            return text.includes('kl.') || 
+                   text.includes('event') || 
+                   (text.includes('Salsa') || text.includes('Bachata') || text.includes('Kizomba')) ||
+                   text.includes('kr');
         }
 
-        // Enhanced send message function
+        // Enhanced send message function with security validation
         async function sendMessage() {
             const input = document.getElementById("userInput");
             const message = input.value.trim();
 
-            if (!message) return;
+            const validation = securityValidator.validateInput(message);
 
-            trackEvent('message_sent', 'user_interaction', message.substring(0, 50));
+            if (validation.isEmpty) {
+                showToast('Please enter a message', 'warning');
+                return;
+            }
 
-            addMessage(message, "user");
+            if (!validation.isSafe) {
+                showToast('⚠️ Message contains unsafe content and has been sanitized', 'warning');
+                trackEvent('unsafe_input_sanitized', 'security', validation.threatLevel);
+            }
+
+            if (validation.tooLong) {
+                showToast(`Message too long. Max ${CONFIG.MAX_MESSAGE_LENGTH} characters.`, 'warning');
+                return;
+            }
+
+            const sanitizedMessage = validation.sanitized;
+            trackEvent('message_sent', 'user_interaction', sanitizedMessage.substring(0, 50));
+
+            addMessage(sanitizedMessage, "user", false);
             input.value = "";
+            updateSecurityIndicators();
             
-            // Handle guided submission flow
             if (guidedSubmission.active) {
-                await guidedSubmission.handleInput(message);
+                await guidedSubmission.handleInput(sanitizedMessage);
                 return;
             }
             
@@ -962,9 +1661,9 @@ Hvad leder du efter?</div>
             showTyping(true);
 
             try {
-                const data = await makeApiCall(message);
+                const data = await makeApiCall(sanitizedMessage);
                 showTyping(false);
-                addMessage(data.reply, "bot");
+                addMessage(data.reply, "bot", true);
 
             } catch (error) {
                 showTyping(false);
@@ -972,19 +1671,19 @@ Hvad leder du efter?</div>
                 
                 let errorMessage = getTranslation('connection_error');
                 if (error.message === 'Rate limited') {
-                    return; // Rate limiter already showed message
+                    return;
                 } else if (error.message === 'Request timeout') {
                     errorMessage = "Request timed out. Please try again.";
+                    showToast('⏱️ Request timeout. Please try again.', 'error');
                 }
                 
-                addMessage(errorMessage, "bot");
-                showToast('Connection failed. Please try again.', 'error');
+                addMessage(errorMessage, "bot", false);
             } finally {
                 setInputState(false);
             }
         }
 
-        // Debug functionality
+        // Enhanced Debug Functionality
         function toggleDebug() {
             const panel = document.getElementById('debugPanel');
             panel.classList.toggle('active');
@@ -999,29 +1698,91 @@ Hvad leder du efter?</div>
             const input = document.getElementById('debugInput').value;
             const result = document.getElementById('debugResult');
             
-            // Simulate parsing (you'll need to implement the actual parser)
+            if (!input.trim()) {
+                result.textContent = 'Please enter a query to test...';
+                return;
+            }
+
+            const startTime = performance.now();
+            
+            // Enhanced mock parsing with confidence scoring
             const mockResult = {
                 query: input,
+                sanitized: securityValidator.sanitizeInput(input),
                 parsed: {
                     by: extractCity(input),
                     dansetype: extractDanceType(input),
                     timeFilter: extractTimeFilter(input)
                 },
-                timestamp: new Date().toISOString()
+                confidence: calculateParseConfidence(input),
+                processingTime: `${(performance.now() - startTime).toFixed(2)}ms`,
+                timestamp: new Date().toISOString(),
+                security: securityValidator.validateInput(input)
             };
             
             result.textContent = JSON.stringify(mockResult, null, 2);
             trackEvent('debug_parser_test', 'dev_tool', input);
         }
 
+        function calculateParseConfidence(input) {
+            let confidence = 0;
+            const lower = input.toLowerCase();
+            
+            if (extractCity(lower)) confidence += 0.3;
+            if (extractDanceType(lower)) confidence += 0.3;
+            if (extractTimeFilter(lower)) confidence += 0.4;
+            
+            return Math.round(confidence * 100);
+        }
+
+        function clearDebugResult() {
+            document.getElementById('debugResult').textContent = 'Debug result cleared...';
+            document.getElementById('debugInput').value = '';
+        }
+
+        function exportDebugData() {
+            const data = {
+                performance: performanceMonitor.export(),
+                session: {
+                    id: sessionId,
+                    language: getCurrentLanguage(),
+                    userAgent: navigator.userAgent,
+                    timestamp: new Date().toISOString()
+                },
+                features: {
+                    dompurify: typeof DOMPurify !== 'undefined',
+                    localStorage: typeof localStorage !== 'undefined',
+                    fetch: typeof fetch !== 'undefined',
+                    clipboard: typeof navigator.clipboard !== 'undefined'
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dancemap-debug-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showToast('📊 Debug data exported!', 'success');
+            trackEvent('debug_data_exported', 'dev_tool');
+        }
+
+        function clearPerformanceData() {
+            performanceMonitor.clear();
+            showToast('📈 Performance data cleared!', 'success');
+            trackEvent('performance_data_cleared', 'dev_tool');
+        }
+
         // Mock parser functions (implement actual parsing logic)
         function extractCity(text) {
-            const cities = ["københavn", "aarhus", "odense", "aalborg"];
+            const cities = ["københavn", "aarhus", "odense", "aalborg", "copenhagen", "cph"];
             return cities.find(city => text.toLowerCase().includes(city)) || null;
         }
 
         function extractDanceType(text) {
-            const types = ["salsa", "bachata", "kizomba", "zouk"];
+            const types = ["salsa", "bachata", "kizomba", "zouk", "tango"];
             return types.find(type => text.toLowerCase().includes(type)) || null;
         }
 
@@ -1029,16 +1790,19 @@ Hvad leder du efter?</div>
             if (text.includes("i dag") || text.includes("today")) return "i dag";
             if (text.includes("weekend")) return "weekend";
             if (text.includes("i morgen") || text.includes("tomorrow")) return "i morgen";
+            if (text.includes("denne uge") || text.includes("this week")) return "denne uge";
             return null;
         }
 
-        // Enhanced event handlers
+        // Enhanced Event Handlers
         document.getElementById("userInput").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") {
+            if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
             }
         });
+
+        document.getElementById("userInput").addEventListener("input", updateSecurityIndicators);
 
         document.getElementById("debugInput").addEventListener("keypress", function(e) {
             if (e.key === "Enter") {
@@ -1053,25 +1817,31 @@ Hvad leder du efter?</div>
             document.getElementById("userInput").focus();
         }
 
-        // Initialize app
+        // Initialize app with enhanced security and performance monitoring
         function initializeApp() {
-            // Set initial language
             const currentLang = getCurrentLanguage();
             setLanguage(currentLang);
             
-            // Track app initialization
+            updateSecurityIndicators();
+            performanceMonitor.updateUI();
+            
             trackEvent('app_initialized', 'app_lifecycle', currentLang);
             
-            // Show initial bot message
             const initialMessage = getTranslation('welcome_message');
-            // Update the initial message if needed
             const existingMessage = document.querySelector('.message.bot .bubble');
             if (existingMessage) {
                 existingMessage.textContent = initialMessage;
             }
             
-            console.log('🚀 DanceMap AI v3.2 Enhanced - Loaded successfully');
-            showToast('Welcome to DanceMap AI!', 'success');
+            console.log('🚀 DanceMap AI v3.2 Enhanced - Security & Social Features Loaded');
+            showToast('🎉 Welcome to DanceMap AI! Enhanced with sharing & security features.', 'success');
+            
+            // Performance optimization
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js').catch(err => {
+                    console.log('Service Worker registration failed:', err);
+                });
+            }
         }
 
         // Start the app when DOM is ready
@@ -1080,6 +1850,17 @@ Hvad leder du efter?</div>
         } else {
             initializeApp();
         }
+
+        // Global error handling
+        window.addEventListener('error', function(event) {
+            trackEvent('javascript_error', 'error', event.message);
+            console.error('Global error:', event.error);
+        });
+
+        window.addEventListener('unhandledrejection', function(event) {
+            trackEvent('unhandled_promise_rejection', 'error', event.reason);
+            console.error('Unhandled promise rejection:', event.reason);
+        });
     </script>
 </body>
 </html>
