@@ -1,43 +1,151 @@
 <!DOCTYPE html>
-<html lang="da">
+<html lang="da" id="app-root">
 <head>
-    <!-- Google tag (gtag.js) -->
+    <!-- Google Analytics with enhanced event tracking -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WYGJJJV2E6"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
         gtag('config', 'G-WYGJJJV2E6');
+        
+        // Enhanced event tracking
+        function trackEvent(action, category = 'user_interaction', label = '', value = 0) {
+            gtag('event', action, {
+                event_category: category,
+                event_label: label,
+                value: value
+            });
+        }
     </script>
 
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DanceMap AI</title>
+    <title>DanceMap AI - Find Dance Events in Denmark</title>
+    <meta name="description" content="Find salsa, bachata, kizomba and other dance events in Denmark. AI-powered event discovery for the Danish dance community." />
 
     <style>
+        :root {
+            --primary: #4a90e2;
+            --primary-hover: #357abd;
+            --secondary: #2a5a7a;
+            --background: linear-gradient(180deg, #022237, #011520);
+            --surface: #011c2b;
+            --text: #fff;
+            --text-muted: rgba(255, 255, 255, 0.4);
+            --border: #2a5a7a;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --error: #f44336;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
-            background: linear-gradient(180deg, #022237, #011520);
-            font-family: "Segoe UI", sans-serif;
-            color: #fff;
+            background: var(--background);
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text);
+            overflow-x: hidden;
         }
 
         .app {
             height: 100vh;
             display: flex;
             flex-direction: column;
+            position: relative;
+        }
+
+        /* Language Switcher */
+        .language-switcher {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 1001;
+            display: flex;
+            gap: 8px;
+        }
+
+        .lang-btn {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Debug Panel */
+        .debug-panel {
+            position: fixed;
+            top: 60px;
+            right: 16px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            min-width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .debug-panel.active {
+            display: block;
+        }
+
+        .debug-input {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-size: 12px;
+        }
+
+        .debug-result {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 11px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
         }
 
         .topbar {
             height: 64px;
-            background: #011c2b;
+            background: var(--surface);
             display: flex;
             align-items: center;
+            justify-content: space-between;
             padding: 0 16px;
             font-size: 20px;
             font-weight: 600;
             letter-spacing: 1px;
-            box-shadow: 0 0 10px #00000070;
+            box-shadow: 0 0 10px rgba(0,0,0,0.7);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
         }
 
         .topbar img {
@@ -46,6 +154,22 @@
             margin-right: 10px;
             border-radius: 50%;
             object-fit: cover;
+        }
+
+        .debug-toggle {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .debug-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
         }
 
         #chat {
@@ -76,6 +200,7 @@
             max-width: 70%;
             line-height: 1.6;
             white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         .message.user {
@@ -83,54 +208,10 @@
         }
 
         .message.user .bubble {
-            background: #2a5a7a;
+            background: var(--secondary);
         }
 
-        .input-area {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #011c2b;
-            padding: 16px;
-            display: flex;
-            gap: 10px;
-            box-shadow: 0 -2px 10px #00000070;
-        }
-
-        #userInput {
-            flex: 1;
-            padding: 12px 16px;
-            border-radius: 24px;
-            border: 1px solid #2a5a7a;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            font-size: 15px;
-            outline: none;
-        }
-
-        #userInput::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        #sendBtn {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: #4a90e2;
-            border: none;
-            color: white;
-            cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #sendBtn:hover {
-            background: #357abd;
-        }
-
+        /* Loading Animation */
         .typing {
             display: none;
             align-items: center;
@@ -172,16 +253,127 @@
             40% { opacity: 1; transform: scale(1); }
         }
 
-        a {
-            color: #4a90e2;
-            text-decoration: none;
+        /* Enhanced Loading Indicator for Guided Submission */
+        .guided-loading {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text-muted);
         }
 
-        a:hover {
-            text-decoration: underline;
+        .guided-loading.active {
+            display: flex;
         }
 
-        /* FAB Button - Floating Action Button */
+        .guided-loading .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .input-area {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.7);
+        }
+
+        .input-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            font-size: 15px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        #userInput:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+        #userInput::placeholder {
+            color: var(--text-muted);
+        }
+
+        #userInput:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #sendBtn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        #sendBtn:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        #sendBtn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #sendBtn .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        #sendBtn.loading .spinner {
+            display: block;
+        }
+
+        #sendBtn.loading .send-icon {
+            display: none;
+        }
+
+        /* FAB Button */
         .fab {
             position: fixed;
             bottom: 90px;
@@ -189,7 +381,7 @@
             width: 56px;
             height: 56px;
             border-radius: 50%;
-            background: #4a90e2;
+            background: var(--primary);
             border: none;
             color: white;
             font-size: 24px;
@@ -205,14 +397,56 @@
         .fab:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 16px rgba(74, 144, 226, 0.6);
-            background: #357abd;
+            background: var(--primary-hover);
         }
 
         .fab:active {
             transform: translateY(-1px);
         }
 
-        /* Mobile optimering */
+        /* Rate Limit Notification */
+        .rate-limit-notice {
+            display: none;
+            background: var(--warning);
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .rate-limit-notice.active {
+            display: block;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 80px;
+            right: 16px;
+            background: var(--success);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1002;
+            max-width: 300px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: var(--error);
+        }
+
+        .toast.warning {
+            background: var(--warning);
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
             #chat {
                 padding: 15px;
@@ -245,20 +479,55 @@
                 width: 52px;
                 height: 52px;
             }
+
+            .debug-panel {
+                right: 8px;
+                left: 8px;
+                top: 80px;
+            }
+
+            .language-switcher {
+                top: 8px;
+                right: 8px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="app">
+        <!-- Language Switcher -->
+        <div class="language-switcher">
+            <button class="lang-btn active" onclick="setLanguage('da')" data-lang="da">DA</button>
+            <button class="lang-btn" onclick="setLanguage('en')" data-lang="en">EN</button>
+        </div>
+
+        <!-- Debug Panel -->
+        <div class="debug-panel" id="debugPanel">
+            <h4>🔍 Query Parser Debug</h4>
+            <input type="text" class="debug-input" id="debugInput" placeholder="Test query..." />
+            <button onclick="testParser()" style="background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Parse</button>
+            <div class="debug-result" id="debugResult">Enter a query above to test the parser...</div>
+        </div>
+
+        <!-- Rate Limit Notice -->
+        <div class="rate-limit-notice" id="rateLimitNotice">
+            <span data-lang-key="rate_limit_warning">You're sending messages too quickly. Please wait a moment.</span>
+        </div>
+
         <div class="topbar">
-            <img src="dancemap-icon.png" alt="DanceMap AI" />
-            <span>DanceMap AI</span>
+            <div class="topbar-left">
+                <img src="dancemap-icon.png" alt="DanceMap AI" />
+                <span data-lang-key="app_title">DanceMap AI</span>
+            </div>
+            <button class="debug-toggle" onclick="toggleDebug()" title="Toggle Debug Mode">
+                🔧 Debug
+            </button>
         </div>
 
         <div id="chat">
             <div class="message bot">
                 <img src="dancemap-icon.png" alt="Bot" />
-                <div class="bubble">Velkommen til DanceMap AI! 💃
+                <div class="bubble" data-lang-key="welcome_message">Velkommen til DanceMap AI! 💃
 
 Find salsa, bachata, kizomba og andre dance events i Danmark!
 
@@ -279,199 +548,328 @@ Hvad leder du efter?</div>
         </div>
 
         <!-- FAB Button -->
-        <button class="fab" onclick="startEventSubmission()" title="Tilføj event">
+        <button class="fab" onclick="startEventSubmission()" title="Tilføj event" data-lang-key="add_event_title">
             📝
         </button>
 
         <div class="input-area">
-            <input
-                type="text"
-                id="userInput"
-                placeholder="Skriv en besked..."
-                autocomplete="off"
-            />
-            <button id="sendBtn" onclick="sendMessage()">➤</button>
+            <div class="guided-loading" id="guidedLoading">
+                <div class="spinner"></div>
+                <span data-lang-key="processing">Processing...</span>
+            </div>
+            <div class="input-controls">
+                <input
+                    type="text"
+                    id="userInput"
+                    data-lang-key="input_placeholder"
+                    placeholder="Skriv en besked..."
+                    autocomplete="off"
+                    maxlength="500"
+                />
+                <button id="sendBtn" onclick="sendMessage()" aria-label="Send message">
+                    <span class="send-icon">➤</span>
+                    <div class="spinner"></div>
+                </button>
+            </div>
         </div>
     </div>
 
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3UJHM83amA1WpVV3Tp4e4GxkEYxMEDTJpwTn1NACJ0nQFQ_D0wRJcDGcIWRs7LKvA/exec";
-        let sessionId = generateSessionId();
-        
-        // Guided submission state
-        let submissionState = {
-            active: false,
-            step: 0,
-            data: {}
+        // Enhanced Configuration
+        const CONFIG = {
+            SCRIPT_URL: "https://script.google.com/macros/s/AKfycby3UJHM83amA1WpVV3Tp4e4GxkEYxMEDTJpwTn1NACJ0nQFQ_D0wRJcDGcIWRs7LKvA/exec",
+            REQUEST_TIMEOUT: 30000, // 30 seconds
+            RATE_LIMIT_WINDOW: 60000, // 1 minute
+            MAX_REQUESTS_PER_WINDOW: 20,
+            SESSION_STORAGE_KEY: 'dancemap_session_id',
+            LANGUAGE_KEY: 'dancemap_language'
         };
+
+        // Enhanced Session Management with localStorage
+        function getSessionId() {
+            let sessionId = localStorage.getItem(CONFIG.SESSION_STORAGE_KEY);
+            if (!sessionId) {
+                sessionId = generateSessionId();
+                localStorage.setItem(CONFIG.SESSION_STORAGE_KEY, sessionId);
+                trackEvent('new_session', 'session_management');
+            }
+            return sessionId;
+        }
 
         function generateSessionId() {
             return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         }
 
-        // Start guided event submission from FAB button
-        function startEventSubmission() {
-            submissionState = {
-                active: true,
-                step: 1,
-                data: {}
-            };
-            
-            addMessage("📝 Lad os tilføje et event!\n\nHvilken dato er eventet?\n(fx '6. december' eller '2024-12-06')", "bot");
-            document.getElementById("userInput").focus();
-        }
+        let sessionId = getSessionId();
 
-        document.getElementById("userInput").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                sendMessage();
+        // Rate Limiting
+        class RateLimiter {
+            constructor() {
+                this.requests = [];
             }
-        });
 
-        async function sendMessage() {
-            const input = document.getElementById("userInput");
-            const message = input.value.trim();
-
-            if (!message) return;
-
-            addMessage(message, "user");
-            input.value = "";
-            
-            // Handle guided submission flow
-            if (submissionState.active) {
-                handleGuidedSubmission(message);
-                return;
-            }
-            
-            showTyping(true);
-
-            try {
-                const response = await fetch(`${SCRIPT_URL}?message=${encodeURIComponent(message)}&sessionId=${sessionId}`);
-                const data = await response.json();
-
-                showTyping(false);
-                addMessage(data.reply, "bot");
-
-            } catch (error) {
-                showTyping(false);
-                addMessage("Beklager, jeg kunne ikke forbinde til serveren. Prøv igen! 🔄", "bot");
-                console.error("Error:", error);
-            }
-        }
-        
-        function handleGuidedSubmission(message) {
-            const step = submissionState.step;
-            
-            if (step === 1) {
-                // Dato
-                submissionState.data.dato = message;
-                submissionState.step = 2;
-                addMessage(`✅ ${message}\n\nHvilket tidspunkt starter det?\n(fx '20:00' eller '19.30')`, "bot");
-            }
-            else if (step === 2) {
-                // Tid
-                submissionState.data.tid = message;
-                submissionState.step = 3;
-                addMessage(`✅ ${message}\n\nHvilken type event?\n• Salsa\n• Bachata\n• Kizomba\n• Salsa Bachata\n• Andet`, "bot");
-            }
-            else if (step === 3) {
-                // Type
-                submissionState.data.type = message;
-                submissionState.step = 4;
-                addMessage(`✅ ${message}\n\nHvad hedder stedet?\n(fx 'Nordhus' eller 'Kedelhallen')`, "bot");
-            }
-            else if (step === 4) {
-                // Sted
-                submissionState.data.sted = message;
-                submissionState.step = 5;
-                addMessage(`✅ ${message}\n\nHvilken by?\n(fx 'København' eller 'Aarhus')`, "bot");
-            }
-            else if (step === 5) {
-                // By
-                submissionState.data.by = message;
-                submissionState.step = 6;
+            canMakeRequest() {
+                const now = Date.now();
+                // Remove old requests outside the window
+                this.requests = this.requests.filter(time => now - time < CONFIG.RATE_LIMIT_WINDOW);
                 
-                const summary = `✅ ${message}\n\nPerfekt! Her er hvad jeg har:\n\n` +
-                               `📅 ${submissionState.data.dato} kl. ${submissionState.data.tid}\n` +
-                               `💃 ${submissionState.data.type}\n` +
-                               `📍 ${submissionState.data.sted}\n` +
-                               `🏙️ ${submissionState.data.by}\n\n` +
-                               `Er det korrekt? (ja/nej)`;
-                addMessage(summary, "bot");
-            }
-            else if (step === 6) {
-                // Bekræftelse
-                if (message.toLowerCase() === 'ja' || message.toLowerCase() === 'yes') {
-                    submitEvent();
-                } else {
-                    submissionState = { active: false, step: 0, data: {} };
-                    addMessage("❌ Annulleret. Skriv 'tilføj event' for at prøve igen! 😊", "bot");
+                if (this.requests.length >= CONFIG.MAX_REQUESTS_PER_WINDOW) {
+                    this.showRateLimit();
+                    return false;
                 }
+                
+                this.requests.push(now);
+                return true;
+            }
+
+            showRateLimit() {
+                const notice = document.getElementById('rateLimitNotice');
+                notice.classList.add('active');
+                setTimeout(() => notice.classList.remove('active'), 3000);
+                showToast('Too many requests. Please wait a moment.', 'warning');
             }
         }
-        
-        async function submitEvent() {
-            const submissionText = `${submissionState.data.dato}, ${submissionState.data.tid}, ${submissionState.data.type}, ${submissionState.data.sted}, ${submissionState.data.by}`;
+
+        const rateLimiter = new RateLimiter();
+
+        // Guided submission state with enhanced modular design
+        class GuidedSubmission {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.active = false;
+                this.step = 0;
+                this.data = {};
+                this.hideLoading();
+            }
+
+            start() {
+                this.reset();
+                this.active = true;
+                this.step = 1;
+                trackEvent('guided_submission_started', 'user_flow');
+                
+                const message = getTranslation('guided_start');
+                addMessage(message, "bot");
+                document.getElementById("userInput").focus();
+            }
+
+            showLoading() {
+                document.getElementById('guidedLoading').classList.add('active');
+            }
+
+            hideLoading() {
+                document.getElementById('guidedLoading').classList.remove('active');
+            }
+
+            async handleInput(message) {
+                this.showLoading();
+                await new Promise(resolve => setTimeout(resolve, 500)); // Simulate processing
+                
+                const step = this.step;
+                
+                if (step === 1) {
+                    this.data.dato = message;
+                    this.step = 2;
+                    addMessage(`✅ ${message}\n\n${getTranslation('guided_time')}`, "bot");
+                }
+                else if (step === 2) {
+                    this.data.tid = message;
+                    this.step = 3;
+                    addMessage(`✅ ${message}\n\n${getTranslation('guided_type')}`, "bot");
+                }
+                else if (step === 3) {
+                    this.data.type = message;
+                    this.step = 4;
+                    addMessage(`✅ ${message}\n\n${getTranslation('guided_venue')}`, "bot");
+                }
+                else if (step === 4) {
+                    this.data.sted = message;
+                    this.step = 5;
+                    addMessage(`✅ ${message}\n\n${getTranslation('guided_city')}`, "bot");
+                }
+                else if (step === 5) {
+                    this.data.by = message;
+                    this.step = 6;
+                    
+                    const summary = `✅ ${message}\n\n${getTranslation('guided_confirm')}\n\n` +
+                                   `📅 ${this.data.dato} kl. ${this.data.tid}\n` +
+                                   `💃 ${this.data.type}\n` +
+                                   `📍 ${this.data.sted}\n` +
+                                   `🏙️ ${this.data.by}\n\n` +
+                                   `${getTranslation('guided_confirm_question')}`;
+                    addMessage(summary, "bot");
+                }
+                else if (step === 6) {
+                    if (message.toLowerCase() === 'ja' || message.toLowerCase() === 'yes') {
+                        await this.submitEvent();
+                    } else {
+                        this.reset();
+                        addMessage(getTranslation('guided_cancelled'), "bot");
+                    }
+                }
+                
+                this.hideLoading();
+            }
+
+            async submitEvent() {
+                const submissionText = `${this.data.dato}, ${this.data.tid}, ${this.data.type}, ${this.data.sted}, ${this.data.by}`;
+                
+                trackEvent('event_submitted', 'user_action', submissionText);
+                
+                addMessage(submissionText, "user");
+                
+                try {
+                    const data = await makeApiCall(submissionText);
+                    addMessage(data.reply, "bot");
+                    showToast('Event submitted successfully!', 'success');
+                } catch (error) {
+                    addMessage(getTranslation('submission_error'), "bot");
+                    showToast('Submission failed. Please try again.', 'error');
+                }
+                
+                this.reset();
+            }
+        }
+
+        const guidedSubmission = new GuidedSubmission();
+
+        // Multi-language Support
+        const translations = {
+            da: {
+                app_title: "DanceMap AI",
+                welcome_message: "Velkommen til DanceMap AI! 💃\n\nFind salsa, bachata, kizomba og andre dance events i Danmark!\n\n🔍 Søg: \"salsa i københavn\" eller \"events i weekenden\"\n📝 Tilføj manglende event: Skriv \"tilføj event\"\n\nHvad leder du efter?",
+                input_placeholder: "Skriv en besked...",
+                add_event_title: "Tilføj event",
+                processing: "Behandler...",
+                rate_limit_warning: "Du sender beskeder for hurtigt. Vent venligst et øjeblik.",
+                guided_start: "📝 Lad os tilføje et event!\n\nHvilken dato er eventet?\n(fx '6. december' eller '2024-12-06')",
+                guided_time: "Hvilket tidspunkt starter det?\n(fx '20:00' eller '19.30')",
+                guided_type: "Hvilken type event?\n• Salsa\n• Bachata\n• Kizomba\n• Salsa Bachata\n• Andet",
+                guided_venue: "Hvad hedder stedet?\n(fx 'Nordhus' eller 'Kedelhallen')",
+                guided_city: "Hvilken by?\n(fx 'København' eller 'Aarhus')",
+                guided_confirm: "Perfekt! Her er hvad jeg har:",
+                guided_confirm_question: "Er det korrekt? (ja/nej)",
+                guided_cancelled: "❌ Annulleret. Skriv 'tilføj event' for at prøve igen! 😊",
+                submission_error: "❌ Der skete en fejl ved indsendelse. Prøv igen eller skriv eventet direkte! 😊",
+                connection_error: "Beklager, jeg kunne ikke forbinde til serveren. Prøv igen! 🔄"
+            },
+            en: {
+                app_title: "DanceMap AI",
+                welcome_message: "Welcome to DanceMap AI! 💃\n\nFind salsa, bachata, kizomba and other dance events in Denmark!\n\n🔍 Search: \"salsa in copenhagen\" or \"events this weekend\"\n📝 Add missing event: Write \"add event\"\n\nWhat are you looking for?",
+                input_placeholder: "Type a message...",
+                add_event_title: "Add event",
+                processing: "Processing...",
+                rate_limit_warning: "You're sending messages too quickly. Please wait a moment.",
+                guided_start: "📝 Let's add an event!\n\nWhat date is the event?\n(e.g. 'December 6th' or '2024-12-06')",
+                guided_time: "What time does it start?\n(e.g. '8:00 PM' or '20:00')",
+                guided_type: "What type of event?\n• Salsa\n• Bachata\n• Kizomba\n• Salsa Bachata\n• Other",
+                guided_venue: "What's the venue name?\n(e.g. 'Nordhus' or 'Kedelhallen')",
+                guided_city: "Which city?\n(e.g. 'Copenhagen' or 'Aarhus')",
+                guided_confirm: "Perfect! Here's what I have:",
+                guided_confirm_question: "Is this correct? (yes/no)",
+                guided_cancelled: "❌ Cancelled. Write 'add event' to try again! 😊",
+                submission_error: "❌ An error occurred during submission. Please try again or write the event directly! 😊",
+                connection_error: "Sorry, I couldn't connect to the server. Please try again! 🔄"
+            }
+        };
+
+        function getCurrentLanguage() {
+            return localStorage.getItem(CONFIG.LANGUAGE_KEY) || 'da';
+        }
+
+        function setLanguage(lang) {
+            localStorage.setItem(CONFIG.LANGUAGE_KEY, lang);
+            trackEvent('language_changed', 'ui_interaction', lang);
             
-            console.log("📤 Sending guided submission:", submissionText);
+            // Update UI
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+            });
             
-            // Add as user message
-            addMessage(submissionText, "user");
-            
-            showTyping(true);
-            
+            // Update all translated elements
+            updateTranslations();
+        }
+
+        function getTranslation(key) {
+            const lang = getCurrentLanguage();
+            return translations[lang][key] || translations['da'][key] || key;
+        }
+
+        function updateTranslations() {
+            document.querySelectorAll('[data-lang-key]').forEach(element => {
+                const key = element.getAttribute('data-lang-key');
+                const translation = getTranslation(key);
+                
+                if (element.tagName === 'INPUT') {
+                    element.placeholder = translation;
+                } else {
+                    element.textContent = translation;
+                }
+            });
+        }
+
+        // Enhanced API calls with timeout and retry
+        async function makeApiCall(message, retries = 2) {
+            if (!rateLimiter.canMakeRequest()) {
+                throw new Error('Rate limited');
+            }
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), CONFIG.REQUEST_TIMEOUT);
+
             try {
-                const response = await fetch(`${SCRIPT_URL}?message=${encodeURIComponent(submissionText)}&sessionId=${sessionId}`);
-                
-                console.log("📥 Response status:", response.status);
-                
+                const response = await fetch(`${CONFIG.SCRIPT_URL}?message=${encodeURIComponent(message)}&sessionId=${sessionId}`, {
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
-                
-                console.log("📥 Response data:", data);
-                console.log("📥 Reply text:", data.reply);
-                
-                showTyping(false);
-                addMessage(data.reply, "bot");
-                
-                // Reset state
-                submissionState = { active: false, step: 0, data: {} };
-                
+                trackEvent('api_call_success', 'api_interaction');
+                return data;
+
             } catch (error) {
-                showTyping(false);
-                console.error("❌ Submission error:", error);
-                addMessage("❌ Der skete en fejl ved indsendelse. Prøv igen eller skriv eventet direkte! 😊", "bot");
-                submissionState = { active: false, step: 0, data: {} };
+                clearTimeout(timeoutId);
+                
+                if (error.name === 'AbortError') {
+                    trackEvent('api_call_timeout', 'api_error');
+                    throw new Error('Request timeout');
+                }
+                
+                if (retries > 0) {
+                    trackEvent('api_call_retry', 'api_error', retries);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    return makeApiCall(message, retries - 1);
+                }
+                
+                trackEvent('api_call_failed', 'api_error', error.message);
+                throw error;
             }
         }
 
-        function addMessage(text, sender) {
-            const chat = document.getElementById("chat");
-            const messageDiv = document.createElement("div");
-            messageDiv.className = `message ${sender}`;
-
-            const img = document.createElement("img");
-            img.src = sender === "user" ? "user-icon.svg" : "dancemap-icon.png";
-            img.alt = sender === "user" ? "User" : "Bot";
-
-            const bubble = document.createElement("div");
-            bubble.className = "bubble";
+        // Enhanced UI Management
+        function setInputState(disabled) {
+            const input = document.getElementById('userInput');
+            const sendBtn = document.getElementById('sendBtn');
             
-            const textWithLinks = text.replace(
-                /(https?:\/\/[^\s]+)/g,
-                '<a href="$1" target="_blank">$1</a>'
-            );
+            input.disabled = disabled;
+            sendBtn.disabled = disabled;
             
-            bubble.innerHTML = textWithLinks.replace(/\n/g, "<br>");
-
-            messageDiv.appendChild(img);
-            messageDiv.appendChild(bubble);
-            chat.appendChild(messageDiv);
-
-            chat.scrollTop = chat.scrollHeight;
+            if (disabled) {
+                sendBtn.classList.add('loading');
+            } else {
+                sendBtn.classList.remove('loading');
+            }
         }
 
         function showTyping(show) {
@@ -485,6 +883,202 @@ Hvad leder du efter?</div>
             } else {
                 typing.classList.remove("active");
             }
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            
+            container.appendChild(toast);
+            
+            // Show toast
+            requestAnimationFrame(() => {
+                toast.classList.add('show');
+            });
+            
+            // Auto remove
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => container.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        // Enhanced message handling with XSS protection
+        function addMessage(text, sender) {
+            const chat = document.getElementById("chat");
+            const messageDiv = document.createElement("div");
+            messageDiv.className = `message ${sender}`;
+
+            const img = document.createElement("img");
+            img.src = sender === "user" ? "user-icon.svg" : "dancemap-icon.png";
+            img.alt = sender === "user" ? "User" : "Bot";
+
+            const bubble = document.createElement("div");
+            bubble.className = "bubble";
+            
+            // XSS Protection: Escape HTML but preserve line breaks and links
+            const escapedText = escapeHtml(text);
+            const textWithLinks = escapedText.replace(
+                /(https?:\/\/[^\s]+)/g,
+                '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+            );
+            
+            bubble.innerHTML = textWithLinks.replace(/\n/g, "<br>");
+
+            messageDiv.appendChild(img);
+            messageDiv.appendChild(bubble);
+            chat.appendChild(messageDiv);
+
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Enhanced send message function
+        async function sendMessage() {
+            const input = document.getElementById("userInput");
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            trackEvent('message_sent', 'user_interaction', message.substring(0, 50));
+
+            addMessage(message, "user");
+            input.value = "";
+            
+            // Handle guided submission flow
+            if (guidedSubmission.active) {
+                await guidedSubmission.handleInput(message);
+                return;
+            }
+            
+            setInputState(true);
+            showTyping(true);
+
+            try {
+                const data = await makeApiCall(message);
+                showTyping(false);
+                addMessage(data.reply, "bot");
+
+            } catch (error) {
+                showTyping(false);
+                console.error("Send message error:", error);
+                
+                let errorMessage = getTranslation('connection_error');
+                if (error.message === 'Rate limited') {
+                    return; // Rate limiter already showed message
+                } else if (error.message === 'Request timeout') {
+                    errorMessage = "Request timed out. Please try again.";
+                }
+                
+                addMessage(errorMessage, "bot");
+                showToast('Connection failed. Please try again.', 'error');
+            } finally {
+                setInputState(false);
+            }
+        }
+
+        // Debug functionality
+        function toggleDebug() {
+            const panel = document.getElementById('debugPanel');
+            panel.classList.toggle('active');
+            
+            if (panel.classList.contains('active')) {
+                trackEvent('debug_panel_opened', 'dev_tool');
+                document.getElementById('debugInput').focus();
+            }
+        }
+
+        function testParser() {
+            const input = document.getElementById('debugInput').value;
+            const result = document.getElementById('debugResult');
+            
+            // Simulate parsing (you'll need to implement the actual parser)
+            const mockResult = {
+                query: input,
+                parsed: {
+                    by: extractCity(input),
+                    dansetype: extractDanceType(input),
+                    timeFilter: extractTimeFilter(input)
+                },
+                timestamp: new Date().toISOString()
+            };
+            
+            result.textContent = JSON.stringify(mockResult, null, 2);
+            trackEvent('debug_parser_test', 'dev_tool', input);
+        }
+
+        // Mock parser functions (implement actual parsing logic)
+        function extractCity(text) {
+            const cities = ["københavn", "aarhus", "odense", "aalborg"];
+            return cities.find(city => text.toLowerCase().includes(city)) || null;
+        }
+
+        function extractDanceType(text) {
+            const types = ["salsa", "bachata", "kizomba", "zouk"];
+            return types.find(type => text.toLowerCase().includes(type)) || null;
+        }
+
+        function extractTimeFilter(text) {
+            if (text.includes("i dag") || text.includes("today")) return "i dag";
+            if (text.includes("weekend")) return "weekend";
+            if (text.includes("i morgen") || text.includes("tomorrow")) return "i morgen";
+            return null;
+        }
+
+        // Enhanced event handlers
+        document.getElementById("userInput").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        document.getElementById("debugInput").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                testParser();
+            }
+        });
+
+        // Enhanced start function for guided submission
+        function startEventSubmission() {
+            guidedSubmission.start();
+            document.getElementById("userInput").focus();
+        }
+
+        // Initialize app
+        function initializeApp() {
+            // Set initial language
+            const currentLang = getCurrentLanguage();
+            setLanguage(currentLang);
+            
+            // Track app initialization
+            trackEvent('app_initialized', 'app_lifecycle', currentLang);
+            
+            // Show initial bot message
+            const initialMessage = getTranslation('welcome_message');
+            // Update the initial message if needed
+            const existingMessage = document.querySelector('.message.bot .bubble');
+            if (existingMessage) {
+                existingMessage.textContent = initialMessage;
+            }
+            
+            console.log('🚀 DanceMap AI v3.2 Enhanced - Loaded successfully');
+            showToast('Welcome to DanceMap AI!', 'success');
+        }
+
+        // Start the app when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
         }
     </script>
 </body>
