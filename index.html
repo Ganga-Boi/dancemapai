@@ -131,119 +131,6 @@
             transform: translateY(-1px);
         }
 
-        /* Enhanced Debug Panel */
-        .debug-panel {
-            position: fixed;
-            top: 60px;
-            right: 16px;
-            background: rgba(0, 0, 0, 0.95);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            min-width: 350px;
-            max-height: 500px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-            backdrop-filter: blur(15px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-        }
-
-        .debug-panel.active {
-            display: block;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .debug-section {
-            margin-bottom: 16px;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-        }
-
-        .debug-section h5 {
-            margin: 0 0 8px 0;
-            color: var(--primary);
-            font-size: 12px;
-            text-transform: uppercase;
-        }
-
-        .debug-input {
-            width: 100%;
-            padding: 8px 12px;
-            margin: 8px 0;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--text);
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-
-        .debug-input:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
-        }
-
-        .debug-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-            margin-right: 8px;
-        }
-
-        .debug-btn:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-        }
-
-        .debug-result {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 12px;
-            border-radius: 6px;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            white-space: pre-wrap;
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .performance-metrics {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .metric {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px;
-            border-radius: 4px;
-            text-align: center;
-        }
-
-        .metric-value {
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        .metric-label {
-            font-size: 10px;
-            color: var(--text-muted);
-        }
-
         .topbar {
             height: 64px;
             background: var(--surface);
@@ -269,22 +156,6 @@
             margin-right: 10px;
             border-radius: 50%;
             object-fit: cover;
-        }
-
-        .debug-toggle {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            font-size: 12px;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-
-        .debug-toggle:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text);
         }
 
         #chat {
@@ -414,37 +285,6 @@
             40% { opacity: 1; transform: scale(1); }
         }
 
-        /* Enhanced Loading Indicator */
-        .guided-loading {
-            display: none;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            font-size: 12px;
-            color: var(--text-muted);
-            backdrop-filter: blur(5px);
-        }
-
-        .guided-loading.active {
-            display: flex;
-        }
-
-        .guided-loading .spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid transparent;
-            border-top: 2px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         .input-area {
             position: fixed;
             bottom: 0;
@@ -453,16 +293,10 @@
             background: var(--surface);
             padding: 16px;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.7);
-            backdrop-filter: blur(15px);
-        }
-
-        .input-controls {
-            display: flex;
             gap: 10px;
             align-items: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.7);
+            backdrop-filter: blur(15px);
         }
 
         /* Enhanced Input with Security Features */
@@ -492,47 +326,6 @@
         #userInput:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-        }
-
-        .input-security {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        .char-counter {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .char-counter.warning {
-            color: var(--warning);
-        }
-
-        .char-counter.error {
-            color: var(--error);
-        }
-
-        .security-indicator {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .security-badge {
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 9px;
-            background: var(--success);
-            color: white;
-        }
-
-        .security-badge.warning {
-            background: var(--warning);
         }
 
         #sendBtn {
@@ -573,6 +366,11 @@
             animation: spin 1s linear infinite;
         }
 
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         #sendBtn.loading .spinner {
             display: block;
         }
@@ -611,27 +409,6 @@
 
         .fab:active {
             transform: translateY(-1px);
-        }
-
-        /* Rate Limit Notification */
-        .rate-limit-notice {
-            display: none;
-            background: var(--warning);
-            color: white;
-            padding: 12px 16px;
-            text-align: center;
-            font-size: 14px;
-            backdrop-filter: blur(10px);
-        }
-
-        .rate-limit-notice.active {
-            display: block;
-            animation: slideDown 0.3s ease-out;
-        }
-
-        @keyframes slideDown {
-            from { transform: translateY(-100%); }
-            to { transform: translateY(0); }
         }
 
         /* Enhanced Toast Notifications */
@@ -726,13 +503,6 @@
                 height: 52px;
             }
 
-            .debug-panel {
-                right: 8px;
-                left: 8px;
-                top: 80px;
-                min-width: unset;
-            }
-
             .language-switcher {
                 top: 8px;
                 right: 8px;
@@ -759,58 +529,11 @@
             <button class="lang-btn" onclick="setLanguage('en')" data-lang="en">🇬🇧 EN</button>
         </div>
 
-        <!-- Enhanced Debug Panel -->
-        <div class="debug-panel" id="debugPanel">
-            <div class="debug-section">
-                <h5>🔍 NLP Parser Test</h5>
-                <input type="text" class="debug-input" id="debugInput" placeholder="Test search query..." />
-                <button class="debug-btn" onclick="testParser()">Parse Query</button>
-                <button class="debug-btn" onclick="clearDebugResult()">Clear</button>
-                <div class="debug-result" id="debugResult">Enter a query above to test the NLP parser...</div>
-            </div>
-
-            <div class="debug-section">
-                <h5>📊 Performance Metrics</h5>
-                <div class="performance-metrics" id="performanceMetrics">
-                    <div class="metric">
-                        <div class="metric-value" id="avgResponseTime">-</div>
-                        <div class="metric-label">Avg Response</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value" id="totalRequests">0</div>
-                        <div class="metric-label">Total Requests</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value" id="successRate">-</div>
-                        <div class="metric-label">Success Rate</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value" id="cacheHitRate">-</div>
-                        <div class="metric-label">Cache Hit Rate</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="debug-section">
-                <h5>🛠️ Debug Actions</h5>
-                <button class="debug-btn" onclick="exportDebugData()">Export Debug Data</button>
-                <button class="debug-btn" onclick="clearPerformanceData()">Reset Metrics</button>
-            </div>
-        </div>
-
-        <!-- Rate Limit Notice -->
-        <div class="rate-limit-notice" id="rateLimitNotice">
-            <span data-lang-key="rate_limit_warning">⚠️ You're sending messages too quickly. Please wait a moment.</span>
-        </div>
-
         <div class="topbar">
             <div class="topbar-left">
                 <img src="dancemap-icon.png" alt="DanceMap AI" />
                 <span data-lang-key="app_title">DanceMap AI</span>
             </div>
-            <button class="debug-toggle" onclick="toggleDebug()" title="Toggle Debug Mode">
-                🔧 Debug
-            </button>
         </div>
 
         <div id="chat">
@@ -851,33 +574,19 @@ Hvad leder du efter?</div>
         </button>
 
         <div class="input-area">
-            <div class="guided-loading" id="guidedLoading">
+            <input
+                type="text"
+                id="userInput"
+                data-lang-key="input_placeholder"
+                placeholder="Skriv en besked..."
+                autocomplete="off"
+                maxlength="500"
+                spellcheck="false"
+            />
+            <button id="sendBtn" onclick="sendMessage()" aria-label="Send message">
+                <span class="send-icon">➤</span>
                 <div class="spinner"></div>
-                <span data-lang-key="processing">Processing...</span>
-            </div>
-            <div class="input-controls">
-                <input
-                    type="text"
-                    id="userInput"
-                    data-lang-key="input_placeholder"
-                    placeholder="Skriv en besked..."
-                    autocomplete="off"
-                    maxlength="500"
-                    spellcheck="false"
-                />
-                <button id="sendBtn" onclick="sendMessage()" aria-label="Send message">
-                    <span class="send-icon">➤</span>
-                    <div class="spinner"></div>
-                </button>
-            </div>
-            <div class="input-security">
-                <div class="char-counter" id="charCounter">
-                    <span id="charCount">0</span>/500
-                </div>
-                <div class="security-indicator">
-                    <span class="security-badge" id="securityBadge">🔒 Secure</span>
-                </div>
-            </div>
+            </button>
         </div>
     </div>
 
@@ -885,172 +594,18 @@ Hvad leder du efter?</div>
     <div id="toastContainer"></div>
 
     <script>
-        // Enhanced Configuration with Security Features
+        // FIXED Configuration with CORRECT working Script URL
         const CONFIG = {
-            SCRIPT_URL: "https://script.google.com/macros/s/AKfycby3UJHM83amA1WpVV3Tp4e4GxkEYxMEDTJpwTn1NACJ0nQFQ_D0wRJcDGcIWRs7LKvA/exec",
+            // This is the working script URL from our deployment
+            SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwkRgC1lyM-P0otkLmpsXYmGcNfPl_-VF6u6cDivv-f9yyaf6cdYtaqBOC-3WLM90VX/exec",
             REQUEST_TIMEOUT: 30000,
             RATE_LIMIT_WINDOW: 60000,
             MAX_REQUESTS_PER_WINDOW: 20,
             SESSION_STORAGE_KEY: 'dancemap_session_id',
             LANGUAGE_KEY: 'dancemap_language',
-            PERFORMANCE_KEY: 'dancemap_performance',
             MAX_MESSAGE_LENGTH: 500,
-            SECURITY_PATTERNS: [
-                /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-                /javascript:/gi,
-                /on\w+\s*=/gi,
-                /<iframe/gi,
-                /<object/gi,
-                /<embed/gi
-            ],
             SHARE_BASE_URL: 'https://dancemap.maharaj.dk'
         };
-
-        // Performance Monitoring
-        class PerformanceMonitor {
-            constructor() {
-                this.data = JSON.parse(localStorage.getItem(CONFIG.PERFORMANCE_KEY)) || {
-                    requests: [],
-                    totalRequests: 0,
-                    successfulRequests: 0,
-                    responseTimes: [],
-                    cacheHits: 0,
-                    sessionStart: Date.now()
-                };
-                this.updateUI();
-            }
-
-            recordRequest(success, responseTime, cached = false) {
-                this.data.totalRequests++;
-                if (success) this.data.successfulRequests++;
-                if (cached) this.data.cacheHits++;
-                
-                this.data.responseTimes.push(responseTime);
-                if (this.data.responseTimes.length > 100) {
-                    this.data.responseTimes = this.data.responseTimes.slice(-50);
-                }
-
-                this.save();
-                this.updateUI();
-                
-                trackPerformance('response_time', responseTime, success ? 'success' : 'error');
-            }
-
-            getAverageResponseTime() {
-                if (this.data.responseTimes.length === 0) return 0;
-                return this.data.responseTimes.reduce((a, b) => a + b, 0) / this.data.responseTimes.length;
-            }
-
-            getSuccessRate() {
-                if (this.data.totalRequests === 0) return 100;
-                return Math.round((this.data.successfulRequests / this.data.totalRequests) * 100);
-            }
-
-            getCacheHitRate() {
-                if (this.data.totalRequests === 0) return 0;
-                return Math.round((this.data.cacheHits / this.data.totalRequests) * 100);
-            }
-
-            updateUI() {
-                document.getElementById('avgResponseTime').textContent = `${Math.round(this.getAverageResponseTime())}ms`;
-                document.getElementById('totalRequests').textContent = this.data.totalRequests;
-                document.getElementById('successRate').textContent = `${this.getSuccessRate()}%`;
-                document.getElementById('cacheHitRate').textContent = `${this.getCacheHitRate()}%`;
-            }
-
-            save() {
-                localStorage.setItem(CONFIG.PERFORMANCE_KEY, JSON.stringify(this.data));
-            }
-
-            clear() {
-                this.data = {
-                    requests: [],
-                    totalRequests: 0,
-                    successfulRequests: 0,
-                    responseTimes: [],
-                    cacheHits: 0,
-                    sessionStart: Date.now()
-                };
-                this.save();
-                this.updateUI();
-            }
-
-            export() {
-                return {
-                    ...this.data,
-                    averageResponseTime: this.getAverageResponseTime(),
-                    successRate: this.getSuccessRate(),
-                    cacheHitRate: this.getCacheHitRate(),
-                    sessionDuration: Date.now() - this.data.sessionStart,
-                    userAgent: navigator.userAgent,
-                    timestamp: new Date().toISOString()
-                };
-            }
-        }
-
-        const performanceMonitor = new PerformanceMonitor();
-
-        // Enhanced Security Input Sanitization
-        class SecurityValidator {
-            constructor() {
-                this.patterns = CONFIG.SECURITY_PATTERNS;
-            }
-
-            sanitizeInput(input) {
-                if (!input || typeof input !== 'string') return '';
-                
-                // Use DOMPurify for comprehensive sanitization
-                let sanitized = DOMPurify.sanitize(input, {
-                    ALLOWED_TAGS: [],
-                    ALLOWED_ATTR: [],
-                    KEEP_CONTENT: true
-                });
-
-                // Additional custom patterns
-                this.patterns.forEach(pattern => {
-                    sanitized = sanitized.replace(pattern, '');
-                });
-
-                return sanitized.trim().substring(0, CONFIG.MAX_MESSAGE_LENGTH);
-            }
-
-            validateInput(input) {
-                const original = input;
-                const sanitized = this.sanitizeInput(input);
-                
-                const isSafe = original === sanitized;
-                const isEmpty = !sanitized.length;
-                const tooLong = original.length > CONFIG.MAX_MESSAGE_LENGTH;
-
-                return {
-                    isSafe,
-                    isEmpty,
-                    tooLong,
-                    sanitized,
-                    threatLevel: this.getThreatLevel(original, sanitized)
-                };
-            }
-
-            getThreatLevel(original, sanitized) {
-                if (original === sanitized) return 'safe';
-                
-                const dangerousPatterns = [
-                    /<script/i,
-                    /javascript:/i,
-                    /<iframe/i,
-                    /eval\(/i,
-                    /document\./i
-                ];
-
-                for (let pattern of dangerousPatterns) {
-                    if (pattern.test(original)) return 'high';
-                }
-
-                return 'medium';
-            }
-        }
-
-        const securityValidator = new SecurityValidator();
 
         // Enhanced Session Management
         function getSessionId() {
@@ -1080,20 +635,12 @@ Hvad leder du efter?</div>
                 this.requests = this.requests.filter(time => now - time < CONFIG.RATE_LIMIT_WINDOW);
                 
                 if (this.requests.length >= CONFIG.MAX_REQUESTS_PER_WINDOW) {
-                    this.showRateLimit();
+                    showToast('⚠️ Too many requests. Please wait a moment.', 'warning');
                     return false;
                 }
                 
                 this.requests.push(now);
                 return true;
-            }
-
-            showRateLimit() {
-                const notice = document.getElementById('rateLimitNotice');
-                notice.classList.add('active');
-                setTimeout(() => notice.classList.remove('active'), 5000);
-                showToast('⚠️ Too many requests. Please wait a moment.', 'warning');
-                trackEvent('rate_limit_triggered', 'security');
             }
         }
 
@@ -1104,7 +651,6 @@ Hvad leder du efter?</div>
             const messageElement = buttonElement.closest('.message').querySelector('.bubble');
             const text = messageElement.textContent.trim();
             
-            // Extract event information
             const eventInfo = extractEventFromMessage(text);
             const shareText = formatShareText(eventInfo);
             const shareUrl = `${CONFIG.SHARE_BASE_URL}?ref=${platform}`;
@@ -1153,7 +699,6 @@ Hvad leder du efter?</div>
         function extractEventFromMessage(text) {
             const lines = text.split('\n').filter(line => line.trim());
             
-            // Try to identify event information
             const eventInfo = {
                 title: '',
                 date: '',
@@ -1198,142 +743,6 @@ Hvad leder du efter?</div>
             }, 1500);
         }
 
-        // Enhanced Guided Submission with Modular Design
-        class GuidedSubmission {
-            constructor() {
-                this.reset();
-                this.steps = [
-                    {
-                        key: 'guided_start',
-                        field: 'dato',
-                        nextKey: 'guided_time'
-                    },
-                    {
-                        key: 'guided_time',
-                        field: 'tid', 
-                        nextKey: 'guided_type'
-                    },
-                    {
-                        key: 'guided_type',
-                        field: 'type',
-                        nextKey: 'guided_venue'
-                    },
-                    {
-                        key: 'guided_venue',
-                        field: 'sted',
-                        nextKey: 'guided_city'
-                    },
-                    {
-                        key: 'guided_city',
-                        field: 'by',
-                        nextKey: 'guided_confirm'
-                    }
-                ];
-            }
-
-            reset() {
-                this.active = false;
-                this.step = 0;
-                this.data = {};
-                this.hideLoading();
-            }
-
-            start() {
-                this.reset();
-                this.active = true;
-                this.step = 1;
-                trackEvent('guided_submission_started', 'user_flow');
-                
-                const message = getTranslation('guided_start');
-                addMessage(message, "bot");
-                document.getElementById("userInput").focus();
-            }
-
-            showLoading() {
-                document.getElementById('guidedLoading').classList.add('active');
-            }
-
-            hideLoading() {
-                document.getElementById('guidedLoading').classList.remove('active');
-            }
-
-            async handleInput(message) {
-                const validation = securityValidator.validateInput(message);
-                
-                if (!validation.isSafe) {
-                    showToast('⚠️ Input contains unsafe content', 'warning');
-                    trackEvent('unsafe_input_detected', 'security', validation.threatLevel);
-                    return;
-                }
-
-                if (validation.isEmpty) {
-                    showToast('Please enter a valid response', 'warning');
-                    return;
-                }
-
-                this.showLoading();
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                const stepIndex = this.step - 1;
-                
-                if (stepIndex < this.steps.length) {
-                    const currentStep = this.steps[stepIndex];
-                    this.data[currentStep.field] = validation.sanitized;
-                    this.step++;
-                    
-                    if (stepIndex === this.steps.length - 1) {
-                        // Final step - show confirmation
-                        const summary = `✅ ${validation.sanitized}\n\n${getTranslation('guided_confirm')}\n\n` +
-                                       `📅 ${this.data.dato} kl. ${this.data.tid}\n` +
-                                       `💃 ${this.data.type}\n` +
-                                       `📍 ${this.data.sted}\n` +
-                                       `🏙️ ${this.data.by}\n\n` +
-                                       `${getTranslation('guided_confirm_question')}`;
-                        addMessage(summary, "bot");
-                    } else {
-                        addMessage(`✅ ${validation.sanitized}\n\n${getTranslation(this.steps[stepIndex].nextKey)}`, "bot");
-                    }
-                } else {
-                    // Confirmation step
-                    if (validation.sanitized.toLowerCase() === 'ja' || validation.sanitized.toLowerCase() === 'yes') {
-                        await this.submitEvent();
-                    } else {
-                        this.reset();
-                        addMessage(getTranslation('guided_cancelled'), "bot");
-                    }
-                }
-                
-                this.hideLoading();
-            }
-
-            async submitEvent() {
-                const submissionText = `${this.data.dato}, ${this.data.tid}, ${this.data.type}, ${this.data.sted}, ${this.data.by}`;
-                
-                trackEvent('event_submitted', 'user_action', submissionText);
-                
-                addMessage(submissionText, "user");
-                
-                try {
-                    const startTime = performance.now();
-                    const data = await makeApiCall(submissionText);
-                    const responseTime = performance.now() - startTime;
-                    
-                    performanceMonitor.recordRequest(true, responseTime);
-                    addMessage(data.reply, "bot");
-                    showToast('🎉 Event submitted successfully!', 'success');
-                } catch (error) {
-                    const responseTime = performance.now() - startTime;
-                    performanceMonitor.recordRequest(false, responseTime);
-                    addMessage(getTranslation('submission_error'), "bot");
-                    showToast('❌ Submission failed. Please try again.', 'error');
-                }
-                
-                this.reset();
-            }
-        }
-
-        const guidedSubmission = new GuidedSubmission();
-
         // Multi-language Support
         const translations = {
             da: {
@@ -1341,17 +750,6 @@ Hvad leder du efter?</div>
                 welcome_message: "Velkommen til DanceMap AI! 💃\n\nFind salsa, bachata, kizomba og andre dance events i Danmark!\n\n🔍 Søg: \"salsa i københavn\" eller \"events i weekenden\"\n📝 Tilføj manglende event: Skriv \"tilføj event\"\n\nHvad leder du efter?",
                 input_placeholder: "Skriv en besked...",
                 add_event_title: "Tilføj event",
-                processing: "Behandler...",
-                rate_limit_warning: "⚠️ Du sender beskeder for hurtigt. Vent venligst et øjeblik.",
-                guided_start: "📝 Lad os tilføje et event!\n\nHvilken dato er eventet?\n(fx '6. december' eller '2024-12-06')",
-                guided_time: "Hvilket tidspunkt starter det?\n(fx '20:00' eller '19.30')",
-                guided_type: "Hvilken type event?\n• Salsa\n• Bachata\n• Kizomba\n• Salsa Bachata\n• Andet",
-                guided_venue: "Hvad hedder stedet?\n(fx 'Nordhus' eller 'Kedelhallen')",
-                guided_city: "Hvilken by?\n(fx 'København' eller 'Aarhus')",
-                guided_confirm: "Perfekt! Her er hvad jeg har:",
-                guided_confirm_question: "Er det korrekt? (ja/nej)",
-                guided_cancelled: "❌ Annulleret. Skriv 'tilføj event' for at prøve igen! 😊",
-                submission_error: "❌ Der skete en fejl ved indsendelse. Prøv igen eller skriv eventet direkte! 😊",
                 connection_error: "Beklager, jeg kunne ikke forbinde til serveren. Prøv igen! 🔄"
             },
             en: {
@@ -1359,17 +757,6 @@ Hvad leder du efter?</div>
                 welcome_message: "Welcome to DanceMap AI! 💃\n\nFind salsa, bachata, kizomba and other dance events in Denmark!\n\n🔍 Search: \"salsa in copenhagen\" or \"events this weekend\"\n📝 Add missing event: Write \"add event\"\n\nWhat are you looking for?",
                 input_placeholder: "Type a message...",
                 add_event_title: "Add event",
-                processing: "Processing...",
-                rate_limit_warning: "⚠️ You're sending messages too quickly. Please wait a moment.",
-                guided_start: "📝 Let's add an event!\n\nWhat date is the event?\n(e.g. 'December 6th' or '2024-12-06')",
-                guided_time: "What time does it start?\n(e.g. '8:00 PM' or '20:00')",
-                guided_type: "What type of event?\n• Salsa\n• Bachata\n• Kizomba\n• Salsa Bachata\n• Other",
-                guided_venue: "What's the venue name?\n(e.g. 'Nordhus' or 'Kedelhallen')",
-                guided_city: "Which city?\n(e.g. 'Copenhagen' or 'Aarhus')",
-                guided_confirm: "Perfect! Here's what I have:",
-                guided_confirm_question: "Is this correct? (yes/no)",
-                guided_cancelled: "❌ Cancelled. Write 'add event' to try again! 😊",
-                submission_error: "❌ An error occurred during submission. Please try again or write the event directly! 😊",
                 connection_error: "Sorry, I couldn't connect to the server. Please try again! 🔄"
             }
         };
@@ -1407,17 +794,20 @@ Hvad leder du efter?</div>
             });
         }
 
-        // Enhanced API calls with performance monitoring
+        // Enhanced API calls with timeout and retry
         async function makeApiCall(message, retries = 2) {
             if (!rateLimiter.canMakeRequest()) {
                 throw new Error('Rate limited');
             }
 
-            const startTime = performance.now();
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), CONFIG.REQUEST_TIMEOUT);
 
             try {
+                console.log('🚀 Making API call to:', CONFIG.SCRIPT_URL);
+                console.log('📤 Message:', message);
+                console.log('🔑 Session ID:', sessionId);
+
                 const response = await fetch(`${CONFIG.SCRIPT_URL}?message=${encodeURIComponent(message)}&sessionId=${sessionId}`, {
                     signal: controller.signal,
                     headers: {
@@ -1427,69 +817,37 @@ Hvad leder du efter?</div>
                 });
 
                 clearTimeout(timeoutId);
-                const responseTime = performance.now() - startTime;
+
+                console.log('📥 Response status:', response.status);
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 const data = await response.json();
-                
-                const cached = response.headers.get('x-cache') === 'HIT';
-                performanceMonitor.recordRequest(true, responseTime, cached);
+                console.log('✅ API call successful:', data);
                 
                 trackEvent('api_call_success', 'api_interaction');
                 return data;
 
             } catch (error) {
                 clearTimeout(timeoutId);
-                const responseTime = performance.now() - startTime;
+                console.error('❌ API call failed:', error);
                 
                 if (error.name === 'AbortError') {
-                    performanceMonitor.recordRequest(false, responseTime);
                     trackEvent('api_call_timeout', 'api_error');
                     throw new Error('Request timeout');
                 }
                 
                 if (retries > 0) {
+                    console.log(`🔄 Retrying... (${retries} attempts left)`);
                     trackEvent('api_call_retry', 'api_error', retries);
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     return makeApiCall(message, retries - 1);
                 }
                 
-                performanceMonitor.recordRequest(false, responseTime);
                 trackEvent('api_call_failed', 'api_error', error.message);
                 throw error;
-            }
-        }
-
-        // Enhanced Input Management with Security
-        function updateSecurityIndicators() {
-            const input = document.getElementById('userInput');
-            const charCount = document.getElementById('charCount');
-            const charCounter = document.getElementById('charCounter');
-            const securityBadge = document.getElementById('securityBadge');
-            
-            const validation = securityValidator.validateInput(input.value);
-            
-            // Update character counter
-            charCount.textContent = input.value.length;
-            charCounter.className = 'char-counter';
-            
-            if (input.value.length > 400) {
-                charCounter.classList.add('warning');
-            }
-            if (input.value.length >= 500) {
-                charCounter.classList.add('error');
-            }
-
-            // Update security indicator
-            if (!validation.isSafe) {
-                securityBadge.textContent = '⚠️ Unsafe';
-                securityBadge.className = 'security-badge warning';
-            } else {
-                securityBadge.textContent = '🔒 Secure';
-                securityBadge.className = 'security-badge';
             }
         }
 
@@ -1563,12 +921,20 @@ Hvad leder du efter?</div>
             const bubble = document.createElement("div");
             bubble.className = "bubble";
             
-            // Enhanced XSS Protection using DOMPurify
-            const sanitized = DOMPurify.sanitize(text, {
-                ALLOWED_TAGS: ['br', 'a'],
-                ALLOWED_ATTR: ['href', 'target', 'rel'],
-                KEEP_CONTENT: true
-            });
+            // Enhanced XSS Protection using DOMPurify if available
+            let sanitized;
+            if (typeof DOMPurify !== 'undefined') {
+                sanitized = DOMPurify.sanitize(text, {
+                    ALLOWED_TAGS: ['br', 'a'],
+                    ALLOWED_ATTR: ['href', 'target', 'rel'],
+                    KEEP_CONTENT: true
+                });
+            } else {
+                // Fallback sanitization
+                const div = document.createElement('div');
+                div.textContent = text;
+                sanitized = div.innerHTML;
+            }
             
             const textWithLinks = sanitized.replace(
                 /(https?:\/\/[^\s]+)/g,
@@ -1616,58 +982,45 @@ Hvad leder du efter?</div>
         }
 
         function isEventMessage(text) {
-            // Check if message contains event-like information
             return text.includes('kl.') || 
                    text.includes('event') || 
                    (text.includes('Salsa') || text.includes('Bachata') || text.includes('Kizomba')) ||
                    text.includes('kr');
         }
 
-        // Enhanced send message function with security validation
+        // Enhanced send message function
         async function sendMessage() {
             const input = document.getElementById("userInput");
             const message = input.value.trim();
 
-            const validation = securityValidator.validateInput(message);
-
-            if (validation.isEmpty) {
+            if (!message) {
                 showToast('Please enter a message', 'warning');
                 return;
             }
 
-            if (!validation.isSafe) {
-                showToast('⚠️ Message contains unsafe content and has been sanitized', 'warning');
-                trackEvent('unsafe_input_sanitized', 'security', validation.threatLevel);
-            }
-
-            if (validation.tooLong) {
+            if (message.length > CONFIG.MAX_MESSAGE_LENGTH) {
                 showToast(`Message too long. Max ${CONFIG.MAX_MESSAGE_LENGTH} characters.`, 'warning');
                 return;
             }
 
-            const sanitizedMessage = validation.sanitized;
-            trackEvent('message_sent', 'user_interaction', sanitizedMessage.substring(0, 50));
+            console.log('📝 Sending message:', message);
+            trackEvent('message_sent', 'user_interaction', message.substring(0, 50));
 
-            addMessage(sanitizedMessage, "user", false);
+            addMessage(message, "user", false);
             input.value = "";
-            updateSecurityIndicators();
-            
-            if (guidedSubmission.active) {
-                await guidedSubmission.handleInput(sanitizedMessage);
-                return;
-            }
             
             setInputState(true);
             showTyping(true);
 
             try {
-                const data = await makeApiCall(sanitizedMessage);
+                const data = await makeApiCall(message);
                 showTyping(false);
+                console.log('💬 Bot response:', data.reply);
                 addMessage(data.reply, "bot", true);
 
             } catch (error) {
                 showTyping(false);
-                console.error("Send message error:", error);
+                console.error("❌ Send message error:", error);
                 
                 let errorMessage = getTranslation('connection_error');
                 if (error.message === 'Rate limited') {
@@ -1675,123 +1028,14 @@ Hvad leder du efter?</div>
                 } else if (error.message === 'Request timeout') {
                     errorMessage = "Request timed out. Please try again.";
                     showToast('⏱️ Request timeout. Please try again.', 'error');
+                } else {
+                    showToast('❌ Connection failed. Please try again.', 'error');
                 }
                 
                 addMessage(errorMessage, "bot", false);
             } finally {
                 setInputState(false);
             }
-        }
-
-        // Enhanced Debug Functionality
-        function toggleDebug() {
-            const panel = document.getElementById('debugPanel');
-            panel.classList.toggle('active');
-            
-            if (panel.classList.contains('active')) {
-                trackEvent('debug_panel_opened', 'dev_tool');
-                document.getElementById('debugInput').focus();
-            }
-        }
-
-        function testParser() {
-            const input = document.getElementById('debugInput').value;
-            const result = document.getElementById('debugResult');
-            
-            if (!input.trim()) {
-                result.textContent = 'Please enter a query to test...';
-                return;
-            }
-
-            const startTime = performance.now();
-            
-            // Enhanced mock parsing with confidence scoring
-            const mockResult = {
-                query: input,
-                sanitized: securityValidator.sanitizeInput(input),
-                parsed: {
-                    by: extractCity(input),
-                    dansetype: extractDanceType(input),
-                    timeFilter: extractTimeFilter(input)
-                },
-                confidence: calculateParseConfidence(input),
-                processingTime: `${(performance.now() - startTime).toFixed(2)}ms`,
-                timestamp: new Date().toISOString(),
-                security: securityValidator.validateInput(input)
-            };
-            
-            result.textContent = JSON.stringify(mockResult, null, 2);
-            trackEvent('debug_parser_test', 'dev_tool', input);
-        }
-
-        function calculateParseConfidence(input) {
-            let confidence = 0;
-            const lower = input.toLowerCase();
-            
-            if (extractCity(lower)) confidence += 0.3;
-            if (extractDanceType(lower)) confidence += 0.3;
-            if (extractTimeFilter(lower)) confidence += 0.4;
-            
-            return Math.round(confidence * 100);
-        }
-
-        function clearDebugResult() {
-            document.getElementById('debugResult').textContent = 'Debug result cleared...';
-            document.getElementById('debugInput').value = '';
-        }
-
-        function exportDebugData() {
-            const data = {
-                performance: performanceMonitor.export(),
-                session: {
-                    id: sessionId,
-                    language: getCurrentLanguage(),
-                    userAgent: navigator.userAgent,
-                    timestamp: new Date().toISOString()
-                },
-                features: {
-                    dompurify: typeof DOMPurify !== 'undefined',
-                    localStorage: typeof localStorage !== 'undefined',
-                    fetch: typeof fetch !== 'undefined',
-                    clipboard: typeof navigator.clipboard !== 'undefined'
-                }
-            };
-
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `dancemap-debug-${Date.now()}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-
-            showToast('📊 Debug data exported!', 'success');
-            trackEvent('debug_data_exported', 'dev_tool');
-        }
-
-        function clearPerformanceData() {
-            performanceMonitor.clear();
-            showToast('📈 Performance data cleared!', 'success');
-            trackEvent('performance_data_cleared', 'dev_tool');
-        }
-
-        // Mock parser functions (implement actual parsing logic)
-        function extractCity(text) {
-            const cities = ["københavn", "aarhus", "odense", "aalborg", "copenhagen", "cph"];
-            return cities.find(city => text.toLowerCase().includes(city)) || null;
-        }
-
-        function extractDanceType(text) {
-            const types = ["salsa", "bachata", "kizomba", "zouk", "tango"];
-            return types.find(type => text.toLowerCase().includes(type)) || null;
-        }
-
-        function extractTimeFilter(text) {
-            if (text.includes("i dag") || text.includes("today")) return "i dag";
-            if (text.includes("weekend")) return "weekend";
-            if (text.includes("i morgen") || text.includes("tomorrow")) return "i morgen";
-            if (text.includes("denne uge") || text.includes("this week")) return "denne uge";
-            return null;
         }
 
         // Enhanced Event Handlers
@@ -1802,28 +1046,20 @@ Hvad leder du efter?</div>
             }
         });
 
-        document.getElementById("userInput").addEventListener("input", updateSecurityIndicators);
-
-        document.getElementById("debugInput").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                testParser();
-            }
-        });
-
-        // Enhanced start function for guided submission
         function startEventSubmission() {
-            guidedSubmission.start();
+            // Simple guided submission
+            const message = "Vil du tilføje et event? Skriv det i formatet:\ndato, tid, dansetype, sted, by\n\nEksempel:\n14. december, 20:00, Salsa, Nordhus, København";
+            addMessage(message, "bot");
             document.getElementById("userInput").focus();
         }
 
-        // Initialize app with enhanced security and performance monitoring
+        // Initialize app
         function initializeApp() {
+            console.log('🚀 Initializing DanceMap AI...');
+            console.log('🔧 Script URL:', CONFIG.SCRIPT_URL);
+            
             const currentLang = getCurrentLanguage();
             setLanguage(currentLang);
-            
-            updateSecurityIndicators();
-            performanceMonitor.updateUI();
             
             trackEvent('app_initialized', 'app_lifecycle', currentLang);
             
@@ -1833,15 +1069,8 @@ Hvad leder du efter?</div>
                 existingMessage.textContent = initialMessage;
             }
             
-            console.log('🚀 DanceMap AI v3.2 Enhanced - Security & Social Features Loaded');
-            showToast('🎉 Welcome to DanceMap AI! Enhanced with sharing & security features.', 'success');
-            
-            // Performance optimization
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js').catch(err => {
-                    console.log('Service Worker registration failed:', err);
-                });
-            }
+            console.log('✅ DanceMap AI v3.2 - Ready!');
+            showToast('🎉 Welcome to DanceMap AI!', 'success');
         }
 
         // Start the app when DOM is ready
@@ -1853,13 +1082,13 @@ Hvad leder du efter?</div>
 
         // Global error handling
         window.addEventListener('error', function(event) {
+            console.error('🚨 Global error:', event.error);
             trackEvent('javascript_error', 'error', event.message);
-            console.error('Global error:', event.error);
         });
 
         window.addEventListener('unhandledrejection', function(event) {
+            console.error('🚨 Unhandled promise rejection:', event.reason);
             trackEvent('unhandled_promise_rejection', 'error', event.reason);
-            console.error('Unhandled promise rejection:', event.reason);
         });
     </script>
 </body>
