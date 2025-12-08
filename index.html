@@ -466,47 +466,49 @@
             setInputState(true);
             showTyping(true);
 
-            try {
-                console.log('🚀 Making API call to:', SCRIPT_URL);
-                const response = await fetch(`${SCRIPT_URL}?message=${encodeURIComponent(message)}&sessionId=${sessionId}`, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Cache-Control': 'no-cache'
-                    }
-                });
-
-                console.log('📥 Response status:', response.status);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('✅ API call successful:', data);
-                
+            // JSONP approach to bypass CORS
+            const callbackName = 'callback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+            
+            window[callbackName] = function(data) {
                 showTyping(false);
+                console.log('✅ API call successful:', data);
                 addMessage(data.reply, "bot");
-
+                
                 gtag('event', 'api_call_success', {
                     'event_category': 'api_interaction'
                 });
-
-            } catch (error) {
+                
+                // Cleanup
+                delete window[callbackName];
+                document.head.removeChild(script);
+                setInputState(false);
+            };
+            
+            const script = document.createElement('script');
+            script.src = `${SCRIPT_URL}?message=${encodeURIComponent(message)}&sessionId=${sessionId}&callback=${callbackName}`;
+            
+            script.onerror = function() {
                 showTyping(false);
-                console.error("❌ Send message error:", error);
+                console.error("❌ Send message error: Script failed to load");
                 
                 let errorMessage = "Beklager, jeg kunne ikke forbinde til serveren. Prøv igen! 🔄";
                 
                 addMessage(errorMessage, "bot");
                 showToast('❌ Connection failed. Please try again.', 'error');
-
+                
                 gtag('event', 'api_call_failed', {
                     'event_category': 'api_error',
-                    'event_label': error.message
+                    'event_label': 'Script load failed'
                 });
-            } finally {
+                
+                // Cleanup
+                delete window[callbackName];
+                document.head.removeChild(script);
                 setInputState(false);
-            }
+            };
+            
+            console.log('🚀 Making JSONP call to:', script.src);
+            document.head.appendChild(script);
         }
 
         // Event Handlers
