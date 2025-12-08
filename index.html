@@ -1,64 +1,19 @@
 <!DOCTYPE html>
-<html lang="da" id="app-root">
+<html lang="da">
 <head>
-    <!-- Enhanced Security Headers -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://script.google.com https://www.google-analytics.com; frame-src 'none';">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>DanceMap AI - Find Dance Events in Denmark</title>
+    <meta name="description" content="Find salsa, bachata, kizomba and other dance events in Denmark. AI-powered event discovery." />
     
-    <!-- Google Analytics with enhanced event tracking -->
+    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WYGJJJV2E6"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
         gtag('config', 'G-WYGJJJV2E6');
-        
-        // Enhanced event tracking with performance monitoring
-        function trackEvent(action, category = 'user_interaction', label = '', value = 0) {
-            gtag('event', action, {
-                event_category: category,
-                event_label: label,
-                value: value,
-                custom_map: {
-                    'session_id': getSessionId(),
-                    'user_agent': navigator.userAgent.substring(0, 100)
-                }
-            });
-        }
-        
-        // Performance monitoring
-        function trackPerformance(metric, value, label = '') {
-            gtag('event', 'performance_metric', {
-                event_category: 'performance',
-                event_label: `${metric}_${label}`,
-                value: Math.round(value),
-                custom_map: {
-                    'connection': navigator.connection ? navigator.connection.effectiveType : 'unknown'
-                }
-            });
-        }
     </script>
-
-    <!-- DOMPurify for Enhanced XSS Protection -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
-
-    <title>DanceMap AI - Find Dance Events in Denmark</title>
-    <meta name="description" content="Find salsa, bachata, kizomba and other dance events in Denmark. AI-powered event discovery for the Danish dance community." />
-    
-    <!-- Social Media Meta Tags -->
-    <meta property="og:title" content="DanceMap AI - Find Dance Events in Denmark" />
-    <meta property="og:description" content="Discover salsa, bachata, kizomba and other dance events across Denmark with our AI-powered platform." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://dancemap.maharaj.dk" />
-    <meta property="og:image" content="https://dancemap.maharaj.dk/og-image.png" />
-    <meta property="og:site_name" content="DanceMap AI" />
-    
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="DanceMap AI - Find Dance Events in Denmark" />
-    <meta name="twitter:description" content="Discover salsa, bachata, kizomba and other dance events across Denmark with our AI-powered platform." />
-    <meta name="twitter:image" content="https://dancemap.maharaj.dk/twitter-card.png" />
 
     <style>
         :root {
@@ -73,10 +28,6 @@
             --success: #4caf50;
             --warning: #ff9800;
             --error: #f44336;
-            --share-facebook: #1877f2;
-            --share-twitter: #1da1f2;
-            --share-whatsapp: #25d366;
-            --share-linkedin: #0a66c2;
         }
 
         * {
@@ -98,56 +49,17 @@
             position: relative;
         }
 
-        /* Enhanced Language Switcher */
-        .language-switcher {
-            position: fixed;
-            top: 16px;
-            right: 16px;
-            z-index: 1001;
-            display: flex;
-            gap: 8px;
-        }
-
-        .lang-btn {
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            color: var(--text);
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            backdrop-filter: blur(10px);
-        }
-
-        .lang-btn.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
-        }
-
-        .lang-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-1px);
-        }
-
         .topbar {
             height: 64px;
             background: var(--surface);
             display: flex;
             align-items: center;
-            justify-content: space-between;
             padding: 0 16px;
             font-size: 20px;
             font-weight: 600;
             letter-spacing: 1px;
             box-shadow: 0 0 10px rgba(0,0,0,0.7);
             backdrop-filter: blur(10px);
-        }
-
-        .topbar-left {
-            display: flex;
-            align-items: center;
         }
 
         .topbar img {
@@ -178,6 +90,7 @@
             height: 40px;
             border-radius: 50%;
             flex-shrink: 0;
+            object-fit: cover;
         }
 
         .bubble {
@@ -199,50 +112,6 @@
             background: var(--secondary);
         }
 
-        /* Enhanced Event Sharing */
-        .event-actions {
-            display: none;
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 4px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-        }
-
-        .message.bot:hover .event-actions,
-        .event-actions.active {
-            display: flex;
-            gap: 4px;
-        }
-
-        .share-btn {
-            width: 28px;
-            height: 28px;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            transition: all 0.2s;
-            color: white;
-        }
-
-        .share-btn.facebook { background: var(--share-facebook); }
-        .share-btn.twitter { background: var(--share-twitter); }
-        .share-btn.whatsapp { background: var(--share-whatsapp); }
-        .share-btn.linkedin { background: var(--share-linkedin); }
-        .share-btn.copy { background: #666; }
-
-        .share-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-
         /* Loading Animation */
         .typing {
             display: none;
@@ -259,6 +128,7 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
+            object-fit: cover;
         }
 
         .typing-dots {
@@ -299,7 +169,6 @@
             backdrop-filter: blur(15px);
         }
 
-        /* Enhanced Input with Security Features */
         #userInput {
             flex: 1;
             padding: 12px 16px;
@@ -379,44 +248,12 @@
             display: none;
         }
 
-        /* Enhanced FAB Button */
-        .fab {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: var(--primary);
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-        }
-
-        .fab:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(74, 144, 226, 0.6);
-            background: var(--primary-hover);
-        }
-
-        .fab:active {
-            transform: translateY(-1px);
-        }
-
-        /* Enhanced Toast Notifications */
+        /* Toast Notifications */
         .toast {
             position: fixed;
             top: 80px;
             right: 16px;
-            background: var(--success);
+            background: var(--error);
             color: white;
             padding: 12px 16px;
             border-radius: 8px;
@@ -426,50 +263,21 @@
             z-index: 1002;
             max-width: 300px;
             backdrop-filter: blur(15px);
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .toast.show {
             transform: translateX(0);
         }
 
-        .toast.error {
-            background: var(--error);
+        .toast.success {
+            background: var(--success);
         }
 
         .toast.warning {
             background: var(--warning);
         }
 
-        .toast-icon {
-            font-size: 16px;
-        }
-
-        /* Copy Success Animation */
-        .copy-success {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--success);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            pointer-events: none;
-            animation: copyFade 1.5s ease-out;
-        }
-
-        @keyframes copyFade {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-        }
-
-        /* Responsive Design */
+        /* Mobile Responsive */
         @media (max-width: 768px) {
             #chat {
                 padding: 15px;
@@ -495,68 +303,31 @@
                 width: 36px;
                 height: 36px;
             }
+        }
 
-            .fab {
-                bottom: 80px;
-                right: 16px;
-                width: 52px;
-                height: 52px;
-            }
+        /* Performance optimizations */
+        #chat {
+            will-change: scroll-position;
+        }
 
-            .language-switcher {
-                top: 8px;
-                right: 8px;
-            }
+        .message {
+            will-change: transform;
+        }
 
-            .event-actions {
-                right: -5px;
-                top: -5px;
-            }
-
-            .share-btn {
-                width: 24px;
-                height: 24px;
-                font-size: 10px;
-            }
+        .bubble {
+            contain: layout style paint;
         }
     </style>
 </head>
 <body>
     <div class="app">
-        <!-- Enhanced Language Switcher -->
-        <div class="language-switcher">
-            <button class="lang-btn active" onclick="setLanguage('da')" data-lang="da">🇩🇰 DA</button>
-            <button class="lang-btn" onclick="setLanguage('en')" data-lang="en">🇬🇧 EN</button>
-        </div>
-
         <div class="topbar">
-            <div class="topbar-left">
-                <img src="dancemap-icon.png" alt="DanceMap AI" />
-                <span data-lang-key="app_title">DanceMap AI</span>
-            </div>
+            <img src="dancemap-icon.png" alt="DanceMap AI" />
+            <span>DanceMap AI</span>
         </div>
 
         <div id="chat">
-            <div class="message bot">
-                <img src="dancemap-icon.png" alt="Bot" />
-                <div class="bubble" data-lang-key="welcome_message">Velkommen til DanceMap AI! 💃
-
-Find salsa, bachata, kizomba og andre dance events i Danmark!
-
-🔍 Søg: "salsa i københavn" eller "events i weekenden"
-📝 Tilføj manglende event: Skriv "tilføj event"
-
-Hvad leder du efter?</div>
-                
-                <!-- Event Sharing Actions -->
-                <div class="event-actions">
-                    <button class="share-btn facebook" onclick="shareToSocial('facebook', this)" title="Share on Facebook">📘</button>
-                    <button class="share-btn twitter" onclick="shareToSocial('twitter', this)" title="Share on Twitter">🐦</button>
-                    <button class="share-btn whatsapp" onclick="shareToSocial('whatsapp', this)" title="Share on WhatsApp">📱</button>
-                    <button class="share-btn linkedin" onclick="shareToSocial('linkedin', this)" title="Share on LinkedIn">💼</button>
-                    <button class="share-btn copy" onclick="copyEventToClipboard(this)" title="Copy Link">🔗</button>
-                </div>
-            </div>
+            <!-- Messages will be added here -->
         </div>
 
         <div class="typing" id="typing">
@@ -568,16 +339,10 @@ Hvad leder du efter?</div>
             </div>
         </div>
 
-        <!-- Enhanced FAB Button -->
-        <button class="fab" onclick="startEventSubmission()" data-lang-key="add_event_title" title="Add Event">
-            📝
-        </button>
-
         <div class="input-area">
             <input
                 type="text"
                 id="userInput"
-                data-lang-key="input_placeholder"
                 placeholder="Skriv en besked..."
                 autocomplete="off"
                 maxlength="500"
@@ -594,304 +359,21 @@ Hvad leder du efter?</div>
     <div id="toastContainer"></div>
 
     <script>
-        // FIXED Configuration with CORRECT working Script URL
-        const CONFIG = {
-            // This is the working script URL from our deployment
-            SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwkRgC1lyM-P0otkLmpsXYmGcNfPl_-VF6u6cDivv-f9yyaf6cdYtaqBOC-3WLM90VX/exec",
-            REQUEST_TIMEOUT: 30000,
-            RATE_LIMIT_WINDOW: 60000,
-            MAX_REQUESTS_PER_WINDOW: 20,
-            SESSION_STORAGE_KEY: 'dancemap_session_id',
-            LANGUAGE_KEY: 'dancemap_language',
-            MAX_MESSAGE_LENGTH: 500,
-            SHARE_BASE_URL: 'https://dancemap.maharaj.dk'
-        };
+        // ⚠️⚠️⚠️ IMPORTANT: REPLACE WITH YOUR GOOGLE APPS SCRIPT URL ⚠️⚠️⚠️
+        const SCRIPT_URL = "PASTE_YOUR_NEW_GOOGLE_APPS_SCRIPT_URL_HERE";
+        
+        let sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
-        // Enhanced Session Management
-        function getSessionId() {
-            let sessionId = localStorage.getItem(CONFIG.SESSION_STORAGE_KEY);
-            if (!sessionId) {
-                sessionId = generateSessionId();
-                localStorage.setItem(CONFIG.SESSION_STORAGE_KEY, sessionId);
-                trackEvent('new_session', 'session_management');
-            }
-            return sessionId;
-        }
+        const chat = document.getElementById('chat');
+        const input = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
 
-        function generateSessionId() {
-            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        }
-
-        let sessionId = getSessionId();
-
-        // Enhanced Rate Limiting
-        class RateLimiter {
-            constructor() {
-                this.requests = [];
-            }
-
-            canMakeRequest() {
-                const now = Date.now();
-                this.requests = this.requests.filter(time => now - time < CONFIG.RATE_LIMIT_WINDOW);
-                
-                if (this.requests.length >= CONFIG.MAX_REQUESTS_PER_WINDOW) {
-                    showToast('⚠️ Too many requests. Please wait a moment.', 'warning');
-                    return false;
-                }
-                
-                this.requests.push(now);
-                return true;
-            }
-        }
-
-        const rateLimiter = new RateLimiter();
-
-        // Enhanced Social Sharing
-        function shareToSocial(platform, buttonElement) {
-            const messageElement = buttonElement.closest('.message').querySelector('.bubble');
-            const text = messageElement.textContent.trim();
-            
-            const eventInfo = extractEventFromMessage(text);
-            const shareText = formatShareText(eventInfo);
-            const shareUrl = `${CONFIG.SHARE_BASE_URL}?ref=${platform}`;
-            
-            let url;
-            switch (platform) {
-                case 'facebook':
-                    url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`;
-                    break;
-                case 'twitter':
-                    url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}&hashtags=dance,salsa,bachata,denmark`;
-                    break;
-                case 'linkedin':
-                    url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
-                    break;
-                case 'whatsapp':
-                    url = `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`;
-                    break;
-            }
-
-            if (url) {
-                window.open(url, '_blank', 'width=600,height=400');
-                trackEvent('social_share', 'engagement', platform);
-                showToast(`🎉 Shared to ${platform}!`, 'success');
-            }
-        }
-
-        function copyEventToClipboard(buttonElement) {
-            const messageElement = buttonElement.closest('.message').querySelector('.bubble');
-            const text = messageElement.textContent.trim();
-            
-            const eventInfo = extractEventFromMessage(text);
-            const shareText = formatShareText(eventInfo);
-            const fullText = `${shareText}\n\nFind more events: ${CONFIG.SHARE_BASE_URL}`;
-
-            navigator.clipboard.writeText(fullText).then(() => {
-                showCopySuccess(buttonElement);
-                trackEvent('copy_event', 'engagement');
-                showToast('📋 Copied to clipboard!', 'success');
-            }).catch(err => {
-                console.error('Copy failed:', err);
-                showToast('❌ Copy failed. Please try again.', 'error');
-            });
-        }
-
-        function extractEventFromMessage(text) {
-            const lines = text.split('\n').filter(line => line.trim());
-            
-            const eventInfo = {
-                title: '',
-                date: '',
-                venue: '',
-                price: ''
-            };
-
-            lines.forEach(line => {
-                if (line.includes('kl.') && !eventInfo.date) {
-                    eventInfo.date = line.trim();
-                } else if (line.includes('kr') && !eventInfo.price) {
-                    eventInfo.price = line.trim();
-                } else if (!eventInfo.title && !line.includes('🔍') && !line.includes('📝') && line.length > 5) {
-                    if (!line.startsWith('Find ') && !line.startsWith('Hvad ')) {
-                        eventInfo.title = line.trim();
-                    }
-                }
-            });
-
-            return eventInfo;
-        }
-
-        function formatShareText(eventInfo) {
-            if (eventInfo.title && eventInfo.date) {
-                return `🎉 Check out this dance event: ${eventInfo.title}\n📅 ${eventInfo.date}${eventInfo.price ? '\n💰 ' + eventInfo.price : ''}`;
-            }
-            return '💃 Discover amazing dance events in Denmark with DanceMap AI!';
-        }
-
-        function showCopySuccess(buttonElement) {
-            const successElement = document.createElement('div');
-            successElement.className = 'copy-success';
-            successElement.textContent = 'Copied!';
-            
-            buttonElement.style.position = 'relative';
-            buttonElement.appendChild(successElement);
-            
-            setTimeout(() => {
-                if (buttonElement.contains(successElement)) {
-                    buttonElement.removeChild(successElement);
-                }
-            }, 1500);
-        }
-
-        // Multi-language Support
-        const translations = {
-            da: {
-                app_title: "DanceMap AI",
-                welcome_message: "Velkommen til DanceMap AI! 💃\n\nFind salsa, bachata, kizomba og andre dance events i Danmark!\n\n🔍 Søg: \"salsa i københavn\" eller \"events i weekenden\"\n📝 Tilføj manglende event: Skriv \"tilføj event\"\n\nHvad leder du efter?",
-                input_placeholder: "Skriv en besked...",
-                add_event_title: "Tilføj event",
-                connection_error: "Beklager, jeg kunne ikke forbinde til serveren. Prøv igen! 🔄"
-            },
-            en: {
-                app_title: "DanceMap AI",
-                welcome_message: "Welcome to DanceMap AI! 💃\n\nFind salsa, bachata, kizomba and other dance events in Denmark!\n\n🔍 Search: \"salsa in copenhagen\" or \"events this weekend\"\n📝 Add missing event: Write \"add event\"\n\nWhat are you looking for?",
-                input_placeholder: "Type a message...",
-                add_event_title: "Add event",
-                connection_error: "Sorry, I couldn't connect to the server. Please try again! 🔄"
-            }
-        };
-
-        function getCurrentLanguage() {
-            return localStorage.getItem(CONFIG.LANGUAGE_KEY) || 'da';
-        }
-
-        function setLanguage(lang) {
-            localStorage.setItem(CONFIG.LANGUAGE_KEY, lang);
-            trackEvent('language_changed', 'ui_interaction', lang);
-            
-            document.querySelectorAll('.lang-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
-            });
-            
-            updateTranslations();
-        }
-
-        function getTranslation(key) {
-            const lang = getCurrentLanguage();
-            return translations[lang][key] || translations['da'][key] || key;
-        }
-
-        function updateTranslations() {
-            document.querySelectorAll('[data-lang-key]').forEach(element => {
-                const key = element.getAttribute('data-lang-key');
-                const translation = getTranslation(key);
-                
-                if (element.tagName === 'INPUT') {
-                    element.placeholder = translation;
-                } else {
-                    element.textContent = translation;
-                }
-            });
-        }
-
-        // Enhanced API calls with timeout and retry
-        async function makeApiCall(message, retries = 2) {
-            if (!rateLimiter.canMakeRequest()) {
-                throw new Error('Rate limited');
-            }
-
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), CONFIG.REQUEST_TIMEOUT);
-
-            try {
-                console.log('🚀 Making API call to:', CONFIG.SCRIPT_URL);
-                console.log('📤 Message:', message);
-                console.log('🔑 Session ID:', sessionId);
-
-                const response = await fetch(`${CONFIG.SCRIPT_URL}?message=${encodeURIComponent(message)}&sessionId=${sessionId}`, {
-                    signal: controller.signal,
-                    headers: {
-                        'Accept': 'application/json',
-                        'Cache-Control': 'no-cache'
-                    }
-                });
-
-                clearTimeout(timeoutId);
-
-                console.log('📥 Response status:', response.status);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('✅ API call successful:', data);
-                
-                trackEvent('api_call_success', 'api_interaction');
-                return data;
-
-            } catch (error) {
-                clearTimeout(timeoutId);
-                console.error('❌ API call failed:', error);
-                
-                if (error.name === 'AbortError') {
-                    trackEvent('api_call_timeout', 'api_error');
-                    throw new Error('Request timeout');
-                }
-                
-                if (retries > 0) {
-                    console.log(`🔄 Retrying... (${retries} attempts left)`);
-                    trackEvent('api_call_retry', 'api_error', retries);
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    return makeApiCall(message, retries - 1);
-                }
-                
-                trackEvent('api_call_failed', 'api_error', error.message);
-                throw error;
-            }
-        }
-
-        function setInputState(disabled) {
-            const input = document.getElementById('userInput');
-            const sendBtn = document.getElementById('sendBtn');
-            
-            input.disabled = disabled;
-            sendBtn.disabled = disabled;
-            
-            if (disabled) {
-                sendBtn.classList.add('loading');
-            } else {
-                sendBtn.classList.remove('loading');
-            }
-        }
-
-        function showTyping(show) {
-            const typing = document.getElementById("typing");
-            const chat = document.getElementById("chat");
-            
-            if (show) {
-                typing.classList.add("active");
-                chat.appendChild(typing);
-                chat.scrollTop = chat.scrollHeight;
-            } else {
-                typing.classList.remove("active");
-            }
-        }
-
-        function showToast(message, type = 'success') {
+        function showToast(message, type = 'error') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
+            toast.textContent = message;
             
-            const icon = document.createElement('span');
-            icon.className = 'toast-icon';
-            icon.textContent = type === 'success' ? '✅' : type === 'warning' ? '⚠️' : '❌';
-            
-            const text = document.createElement('span');
-            text.textContent = message;
-            
-            toast.appendChild(icon);
-            toast.appendChild(text);
             container.appendChild(toast);
             
             requestAnimationFrame(() => {
@@ -908,169 +390,150 @@ Hvad leder du efter?</div>
             }, 4000);
         }
 
-        // Enhanced message handling with XSS protection and sharing
-        function addMessage(text, sender, enableSharing = true) {
-            const chat = document.getElementById("chat");
+        function setInputState(disabled) {
+            input.disabled = disabled;
+            sendBtn.disabled = disabled;
+            
+            if (disabled) {
+                sendBtn.classList.add('loading');
+            } else {
+                sendBtn.classList.remove('loading');
+            }
+        }
+
+        function showTyping(show) {
+            const typing = document.getElementById("typing");
+            
+            if (show) {
+                typing.classList.add("active");
+                chat.appendChild(typing);
+                chat.scrollTop = chat.scrollHeight;
+            } else {
+                typing.classList.remove("active");
+            }
+        }
+
+        function addMessage(text, sender) {
             const messageDiv = document.createElement("div");
             messageDiv.className = `message ${sender}`;
 
             const img = document.createElement("img");
-            img.src = sender === "user" ? "user-icon.svg" : "dancemap-icon.png";
+            if (sender === "user") {
+                // Try user icon first, fallback to SVG
+                img.src = "user-icon.png";
+                img.onerror = function() {
+                    this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='%23666'/%3E%3Ctext x='50' y='50' text-anchor='middle' dominant-baseline='central' font-size='30' fill='white'%3E👤%3C/text%3E%3C/svg%3E";
+                };
+            } else {
+                // Use your DanceMap icon for bot
+                img.src = "dancemap-icon.png";
+            }
             img.alt = sender === "user" ? "User" : "Bot";
 
             const bubble = document.createElement("div");
             bubble.className = "bubble";
-            
-            // Enhanced XSS Protection using DOMPurify if available
-            let sanitized;
-            if (typeof DOMPurify !== 'undefined') {
-                sanitized = DOMPurify.sanitize(text, {
-                    ALLOWED_TAGS: ['br', 'a'],
-                    ALLOWED_ATTR: ['href', 'target', 'rel'],
-                    KEEP_CONTENT: true
-                });
-            } else {
-                // Fallback sanitization
-                const div = document.createElement('div');
-                div.textContent = text;
-                sanitized = div.innerHTML;
-            }
-            
-            const textWithLinks = sanitized.replace(
-                /(https?:\/\/[^\s]+)/g,
-                '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
-            );
-            
-            bubble.innerHTML = textWithLinks.replace(/\n/g, "<br>");
+            bubble.textContent = text;
 
             messageDiv.appendChild(img);
             messageDiv.appendChild(bubble);
-
-            // Add sharing actions for bot messages with event content
-            if (sender === "bot" && enableSharing && isEventMessage(text)) {
-                const actionsDiv = document.createElement("div");
-                actionsDiv.className = "event-actions";
-                
-                const shareButtons = [
-                    { platform: 'facebook', icon: '📘', title: 'Share on Facebook' },
-                    { platform: 'twitter', icon: '🐦', title: 'Share on Twitter' },
-                    { platform: 'whatsapp', icon: '📱', title: 'Share on WhatsApp' },
-                    { platform: 'linkedin', icon: '💼', title: 'Share on LinkedIn' },
-                    { platform: 'copy', icon: '🔗', title: 'Copy Link' }
-                ];
-
-                shareButtons.forEach(btn => {
-                    const button = document.createElement('button');
-                    button.className = `share-btn ${btn.platform}`;
-                    button.title = btn.title;
-                    button.textContent = btn.icon;
-                    
-                    if (btn.platform === 'copy') {
-                        button.onclick = () => copyEventToClipboard(button);
-                    } else {
-                        button.onclick = () => shareToSocial(btn.platform, button);
-                    }
-                    
-                    actionsDiv.appendChild(button);
-                });
-
-                messageDiv.appendChild(actionsDiv);
-            }
-
             chat.appendChild(messageDiv);
+
             chat.scrollTop = chat.scrollHeight;
         }
 
-        function isEventMessage(text) {
-            return text.includes('kl.') || 
-                   text.includes('event') || 
-                   (text.includes('Salsa') || text.includes('Bachata') || text.includes('Kizomba')) ||
-                   text.includes('kr');
-        }
-
-        // Enhanced send message function
         async function sendMessage() {
-            const input = document.getElementById("userInput");
             const message = input.value.trim();
 
             if (!message) {
-                showToast('Please enter a message', 'warning');
+                showToast('Skriv venligst en besked', 'warning');
                 return;
             }
 
-            if (message.length > CONFIG.MAX_MESSAGE_LENGTH) {
-                showToast(`Message too long. Max ${CONFIG.MAX_MESSAGE_LENGTH} characters.`, 'warning');
+            if (SCRIPT_URL === "PASTE_YOUR_NEW_GOOGLE_APPS_SCRIPT_URL_HERE") {
+                showToast('⚠️ Google Apps Script URL ikke sat! Se instruktionerne.', 'error');
                 return;
             }
 
             console.log('📝 Sending message:', message);
-            trackEvent('message_sent', 'user_interaction', message.substring(0, 50));
+            gtag('event', 'message_sent', {
+                'event_category': 'user_interaction',
+                'event_label': message.substring(0, 50)
+            });
 
-            addMessage(message, "user", false);
+            addMessage(message, "user");
             input.value = "";
             
             setInputState(true);
             showTyping(true);
 
             try {
-                const data = await makeApiCall(message);
+                console.log('🚀 Making API call to:', SCRIPT_URL);
+                const response = await fetch(`${SCRIPT_URL}?message=${encodeURIComponent(message)}&sessionId=${sessionId}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+
+                console.log('📥 Response status:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('✅ API call successful:', data);
+                
                 showTyping(false);
-                console.log('💬 Bot response:', data.reply);
-                addMessage(data.reply, "bot", true);
+                addMessage(data.reply, "bot");
+
+                gtag('event', 'api_call_success', {
+                    'event_category': 'api_interaction'
+                });
 
             } catch (error) {
                 showTyping(false);
                 console.error("❌ Send message error:", error);
                 
-                let errorMessage = getTranslation('connection_error');
-                if (error.message === 'Rate limited') {
-                    return;
-                } else if (error.message === 'Request timeout') {
-                    errorMessage = "Request timed out. Please try again.";
-                    showToast('⏱️ Request timeout. Please try again.', 'error');
-                } else {
-                    showToast('❌ Connection failed. Please try again.', 'error');
-                }
+                let errorMessage = "Beklager, jeg kunne ikke forbinde til serveren. Prøv igen! 🔄";
                 
-                addMessage(errorMessage, "bot", false);
+                addMessage(errorMessage, "bot");
+                showToast('❌ Connection failed. Please try again.', 'error');
+
+                gtag('event', 'api_call_failed', {
+                    'event_category': 'api_error',
+                    'event_label': error.message
+                });
             } finally {
                 setInputState(false);
             }
         }
 
-        // Enhanced Event Handlers
-        document.getElementById("userInput").addEventListener("keypress", function(e) {
+        // Event Handlers
+        input.addEventListener("keypress", function(e) {
             if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
             }
         });
 
-        function startEventSubmission() {
-            // Simple guided submission
-            const message = "Vil du tilføje et event? Skriv det i formatet:\ndato, tid, dansetype, sted, by\n\nEksempel:\n14. december, 20:00, Salsa, Nordhus, København";
-            addMessage(message, "bot");
-            document.getElementById("userInput").focus();
-        }
-
         // Initialize app
         function initializeApp() {
             console.log('🚀 Initializing DanceMap AI...');
-            console.log('🔧 Script URL:', CONFIG.SCRIPT_URL);
+            console.log('🔧 Script URL:', SCRIPT_URL);
             
-            const currentLang = getCurrentLanguage();
-            setLanguage(currentLang);
+            const welcomeMessage = "Velkommen til DanceMap AI! 💃\n\nFind salsa, bachata, kizomba og andre dance events i Danmark!\n\n🔍 Søg: \"salsa i københavn\" eller \"events i weekenden\"\n\nHvad leder du efter?";
+            addMessage(welcomeMessage, "bot");
             
-            trackEvent('app_initialized', 'app_lifecycle', currentLang);
+            input.focus();
             
-            const initialMessage = getTranslation('welcome_message');
-            const existingMessage = document.querySelector('.message.bot .bubble');
-            if (existingMessage) {
-                existingMessage.textContent = initialMessage;
+            if (SCRIPT_URL === "PASTE_YOUR_NEW_GOOGLE_APPS_SCRIPT_URL_HERE") {
+                showToast('⚠️ Husk at opdatere Google Apps Script URL!', 'warning');
+            } else {
+                showToast('🎉 Welcome to DanceMap AI!', 'success');
             }
             
-            console.log('✅ DanceMap AI v3.2 - Ready!');
-            showToast('🎉 Welcome to DanceMap AI!', 'success');
+            console.log('✅ DanceMap AI - Ready!');
         }
 
         // Start the app when DOM is ready
@@ -1083,12 +546,10 @@ Hvad leder du efter?</div>
         // Global error handling
         window.addEventListener('error', function(event) {
             console.error('🚨 Global error:', event.error);
-            trackEvent('javascript_error', 'error', event.message);
-        });
-
-        window.addEventListener('unhandledrejection', function(event) {
-            console.error('🚨 Unhandled promise rejection:', event.reason);
-            trackEvent('unhandled_promise_rejection', 'error', event.reason);
+            gtag('event', 'javascript_error', {
+                'event_category': 'error',
+                'event_label': event.message
+            });
         });
     </script>
 </body>
