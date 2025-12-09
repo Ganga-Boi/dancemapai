@@ -261,7 +261,7 @@
   </button>
 
   <script>
-    const API_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
+    const API_URL = 'https://script.google.com/macros/s/AKfycby3UJHM83amA1WpVV3Tp4e4GxkEYxMEDTJpwTn1NACJ0nQFQ_D0wRJcDGcIWRs7LKvA/exec';
     const chat = document.getElementById('chat');
     const input = document.getElementById('input');
     const send = document.getElementById('send');
@@ -306,7 +306,7 @@
         addMessage(data.reply || 'Fejl - prøv igen.');
       } catch (e) {
         hideTyping();
-        if (API_URL === 'https://script.google.com/macros/s/AKfycby3UJHM83amA1WpVV3Tp4e4GxkEYxMEDTJpwTn1NACJ0nQFQ_D0wRJcDGcIWRs7LKvA/exec') {
+        if (API_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
           addMessage('**Demo mode** - Indsæt din Apps Script URL for at aktivere.');
         } else {
           addMessage('Kunne ikke forbinde. Prøv igen.');
