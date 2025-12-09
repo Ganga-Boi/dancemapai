@@ -112,18 +112,6 @@
       font-weight: 600;
     }
 
-    .message .examples {
-      margin-top: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .message .example {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
-
     .typing {
       display: flex;
       gap: 4px;
@@ -254,19 +242,7 @@
 
   <div class="chat" id="chat">
     <div class="message bot">
-      Her finder du hurtigt danse-events som <strong>Salsa</strong>, <strong>Bachata</strong>, <strong>Kizomba</strong>, <strong>Latin</strong>, <strong>Zouk</strong>, <strong>Tango</strong> – samt workshops, classes og social events i København og omegn.
-      <div class="examples">
-        <span class="example">• "salsa i aften"</span>
-        <span class="example">• "bachata workshop"</span>
-        <span class="example">• "kizomba på lørdag"</span>
-      </div>
-    </div>
-    <div class="message bot">
-      <strong>Indsend event</strong><br>
-      Kender du et event, der mangler? Skriv "indsend event" – så hjælper du med at holde DanceMap opdateret.
-    </div>
-    <div class="message bot">
-      Hvad vil du gerne finde i dag?
+      Hej og velkommen til DanceMap! Her finder du salsa, bachata, kizomba og andre danse-events i København. Hvad leder du efter?
     </div>
   </div>
 
@@ -285,7 +261,7 @@
   </button>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycby3UJHM83amA1WpVV3Tp4e4GxkEYxMEDTJpwTn1NACJ0nQFQ_D0wRJcDGcIWRs7LKvA/exec';
+    const API_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
     const chat = document.getElementById('chat');
     const input = document.getElementById('input');
     const send = document.getElementById('send');
@@ -330,7 +306,7 @@
         addMessage(data.reply || 'Fejl - prøv igen.');
       } catch (e) {
         hideTyping();
-        if (API_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+        if (API_URL === 'https://script.google.com/macros/s/AKfycby3UJHM83amA1WpVV3Tp4e4GxkEYxMEDTJpwTn1NACJ0nQFQ_D0wRJcDGcIWRs7LKvA/exec') {
           addMessage('**Demo mode** - Indsæt din Apps Script URL for at aktivere.');
         } else {
           addMessage('Kunne ikke forbinde. Prøv igen.');
