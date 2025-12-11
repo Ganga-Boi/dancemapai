@@ -1198,6 +1198,7 @@ Adresse: Nyelandsvej 75A, 2000 Frederiksberg"></textarea>
                 adresse: null,
                 by: null,
                 pris: null,
+                arrangoer: null,
                 link: null
             };
 
@@ -1243,7 +1244,7 @@ Adresse: Nyelandsvej 75A, 2000 Frederiksberg"></textarea>
             }
 
             // === TID PARSING ===
-            // "kl. 21:00", "21.00", "kl 21", "21:00-23:00"
+            // "kl. 21:00", "21.00", "kl 21", "21:00-23:00", "19:30 – Doors open", "21:00–01:00"
             const timeMatch = text.match(/kl\.?\s*(\d{1,2})[:\.]?(\d{2})?\s*(?:[-–]\s*(\d{1,2})[:\.]?(\d{2})?)?/i);
             if (timeMatch) {
                 const startHour = timeMatch[1].padStart(2, '0');
@@ -1256,11 +1257,31 @@ Adresse: Nyelandsvej 75A, 2000 Frederiksberg"></textarea>
                     parsed.sluttid = `${endHour}:${endMin}`;
                 }
             } else {
-                // Fallback: bare "21:00"
+                // Try "19:30 – Doors" or "21:00–01:00" pattern
+                const programTimeMatch = text.match(/(\d{1,2}):(\d{2})\s*[-–]/);
+                if (programTimeMatch) {
+                    parsed.starttid = `${programTimeMatch[1].padStart(2, '0')}:${programTimeMatch[2]}`;
+                }
+                // Look for end time like "–01:00" or "-23:00"
+                const endTimeMatch = text.match(/[-–]\s*(\d{1,2}):(\d{2})\s*[-–]?\s*(?:social|dancing|party|fest)/i);
+                if (endTimeMatch) {
+                    parsed.sluttid = `${endTimeMatch[1].padStart(2, '0')}:${endTimeMatch[2]}`;
+                }
+            }
+            
+            // Fallback: bare "21:00"
+            if (!parsed.starttid) {
                 const simpleTime = text.match(/(\d{1,2}):(\d{2})/);
                 if (simpleTime) {
                     parsed.starttid = `${simpleTime[1].padStart(2, '0')}:${simpleTime[2]}`;
                 }
+            }
+
+            // === ARRANGØR PARSING ===
+            // "Begivenhed af X", "Event by X", "Hosted by X"
+            const arrangorMatch = text.match(/(?:begivenhed af|event by|hosted by|arrangør[:\s]*|organizer[:\s]*)\s*([^\n,]+)/i);
+            if (arrangorMatch) {
+                parsed.arrangoer = arrangorMatch[1].trim();
             }
 
             // === DANSETYPE PARSING ===
@@ -1342,6 +1363,33 @@ Adresse: Nyelandsvej 75A, 2000 Frederiksberg"></textarea>
             const linkMatch = text.match(/(https?:\/\/[^\s]+)/i);
             if (linkMatch) {
                 parsed.link = linkMatch[1];
+                
+                // Try to extract date from URL (common in booking systems like bookwhen)
+                // Pattern: 20251227 (YYYYMMDD format in URL, possibly followed by time like 134500)
+                if (!parsed.dato) {
+                    // Match YYYYMMDD possibly followed by HHMMSS
+                    const urlDateMatch = linkMatch[1].match(/(20\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])(\d{6})?/);
+                    if (urlDateMatch) {
+                        parsed.dato = `${urlDateMatch[1]}-${urlDateMatch[2]}-${urlDateMatch[3]}`;
+                    }
+                }
+            }
+
+            // === PRIS PARSING (extra patterns for English) ===
+            if (!parsed.pris) {
+                // "Entry: 60 DKK", "60 kr", "60 DKK"
+                const pricePatterns = [
+                    /entry[:\s]*(\d+)\s*(?:kr|dkk)/i,
+                    /(\d+)\s*dkk/i,
+                    /pris[:\s]*(\d+)/i
+                ];
+                for (const pattern of pricePatterns) {
+                    const match = text.match(pattern);
+                    if (match) {
+                        parsed.pris = match[1] + ' kr';
+                        break;
+                    }
+                }
             }
 
             // === UDFYLD FORMULAR ===
@@ -1389,6 +1437,10 @@ Adresse: Nyelandsvej 75A, 2000 Frederiksberg"></textarea>
             }
             if (parsed.pris) {
                 document.getElementById('pris').value = parsed.pris;
+                filledCount++;
+            }
+            if (parsed.arrangoer) {
+                document.getElementById('arrangoer').value = parsed.arrangoer;
                 filledCount++;
             }
             if (parsed.link) {
