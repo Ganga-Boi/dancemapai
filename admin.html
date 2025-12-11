@@ -1310,12 +1310,23 @@ Adresse: Nyelandsvej 75A, 2000 Frederiksberg"></textarea>
             }
 
             // === PRIS PARSING ===
-            const priceMatch = text.match(/(\d+)\s*kr\.?|pris[:\s]+(\d+)|gratis|free|fri\s+entr[ée]/i);
-            if (priceMatch) {
-                if (lower.includes('gratis') || lower.includes('free') || lower.includes('fri entr')) {
-                    parsed.pris = 'Gratis';
-                } else {
-                    parsed.pris = (priceMatch[1] || priceMatch[2]) + ' kr';
+            // Patterns: "60 kr", "60 DKK", "Entry: 60 DKK", "Pris: 100", "gratis"
+            if (lower.includes('gratis') || lower.includes('free') || lower.includes('fri entr')) {
+                parsed.pris = 'Gratis';
+            } else {
+                const pricePatterns = [
+                    /entry[:\s]*(\d+)\s*(?:kr|dkk)/i,      // "Entry: 60 DKK"
+                    /(\d+)\s*dkk/i,                         // "60 DKK"
+                    /(\d+)\s*kr\.?/i,                       // "60 kr"
+                    /pris[:\s]*(\d+)/i,                     // "Pris: 100"
+                    /price[:\s]*(\d+)/i                     // "Price: 100"
+                ];
+                for (const pattern of pricePatterns) {
+                    const match = text.match(pattern);
+                    if (match && match[1]) {
+                        parsed.pris = match[1] + ' kr';
+                        break;
+                    }
                 }
             }
 
@@ -1360,37 +1371,35 @@ Adresse: Nyelandsvej 75A, 2000 Frederiksberg"></textarea>
             }
 
             // === LINK PARSING ===
-            const linkMatch = text.match(/(https?:\/\/[^\s]+)/i);
+            const linkMatch = text.match(/(https?:\/\/[^\s\n]+)/i);
             if (linkMatch) {
                 parsed.link = linkMatch[1];
                 
-                // Try to extract date from URL (common in booking systems like bookwhen)
-                // Pattern: 20251227 (YYYYMMDD format in URL, possibly followed by time like 134500)
+                // Try to extract date from URL (common in booking systems like bookwhen, eventbrite)
+                // Pattern: 20251227 (YYYYMMDD format), -2025-12-27, or similar
                 if (!parsed.dato) {
-                    // Match YYYYMMDD possibly followed by HHMMSS
-                    const urlDateMatch = linkMatch[1].match(/(20\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])(\d{6})?/);
-                    if (urlDateMatch) {
-                        parsed.dato = `${urlDateMatch[1]}-${urlDateMatch[2]}-${urlDateMatch[3]}`;
+                    const url = linkMatch[1];
+                    
+                    // Try YYYYMMDD format (with optional time suffix)
+                    const yyyymmdd = url.match(/(202[4-9])(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])/);
+                    if (yyyymmdd) {
+                        parsed.dato = `${yyyymmdd[1]}-${yyyymmdd[2]}-${yyyymmdd[3]}`;
+                        console.log('Found date in URL (YYYYMMDD):', parsed.dato);
+                    }
+                    
+                    // Try YYYY-MM-DD format
+                    if (!parsed.dato) {
+                        const isoDate = url.match(/(202[4-9])-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])/);
+                        if (isoDate) {
+                            parsed.dato = `${isoDate[1]}-${isoDate[2]}-${isoDate[3]}`;
+                            console.log('Found date in URL (ISO):', parsed.dato);
+                        }
                     }
                 }
             }
-
-            // === PRIS PARSING (extra patterns for English) ===
-            if (!parsed.pris) {
-                // "Entry: 60 DKK", "60 kr", "60 DKK"
-                const pricePatterns = [
-                    /entry[:\s]*(\d+)\s*(?:kr|dkk)/i,
-                    /(\d+)\s*dkk/i,
-                    /pris[:\s]*(\d+)/i
-                ];
-                for (const pattern of pricePatterns) {
-                    const match = text.match(pattern);
-                    if (match) {
-                        parsed.pris = match[1] + ' kr';
-                        break;
-                    }
-                }
-            }
+            
+            // Debug: Log what was parsed
+            console.log('Parsed data:', parsed);
 
             // === UDFYLD FORMULAR ===
             let filledCount = 0;
