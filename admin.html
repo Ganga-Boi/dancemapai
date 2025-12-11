@@ -189,6 +189,63 @@
             color: var(--text-primary);
         }
 
+        .quick-paste-section {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .quick-paste-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary-light);
+        }
+
+        .quick-paste-section textarea {
+            width: 100%;
+            min-height: 120px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        .quick-paste-section textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .quick-paste-section textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider span {
+            padding: 0 16px;
+        }
+
         .btn {
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             border: none;
@@ -534,6 +591,29 @@
                 <h2 class="card-title">📝 Tilføj Nyt Event</h2>
                 <form id="eventForm" onsubmit="submitEvent(event)">
                     <input type="hidden" id="eventId" name="eventId" value="">
+                    
+                    <!-- Quick Paste Section -->
+                    <div class="quick-paste-section">
+                        <h3 class="quick-paste-title">⚡ Quick Paste</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 12px;">
+                            Kopier tekst fra Facebook, email eller flyer og indsæt her:
+                        </p>
+                        <textarea id="quickPasteInput" placeholder="Indsæt event-tekst her...
+
+Eksempel:
+Salsa Social @ Kedelhallen
+Fredag d. 20. december kl. 21:00
+Pris: 100 kr
+Adresse: Nyelandsvej 75A, 2000 Frederiksberg"></textarea>
+                        <button type="button" class="btn btn-secondary" onclick="parseQuickPaste()" style="margin-top: 10px;">
+                            🔍 Udtræk data
+                        </button>
+                    </div>
+                    
+                    <div class="divider">
+                        <span>eller udfyld manuelt</span>
+                    </div>
+                    
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="dato">Dato *</label>
@@ -595,12 +675,16 @@
                             <input type="url" id="link" name="link" placeholder="https://...">
                         </div>
                         <div class="form-group full-width">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="recurring" name="recurring">
-                                <span class="checkbox-text">♻️ Gentages hver uge (samme ugedag)</span>
-                            </label>
+                            <label for="recurring">Gentagelse</label>
+                            <select id="recurring" name="recurring">
+                                <option value="">Ingen gentagelse (enkelt event)</option>
+                                <option value="weekly">♻️ Hver uge (samme ugedag)</option>
+                                <option value="biweekly">🔄 Hver anden uge</option>
+                                <option value="weekend">🎉 Hver weekend (lør + søn)</option>
+                                <option value="monthly">📅 Hver måned (samme dato)</option>
+                            </select>
                             <small style="color: var(--text-muted); margin-top: 4px; display: block;">
-                                Aktivér dette for faste ugentlige events (fx "Latin Fridays" hver fredag)
+                                Vælg gentagelsesmønster for faste events
                             </small>
                         </div>
                     </div>
@@ -731,7 +815,7 @@
                 pris: document.getElementById('pris').value,
                 arrangoer: document.getElementById('arrangoer').value,
                 link: document.getElementById('link').value,
-                recurring: document.getElementById('recurring').checked,
+                recurring: document.getElementById('recurring').value || '',
                 status: isUpdate ? 'approved' : 'pending'
             };
             
@@ -745,11 +829,17 @@
                     body: JSON.stringify(formData)
                 });
                 
-                const isRecurring = formData.recurring ? ' (gentages hver uge)' : '';
+                const recurringLabels = {
+                    'weekly': ' (gentages hver uge)',
+                    'biweekly': ' (gentages hver anden uge)',
+                    'weekend': ' (gentages hver weekend)',
+                    'monthly': ' (gentages hver måned)'
+                };
+                const recurringMsg = recurringLabels[formData.recurring] || '';
                 if (isUpdate) {
-                    showAlert('Event opdateret og godkendt! 🎉' + isRecurring, 'success');
+                    showAlert('Event opdateret og godkendt! 🎉' + recurringMsg, 'success');
                 } else {
-                    showAlert('Event indsendt til godkendelse! 🎉' + isRecurring, 'success');
+                    showAlert('Event indsendt til godkendelse! 🎉' + recurringMsg, 'success');
                 }
                 clearForm();
                 
@@ -772,6 +862,7 @@
             document.getElementById('eventForm').reset();
             document.getElementById('eventId').value = '';
             document.getElementById('starttid').value = '20:00';
+            document.getElementById('recurring').value = '';
             
             // Set date to tomorrow
             const tomorrow = new Date();
@@ -958,8 +1049,18 @@
             }
             
             pendingList.innerHTML = events.map((event, index) => {
-                const isRecurring = event.Recurring === true || event.Recurring === "TRUE" || event.Recurring === "true";
-                const recurringBadge = isRecurring ? '<span class="status-badge status-recurring">♻️ Ugentlig</span>' : '';
+                const recurringValue = event.Recurring || '';
+                const recurringLabels = {
+                    'weekly': '♻️ Ugentlig',
+                    'biweekly': '🔄 Hver 2. uge',
+                    'weekend': '🎉 Weekend',
+                    'monthly': '📅 Månedlig',
+                    'true': '♻️ Ugentlig',
+                    'TRUE': '♻️ Ugentlig'
+                };
+                const recurringBadge = recurringLabels[recurringValue] 
+                    ? `<span class="status-badge status-recurring">${recurringLabels[recurringValue]}</span>` 
+                    : '';
                 const eventDataJson = encodeURIComponent(JSON.stringify(event));
                 return `
                 <div class="event-item">
@@ -1049,8 +1150,13 @@
                 document.getElementById('arrangoer').value = event.Arrangør || event.arrangoer || '';
                 document.getElementById('link').value = event.Link || event.link || '';
                 
-                const isRecurring = event.Recurring === true || event.Recurring === "TRUE" || event.Recurring === "true";
-                document.getElementById('recurring').checked = isRecurring;
+                const isRecurring = event.Recurring || '';
+                // Handle legacy boolean values
+                let recurringValue = isRecurring;
+                if (isRecurring === true || isRecurring === 'TRUE' || isRecurring === 'true') {
+                    recurringValue = 'weekly';
+                }
+                document.getElementById('recurring').value = recurringValue;
                 
                 // Change button text
                 document.getElementById('submitBtn').innerHTML = '<span>✅ Opdater & Godkend</span>';
@@ -1073,6 +1179,231 @@
             tomorrow.setDate(tomorrow.getDate() + 1);
             document.getElementById('dato').value = tomorrow.toISOString().split('T')[0];
         });
+
+        // Quick Paste Parser
+        function parseQuickPaste() {
+            const text = document.getElementById('quickPasteInput').value.trim();
+            if (!text) {
+                showAlert('Indsæt noget tekst først', 'error');
+                return;
+            }
+
+            const lower = text.toLowerCase();
+            const parsed = {
+                dato: null,
+                starttid: null,
+                sluttid: null,
+                dansetype: null,
+                sted: null,
+                adresse: null,
+                by: null,
+                pris: null,
+                link: null
+            };
+
+            // === DATO PARSING ===
+            // "20. december", "d. 20 december", "20/12", "2024-12-20"
+            const datePatterns = [
+                /(\d{1,2})\.?\s*(jan|feb|mar|apr|maj|jun|jul|aug|sep|okt|nov|dec|januar|februar|marts|april|maj|juni|juli|august|september|oktober|november|december)\s*(\d{4})?/i,
+                /(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.]?(\d{2,4})?/,
+                /(\d{4})-(\d{2})-(\d{2})/
+            ];
+
+            const monthMap = {
+                'jan': '01', 'januar': '01', 'feb': '02', 'februar': '02',
+                'mar': '03', 'marts': '03', 'apr': '04', 'april': '04',
+                'maj': '05', 'jun': '06', 'juni': '06', 'jul': '07', 'juli': '07',
+                'aug': '08', 'august': '08', 'sep': '09', 'september': '09',
+                'okt': '10', 'oktober': '10', 'nov': '11', 'november': '11',
+                'dec': '12', 'december': '12'
+            };
+
+            for (const pattern of datePatterns) {
+                const match = text.match(pattern);
+                if (match) {
+                    if (match[0].includes('-') && match[0].length === 10) {
+                        // ISO format
+                        parsed.dato = match[0];
+                    } else if (monthMap[match[2]?.toLowerCase()]) {
+                        // "20. december 2024"
+                        const day = match[1].padStart(2, '0');
+                        const month = monthMap[match[2].toLowerCase()];
+                        const year = match[3] || new Date().getFullYear();
+                        parsed.dato = `${year}-${month}-${day}`;
+                    } else if (match[1] && match[2]) {
+                        // "20/12" or "20-12-2024"
+                        const day = match[1].padStart(2, '0');
+                        const month = match[2].padStart(2, '0');
+                        let year = match[3] || new Date().getFullYear();
+                        if (year.toString().length === 2) year = '20' + year;
+                        parsed.dato = `${year}-${month}-${day}`;
+                    }
+                    break;
+                }
+            }
+
+            // === TID PARSING ===
+            // "kl. 21:00", "21.00", "kl 21", "21:00-23:00"
+            const timeMatch = text.match(/kl\.?\s*(\d{1,2})[:\.]?(\d{2})?\s*(?:[-–]\s*(\d{1,2})[:\.]?(\d{2})?)?/i);
+            if (timeMatch) {
+                const startHour = timeMatch[1].padStart(2, '0');
+                const startMin = timeMatch[2] || '00';
+                parsed.starttid = `${startHour}:${startMin}`;
+                
+                if (timeMatch[3]) {
+                    const endHour = timeMatch[3].padStart(2, '0');
+                    const endMin = timeMatch[4] || '00';
+                    parsed.sluttid = `${endHour}:${endMin}`;
+                }
+            } else {
+                // Fallback: bare "21:00"
+                const simpleTime = text.match(/(\d{1,2}):(\d{2})/);
+                if (simpleTime) {
+                    parsed.starttid = `${simpleTime[1].padStart(2, '0')}:${simpleTime[2]}`;
+                }
+            }
+
+            // === DANSETYPE PARSING ===
+            const danceTypes = [
+                { keywords: ['salsa', 'rueda'], value: 'Salsa' },
+                { keywords: ['bachata', 'sensual'], value: 'Bachata' },
+                { keywords: ['kizomba', 'kiz', 'semba'], value: 'Kizomba' },
+                { keywords: ['zouk'], value: 'Zouk' },
+                { keywords: ['tango'], value: 'Tango' },
+                { keywords: ['latin mix', 'latin party'], value: 'Latin Mix' },
+                { keywords: ['workshop', 'kursus', 'class'], value: 'Workshop' },
+                { keywords: ['social', 'fest', 'party'], value: 'Social' }
+            ];
+
+            const foundTypes = [];
+            for (const type of danceTypes) {
+                if (type.keywords.some(kw => lower.includes(kw))) {
+                    foundTypes.push(type.value);
+                }
+            }
+
+            if (foundTypes.includes('Salsa') && foundTypes.includes('Bachata')) {
+                parsed.dansetype = 'Salsa & Bachata';
+            } else if (foundTypes.length > 0) {
+                parsed.dansetype = foundTypes[0];
+            }
+
+            // === PRIS PARSING ===
+            const priceMatch = text.match(/(\d+)\s*kr\.?|pris[:\s]+(\d+)|gratis|free|fri\s+entr[ée]/i);
+            if (priceMatch) {
+                if (lower.includes('gratis') || lower.includes('free') || lower.includes('fri entr')) {
+                    parsed.pris = 'Gratis';
+                } else {
+                    parsed.pris = (priceMatch[1] || priceMatch[2]) + ' kr';
+                }
+            }
+
+            // === STED/VENUE PARSING ===
+            const knownVenues = [
+                { name: 'Kedelhallen', address: 'Nyelandsvej 75A', city: 'Frederiksberg' },
+                { name: 'Old Irish Pub', address: 'Vesterbrogade 2D', city: 'København' },
+                { name: 'The Old Irish', address: 'Vesterbrogade 2D', city: 'København' },
+                { name: 'Bachata House', address: '', city: 'København' },
+                { name: 'Copenhagen Salsa Academy', address: '', city: 'København' },
+                { name: 'CSA', address: '', city: 'København' },
+                { name: 'Dansens Hus', address: '', city: 'København' },
+                { name: 'Vega', address: 'Enghavevej 40', city: 'København' },
+                { name: 'Cubansk Danseskole', address: 'Blegdamsvej 104', city: 'København' },
+                { name: 'Havana Social', address: '', city: 'København' }
+            ];
+
+            for (const venue of knownVenues) {
+                if (lower.includes(venue.name.toLowerCase())) {
+                    parsed.sted = venue.name;
+                    if (venue.address) parsed.adresse = venue.address;
+                    if (venue.city) parsed.by = venue.city;
+                    break;
+                }
+            }
+
+            // === ADRESSE PARSING (hvis ikke fundet via venue) ===
+            if (!parsed.adresse) {
+                const addressMatch = text.match(/([A-Za-zæøåÆØÅ]+(?:vej|gade|torv|plads|allé|stræde|boulevard)\s+\d+[A-Za-z]?)/i);
+                if (addressMatch) {
+                    parsed.adresse = addressMatch[1];
+                }
+            }
+
+            // === POSTNUMMER & BY ===
+            const zipMatch = text.match(/(\d{4})\s+(København|Frederiksberg|Amager|Valby|Østerbro|Nørrebro|Vesterbro)/i);
+            if (zipMatch) {
+                if (!parsed.adresse) {
+                    parsed.adresse = (parsed.adresse || '') + ', ' + zipMatch[0];
+                }
+                parsed.by = zipMatch[2];
+            }
+
+            // === LINK PARSING ===
+            const linkMatch = text.match(/(https?:\/\/[^\s]+)/i);
+            if (linkMatch) {
+                parsed.link = linkMatch[1];
+            }
+
+            // === UDFYLD FORMULAR ===
+            let filledCount = 0;
+
+            if (parsed.dato) {
+                document.getElementById('dato').value = parsed.dato;
+                filledCount++;
+            }
+            if (parsed.starttid) {
+                document.getElementById('starttid').value = parsed.starttid;
+                filledCount++;
+            }
+            if (parsed.sluttid) {
+                document.getElementById('sluttid').value = parsed.sluttid;
+                filledCount++;
+            }
+            if (parsed.dansetype) {
+                const select = document.getElementById('dansetype');
+                for (let option of select.options) {
+                    if (option.value === parsed.dansetype || option.value.includes(parsed.dansetype)) {
+                        select.value = option.value;
+                        filledCount++;
+                        break;
+                    }
+                }
+            }
+            if (parsed.sted) {
+                document.getElementById('sted').value = parsed.sted;
+                filledCount++;
+            }
+            if (parsed.adresse) {
+                document.getElementById('adresse').value = parsed.adresse.replace(/^,\s*/, '');
+                filledCount++;
+            }
+            if (parsed.by) {
+                const bySelect = document.getElementById('by');
+                for (let option of bySelect.options) {
+                    if (option.value.toLowerCase() === parsed.by.toLowerCase()) {
+                        bySelect.value = option.value;
+                        filledCount++;
+                        break;
+                    }
+                }
+            }
+            if (parsed.pris) {
+                document.getElementById('pris').value = parsed.pris;
+                filledCount++;
+            }
+            if (parsed.link) {
+                document.getElementById('link').value = parsed.link;
+                filledCount++;
+            }
+
+            // Feedback
+            if (filledCount > 0) {
+                showAlert(`✅ ${filledCount} felter udfyldt automatisk! Tjek og udfyld resten.`, 'success');
+                document.getElementById('quickPasteInput').value = '';
+            } else {
+                showAlert('Kunne ikke finde data i teksten. Prøv et andet format.', 'error');
+            }
+        }
     </script>
 </body>
 </html>
