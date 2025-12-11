@@ -824,6 +824,9 @@ Adresse: Nyelandsvej 75A, 2000 Frederiksberg"></textarea>
                 // Using JSONP for cross-origin (same pattern as loadPendingEvents)
                 const callbackName = 'submit_callback_' + Date.now();
                 
+                console.log('📤 Submitting event:', formData);
+                console.log('📍 URL:', SCRIPT_URL);
+                
                 const promise = new Promise((resolve, reject) => {
                     window[callbackName] = (data) => {
                         delete window[callbackName];
@@ -845,10 +848,16 @@ Adresse: Nyelandsvej 75A, 2000 Frederiksberg"></textarea>
                 
                 const script = document.createElement('script');
                 script.src = `${SCRIPT_URL}?${params.toString()}`;
+                console.log('🔗 Full request URL:', script.src);
+                script.onerror = (e) => {
+                    console.error('❌ Script load error:', e);
+                };
                 document.body.appendChild(script);
                 
                 const data = await promise;
                 script.remove();
+                
+                console.log('📬 Server response:', data);
                 
                 if (data.success) {
                     const recurringLabels = {
