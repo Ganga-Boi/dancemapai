@@ -224,7 +224,7 @@
                 arrangoer: document.getElementById('arrangoer').value,
                 link: document.getElementById('link').value,
                 recurring: document.getElementById('recurring').value || '',
-                status: isUpdate ? 'approved' : 'pending'
+                status: 'approved'  // Always approve directly
             };
             
             try {
