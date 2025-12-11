@@ -804,7 +804,8 @@ Adresse: Nyelandsvej 75A, 2000 Frederiksberg"></textarea>
             const isUpdate = eventId !== '';
             
             const formData = {
-                eventId: eventId || null,
+                action: 'submitEvent',
+                eventId: eventId || '',
                 dato: document.getElementById('dato').value,
                 starttid: document.getElementById('starttid').value,
                 sluttid: document.getElementById('sluttid').value,
@@ -820,41 +821,67 @@ Adresse: Nyelandsvej 75A, 2000 Frederiksberg"></textarea>
             };
             
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
+                // Using JSONP for cross-origin (same pattern as loadPendingEvents)
+                const callbackName = 'submit_callback_' + Date.now();
+                
+                const promise = new Promise((resolve, reject) => {
+                    window[callbackName] = (data) => {
+                        delete window[callbackName];
+                        resolve(data);
+                    };
+                    
+                    setTimeout(() => {
+                        delete window[callbackName];
+                        reject(new Error('Timeout'));
+                    }, 15000);
                 });
                 
-                const recurringLabels = {
-                    'weekly': ' (gentages hver uge)',
-                    'biweekly': ' (gentages hver anden uge)',
-                    'weekend': ' (gentages hver weekend)',
-                    'monthly': ' (gentages hver måned)'
-                };
-                const recurringMsg = recurringLabels[formData.recurring] || '';
-                if (isUpdate) {
-                    showAlert('Event opdateret og godkendt! 🎉' + recurringMsg, 'success');
-                } else {
-                    showAlert('Event indsendt til godkendelse! 🎉' + recurringMsg, 'success');
+                // Build URL with all parameters
+                const params = new URLSearchParams();
+                for (const [key, value] of Object.entries(formData)) {
+                    params.append(key, value);
                 }
-                clearForm();
+                params.append('callback', callbackName);
                 
-                // Refresh pending list if we just approved an event
-                if (isUpdate) {
-                    loadPendingEvents();
+                const script = document.createElement('script');
+                script.src = `${SCRIPT_URL}?${params.toString()}`;
+                document.body.appendChild(script);
+                
+                const data = await promise;
+                script.remove();
+                
+                if (data.success) {
+                    const recurringLabels = {
+                        'weekly': ' (gentages hver uge)',
+                        'biweekly': ' (gentages hver anden uge)',
+                        'weekend': ' (gentages hver weekend)',
+                        'monthly': ' (gentages hver måned)'
+                    };
+                    const recurringMsg = recurringLabels[formData.recurring] || '';
+                    if (isUpdate) {
+                        showAlert('Event opdateret og godkendt! 🎉' + recurringMsg, 'success');
+                    } else {
+                        showAlert('Event indsendt til godkendelse! 🎉' + recurringMsg, 'success');
+                    }
+                    clearForm();
+                    
+                    // Refresh pending list if we just approved an event
+                    if (isUpdate) {
+                        loadPendingEvents();
+                    }
+                } else {
+                    showAlert('Fejl: ' + (data.error || 'Kunne ikke gemme event'), 'error');
                 }
                 
             } catch (error) {
-                console.error('Error:', error);
-                showAlert('Der opstod en fejl. Prøv igen.', 'error');
+                console.error('Submit error:', error);
+                showAlert('Netværksfejl - prøv igen', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = isUpdate 
+                    ? '<span>✅ Opdater & Godkend</span>' 
+                    : '<span>📤 Indsend Event</span>';
             }
-            
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<span>📤 Indsend Event</span>';
         }
 
         // Clear form - reset to tomorrow's date
