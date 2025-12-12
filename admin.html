@@ -6,7 +6,562 @@
     <title>DanceMap Admin v1.4.8</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DanceMap Admin v1.4.8</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
+            --primary: #667eea; --primary-dark: #5a67d8; --secondary: #ed64a6;
+            --bg-dark: #0f0f23; --bg-card: #1a1a2e; --bg-input: #16213e;
+            --text-primary: #ffffff; --text-secondary: #a0aec0;
+            --border: #2d3748; --success: #48bb78; --error: #fc8181;
+            --radius: 16px; --radius-sm: 12px;
+        }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: linear-gradient(135deg, var(--bg-dark), #1a1a2e); color: var(--text-primary); min-height: 100vh; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 2rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { padding: 12px 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; font-weight: 500; }
+        .tab-btn.active { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-color: transparent; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .quick-paste { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px; }
+        .quick-paste-title { font-weight: 600; color: var(--primary); margin-bottom: 8px; }
+        .quick-paste textarea { width: 100%; min-height: 120px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text-primary); font-family: inherit; resize: vertical; margin-top: 8px; }
+        .quick-paste textarea:focus { outline: none; border-color: var(--primary); }
+        .divider { display: flex; align-items: center; margin: 24px 0; color: #718096; font-size: 0.85rem; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .divider span { padding: 0 16px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-group label { font-size: 0.9rem; color: var(--text-secondary); }
+        .form-group input, .form-group select { padding: 12px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 0.95rem; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
+        .required { color: var(--error); }
+        .btn { padding: 14px 28px; border-radius: var(--radius-sm); font-size: 1rem; font-weight: 600; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4); }
+        .btn-secondary { background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-small { padding: 8px 16px; font-size: 0.85rem; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-group { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+        .alert { padding: 14px 18px; border-radius: var(--radius-sm); margin-bottom: 16px; }
+        .alert-success { background: rgba(72, 187, 120, 0.15); border: 1px solid var(--success); color: var(--success); }
+        .alert-error { background: rgba(252, 129, 129, 0.15); border: 1px solid var(--error); color: var(--error); }
+        .alert-info { background: rgba(102, 126, 234, 0.15); border: 1px solid var(--primary); color: var(--primary); }
+        .event-item { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 12px; }
+        .event-title { font-weight: 600; margin-bottom: 6px; }
+        .event-details { font-size: 0.85rem; color: var(--text-secondary); }
+        .loading-spinner { width: 20px; height: 20px; border: 2px solid transparent; border-top-color: currentColor; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎭 DanceMap Admin v1.4.8</h1>
+            <p style="color: var(--text-secondary);">Events går direkte til chatbot</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('submit')">📝 Tilføj Event</button>
+            <button class="tab-btn" onclick="switchTab('pending')">⏳ Ventende (<span id="pendingCount">0</span>)</button>
+        </div>
+        
+        <div id="alertContainer"></div>
+
+        <div id="submitTab" class="tab-content active">
+            <div class="card">
+                <form id="eventForm" onsubmit="submitEvent(event)">
+                    <input type="hidden" id="eventId" value="">
+                    
+                    <div class="quick-paste">
+                        <div class="quick-paste-title">⚡ Quick Paste - bare indsæt!</div>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem;">Kopier tekst fra Facebook og indsæt her - felterne udfyldes automatisk:</p>
+                        <textarea id="quickPasteInput" placeholder="Indsæt event-tekst her..." onpaste="setTimeout(parseQuickPaste, 100)"></textarea>
+                    </div>
+                    
+                    <div class="divider"><span>eller udfyld manuelt</span></div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Dato <span class="required">*</span></label>
+                            <input type="date" id="dato" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Starttid <span class="required">*</span></label>
+                            <input type="time" id="starttid" value="20:00" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Sluttid</label>
+                            <input type="time" id="sluttid">
+                        </div>
+                        <div class="form-group">
+                            <label>Dansetype <span class="required">*</span></label>
+                            <select id="dansetype" required>
+                                <option value="">Vælg...</option>
+                                <option value="Salsa">Salsa</option>
+                                <option value="Bachata">Bachata</option>
+                                <option value="Salsa & Bachata">Salsa & Bachata</option>
+                                <option value="Kizomba">Kizomba</option>
+                                <option value="Latin Mix">Latin Mix</option>
+                                <option value="Zouk">Zouk</option>
+                                <option value="Tango">Tango</option>
+                                <option value="Workshop">Workshop</option>
+                                <option value="Social">Social / Party</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Sted <span class="required">*</span></label>
+                            <input type="text" id="sted" placeholder="Fx: Kedelhallen" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Adresse</label>
+                            <input type="text" id="adresse" placeholder="Fx: Nyelandsvej 75A">
+                        </div>
+                        <div class="form-group">
+                            <label>By</label>
+                            <select id="by">
+                                <option value="København">København</option>
+                                <option value="Frederiksberg">Frederiksberg</option>
+                                <option value="Vanløse">Vanløse</option>
+                                <option value="Nørrebro">Nørrebro</option>
+                                <option value="Vesterbro">Vesterbro</option>
+                                <option value="Østerbro">Østerbro</option>
+                                <option value="Amager">Amager</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Pris</label>
+                            <input type="text" id="pris" placeholder="Fx: 80 kr">
+                        </div>
+                        <div class="form-group">
+                            <label>Arrangør</label>
+                            <input type="text" id="arrangoer" placeholder="Navn">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Link</label>
+                            <input type="url" id="link" placeholder="https://...">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Gentagelse</label>
+                            <select id="recurring">
+                                <option value="">Ingen</option>
+                                <option value="weekly">Hver uge</option>
+                                <option value="biweekly">Hver anden uge</option>
+                                <option value="monthly">Hver måned</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">📤 Indsend Event</button>
+                        <button type="button" class="btn btn-secondary" onclick="clearForm()">🗑️ Ryd</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="pendingTab" class="tab-content">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+                    <h3>Ventende Events</h3>
+                    <button class="btn btn-secondary btn-small" onclick="loadPendingEvents()">🔄 Opdater</button>
+                </div>
+                <div id="pendingList"><div class="alert alert-info">Klik for at indlæse</div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3UJHM83amA1WpVV3Tp4e4GxkEYxMEDTJpwTn1NACJ0nQFQ_D0wRJcDGcIWRs7LKvA/exec";
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+            document.getElementById(`${tab}Tab`).classList.add('active');
+            if (tab === 'pending') loadPendingEvents();
+        }
+
+        function showAlert(msg, type = 'info') {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = msg;
+            document.getElementById('alertContainer').appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        async function submitEvent(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> Sender...';
+            
+            const data = {
+                action: 'submitEvent',
+                dato: document.getElementById('dato').value,
+                starttid: document.getElementById('starttid').value,
+                sluttid: document.getElementById('sluttid').value,
+                dansetype: document.getElementById('dansetype').value,
+                sted: document.getElementById('sted').value,
+                adresse: document.getElementById('adresse').value,
+                by: document.getElementById('by').value,
+                pris: document.getElementById('pris').value,
+                arrangoer: document.getElementById('arrangoer').value,
+                link: document.getElementById('link').value,
+                recurring: document.getElementById('recurring').value,
+                status: 'approved'
+            };
+            
+            try {
+                const cb = 'cb_' + Date.now();
+                const promise = new Promise((resolve, reject) => {
+                    window[cb] = d => { delete window[cb]; resolve(d); };
+                    setTimeout(() => { delete window[cb]; reject(new Error('Timeout')); }, 15000);
+                });
+                
+                const params = new URLSearchParams(data);
+                params.append('callback', cb);
+                
+                const script = document.createElement('script');
+                script.src = `${SCRIPT_URL}?${params}`;
+                document.body.appendChild(script);
+                
+                const result = await promise;
+                script.remove();
+                
+                if (result.success) {
+                    showAlert('✅ Event tilføjet!', 'success');
+                    clearForm();
+                } else {
+                    showAlert('❌ Fejl: ' + (result.error || 'Ukendt'), 'error');
+                }
+            } catch (err) {
+                showAlert('❌ Netværksfejl - prøv igen', 'error');
+                console.error(err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '📤 Indsend Event';
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('eventForm').reset();
+            document.getElementById('starttid').value = '20:00';
+            document.getElementById('quickPasteInput').value = '';
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('dato').value = tomorrow.toISOString().split('T')[0];
+        }
+
+        async function loadPendingEvents() {
+            const list = document.getElementById('pendingList');
+            list.innerHTML = '<div class="alert alert-info">🔄 Indlæser...</div>';
+            
+            try {
+                const cb = 'pending_' + Date.now();
+                const promise = new Promise((resolve, reject) => {
+                    window[cb] = d => { delete window[cb]; resolve(d); };
+                    setTimeout(() => { delete window[cb]; reject(new Error('Timeout')); }, 10000);
+                });
+                
+                const script = document.createElement('script');
+                script.src = `${SCRIPT_URL}?action=getPending&callback=${cb}`;
+                document.body.appendChild(script);
+                
+                const data = await promise;
+                script.remove();
+                
+                if (data.success && data.events?.length > 0) {
+                    document.getElementById('pendingCount').textContent = data.events.length;
+                    list.innerHTML = data.events.map(e => `
+                        <div class="event-item">
+                            <div class="event-title">${e.Dansetype || 'Event'} @ ${e.Sted || '?'}</div>
+                            <div class="event-details">📅 ${e.Dato || '?'} kl. ${e.Starttid || '?'}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = '<div class="alert alert-info">📭 Ingen ventende</div>';
+                    document.getElementById('pendingCount').textContent = '0';
+                }
+            } catch (e) {
+                list.innerHTML = '<div class="alert alert-error">⚠️ Kunne ikke indlæse</div>';
+            }
+        }
+
+        // ============================================
+        // QUICK PASTE PARSER
+        // ============================================
+        function parseQuickPaste() {
+            const text = document.getElementById('quickPasteInput').value.trim();
+            if (!text) return;
+            
+            const lower = text.toLowerCase();
+            const parsed = {};
+            let filled = [];
+            
+            console.log('📋 Parsing text:', text.substring(0, 200) + '...');
+
+            // === DATO ===
+            const months = {jan:'01',feb:'02',mar:'03',apr:'04',maj:'05',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',okt:'10',oct:'10',nov:'11',dec:'12'};
+            const dateMatch = text.match(/(\d{1,2})\.?\s*(jan(?:uar)?|feb(?:ruar)?|mar(?:ts)?|apr(?:il)?|maj|may|jun[ie]?|jul[iy]?|aug(?:ust)?|sep(?:t(?:ember)?)?|okt(?:ober)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s*(\d{4})?/i);
+            if (dateMatch) {
+                const day = dateMatch[1].padStart(2, '0');
+                const monthKey = dateMatch[2].substring(0, 3).toLowerCase();
+                const month = months[monthKey];
+                const year = dateMatch[3] || new Date().getFullYear();
+                if (month) {
+                    parsed.dato = `${year}-${month}-${day}`;
+                    filled.push('dato');
+                }
+            }
+
+            // === STARTTID ===
+            // Pattern: "20:30 – Doors" eller "20.30 - Doors"
+            let startMatch = text.match(/(\d{1,2})[:\.](\d{2})\s*[-–—]\s*[Dd]oors/);
+            if (startMatch) {
+                parsed.starttid = `${startMatch[1].padStart(2, '0')}:${startMatch[2]}`;
+                filled.push('starttid');
+            }
+            
+            // Pattern: "Doors open 20:30"
+            if (!parsed.starttid) {
+                startMatch = text.match(/[Dd]oors?\s*[Oo]pen[:\s]*(\d{1,2})[:\.](\d{2})/);
+                if (startMatch) {
+                    parsed.starttid = `${startMatch[1].padStart(2, '0')}:${startMatch[2]}`;
+                    filled.push('starttid');
+                }
+            }
+            
+            // Pattern: "kl. 19.45" header
+            if (!parsed.starttid) {
+                startMatch = text.match(/kl\.?\s*(\d{1,2})[:\.](\d{2})/i);
+                if (startMatch) {
+                    parsed.starttid = `${startMatch[1].padStart(2, '0')}:${startMatch[2]}`;
+                    filled.push('starttid');
+                }
+            }
+            
+            // Pattern: "Dørene åbner kl. 19:45"
+            if (!parsed.starttid) {
+                startMatch = text.match(/[Dd]ørene?\s*åbner[:\s]*(?:kl\.?\s*)?(\d{1,2})[:\.](\d{2})/);
+                if (startMatch) {
+                    parsed.starttid = `${startMatch[1].padStart(2, '0')}:${startMatch[2]}`;
+                    filled.push('starttid');
+                }
+            }
+            
+            console.log('⏰ Starttid found:', parsed.starttid);
+
+            // === SLUTTID - Find ALL time ranges and take the LAST end time ===
+            const timeRangeRegex = /(\d{1,2})[:\.](\d{2})\s*[-–—]\s*(\d{1,2})[:\.](\d{2})/g;
+            const allRanges = [...text.matchAll(timeRangeRegex)];
+            console.log('🕐 Time ranges found:', allRanges.length);
+            
+            if (allRanges.length > 0) {
+                // Take the last range's end time (e.g., "21:45–02:00" → 02:00)
+                const lastRange = allRanges[allRanges.length - 1];
+                parsed.sluttid = `${lastRange[3].padStart(2, '0')}:${lastRange[4]}`;
+                filled.push('sluttid');
+                console.log('🏁 Sluttid from last range:', parsed.sluttid);
+            }
+
+            // === DANSETYPE ===
+            if (lower.includes('salsa') && lower.includes('bachata')) {
+                parsed.dansetype = 'Salsa & Bachata';
+                filled.push('dansetype');
+            } else if (lower.includes('salsa') || lower.includes('rueda') || lower.includes('timba') || lower.includes('son cubano')) {
+                parsed.dansetype = 'Salsa';
+                filled.push('dansetype');
+            } else if (lower.includes('bachata')) {
+                parsed.dansetype = 'Bachata';
+                filled.push('dansetype');
+            } else if (lower.includes('kizomba')) {
+                parsed.dansetype = 'Kizomba';
+                filled.push('dansetype');
+            } else if (lower.includes('zouk')) {
+                parsed.dansetype = 'Zouk';
+                filled.push('dansetype');
+            } else if (lower.includes('tango')) {
+                parsed.dansetype = 'Tango';
+                filled.push('dansetype');
+            } else if (lower.includes('workshop') || lower.includes('bootcamp')) {
+                parsed.dansetype = 'Workshop';
+                filled.push('dansetype');
+            } else if (lower.includes('latin')) {
+                parsed.dansetype = 'Latin Mix';
+                filled.push('dansetype');
+            } else if (lower.includes('social') || lower.includes('fest') || lower.includes('party')) {
+                parsed.dansetype = 'Social';
+                filled.push('dansetype');
+            }
+
+            // === PRIS - Multiple patterns ===
+            const prices = [];
+            
+            // "80 kr", "100 dkk"
+            let priceMatch;
+            const priceRegex1 = /(\d+)\s*(?:kr\.?|dkk)/gi;
+            while ((priceMatch = priceRegex1.exec(text)) !== null) {
+                const p = parseInt(priceMatch[1]);
+                if (p > 0 && p < 2000 && !prices.includes(p)) prices.push(p);
+            }
+            
+            // "DKK 80", "kr 100"
+            const priceRegex2 = /(?:dkk|kr\.?)\s*(\d+)/gi;
+            while ((priceMatch = priceRegex2.exec(text)) !== null) {
+                const p = parseInt(priceMatch[1]);
+                if (p > 0 && p < 2000 && !prices.includes(p)) prices.push(p);
+            }
+            
+            console.log('💰 Prices found:', prices);
+            
+            if (lower.includes('gratis') || lower.includes('free entry')) {
+                parsed.pris = 'Gratis';
+                filled.push('pris');
+            } else if (prices.length > 0) {
+                const min = Math.min(...prices);
+                const max = Math.max(...prices);
+                parsed.pris = min === max ? `${min} kr` : `${min}-${max} kr`;
+                filled.push('pris');
+            }
+
+            // === STED & ADRESSE ===
+            const venues = [
+                {name:'Kedelhallen', addr:'Nyelandsvej 75A', city:'Frederiksberg'},
+                {name:'Old Irish Pub', addr:'Vesterbrogade 2D', city:'København'},
+                {name:'Copenhagen Salsa Academy', addr:'Kastanie Allé 20', city:'Vanløse'},
+                {name:'CSA studio', addr:'Kastanie Allé 20', city:'Vanløse'},
+                {name:'Cubansk Danseskole', addr:'Blegdamsvej 1B', city:'København'},
+                {name:'Vega', addr:'Enghavevej 40', city:'København'},
+                {name:'4Water', addr:'Havnegade 41', city:'København'}
+            ];
+            
+            for (const v of venues) {
+                if (lower.includes(v.name.toLowerCase())) {
+                    parsed.sted = v.name;
+                    parsed.adresse = v.addr;
+                    parsed.by = v.city;
+                    filled.push('sted', 'adresse', 'by');
+                    break;
+                }
+            }
+            
+            // Fallback: Find address pattern
+            if (!parsed.adresse) {
+                const addrMatch = text.match(/([A-Za-zæøåÆØÅ]+(?:vej|gade|allé|torv|plads|stræde)\s+\d+[A-Za-z]?)/i);
+                if (addrMatch) {
+                    parsed.adresse = addrMatch[1];
+                    filled.push('adresse');
+                }
+            }
+            
+            // Find city
+            if (!parsed.by) {
+                const cities = ['Frederiksberg', 'Vanløse', 'Nørrebro', 'Vesterbro', 'Østerbro', 'Amager', 'København'];
+                for (const c of cities) {
+                    if (lower.includes(c.toLowerCase())) {
+                        parsed.by = c;
+                        filled.push('by');
+                        break;
+                    }
+                }
+            }
+
+            // === ARRANGØR ===
+            const arrMatch = text.match(/[Bb]egivenhed af\s+([^\n]+?)(?:\s+og\s+|$)/m);
+            if (arrMatch) {
+                parsed.arrangoer = arrMatch[1].trim();
+                filled.push('arrangør');
+            }
+
+            // === LINK ===
+            const linkMatch = text.match(/(https?:\/\/[^\s]+|www\.[^\s]+)/i);
+            if (linkMatch) {
+                parsed.link = linkMatch[1];
+                filled.push('link');
+            }
+
+            // === FILL FORM ===
+            console.log('📝 Parsed result:', parsed);
+            
+            if (parsed.dato) document.getElementById('dato').value = parsed.dato;
+            if (parsed.starttid) document.getElementById('starttid').value = parsed.starttid;
+            if (parsed.sluttid) document.getElementById('sluttid').value = parsed.sluttid;
+            if (parsed.dansetype) document.getElementById('dansetype').value = parsed.dansetype;
+            if (parsed.sted) document.getElementById('sted').value = parsed.sted;
+            if (parsed.adresse) document.getElementById('adresse').value = parsed.adresse;
+            if (parsed.by) document.getElementById('by').value = parsed.by;
+            if (parsed.pris) document.getElementById('pris').value = parsed.pris;
+            if (parsed.arrangoer) document.getElementById('arrangoer').value = parsed.arrangoer;
+            if (parsed.link) document.getElementById('link').value = parsed.link;
+            
+            // Clear paste area and show result
+            document.getElementById('quickPasteInput').value = '';
+            
+            if (filled.length > 0) {
+                showAlert(`✅ ${filled.length} felter udfyldt: ${filled.join(', ')}`, 'success');
+            } else {
+                showAlert('❌ Kunne ikke finde data', 'error');
+            }
+        }
+
+        // === TEST & DEBUG ===
+        window.testConnection = async function() {
+            try {
+                const cb = 'test_' + Date.now();
+                const promise = new Promise((resolve, reject) => {
+                    window[cb] = d => { delete window[cb]; resolve(d); };
+                    setTimeout(() => reject(new Error('Timeout')), 10000);
+                });
+                const script = document.createElement('script');
+                script.src = `${SCRIPT_URL}?action=test&callback=${cb}`;
+                document.body.appendChild(script);
+                const data = await promise;
+                script.remove();
+                console.log('Test:', data);
+                alert(data.success ? '✅ Forbindelse OK!' : '❌ Fejl');
+            } catch (e) {
+                alert('❌ Timeout - deploy Kode.gs');
+            }
+        };
+
+        window.clearCache = async function() {
+            try {
+                const cb = 'clear_' + Date.now();
+                const promise = new Promise((resolve, reject) => {
+                    window[cb] = d => { delete window[cb]; resolve(d); };
+                    setTimeout(() => reject(new Error('Timeout')), 10000);
+                });
+                const script = document.createElement('script');
+                script.src = `${SCRIPT_URL}?action=clearCache&callback=${cb}`;
+                document.body.appendChild(script);
+                const data = await promise;
+                script.remove();
+                alert(data.success ? '✅ Cache ryddet!' : '❌ Fejl');
+            } catch (e) {
+                alert('❌ Timeout');
+            }
+        };
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('dato').value = tomorrow.toISOString().split('T')[0];
+        });
+    </script>
+</body>
+</html>
             --primary: #667eea; --primary-dark: #5a67d8; --secondary: #ed64a6;
             --bg-dark: #0f0f23; --bg-card: #1a1a2e; --bg-input: #16213e;
             --text-primary: #ffffff; --text-secondary: #a0aec0;
