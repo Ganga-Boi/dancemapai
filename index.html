@@ -3,247 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DanceMap – Find Danseevents</title>
+  <title>DanceMap</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-      min-height: 100vh;
-      color: #fff;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; color: #fff; }
     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
     header { text-align: center; padding: 30px 0; }
-    header h1 {
-      font-size: 2rem;
-      margin-bottom: 8px;
-      background: linear-gradient(90deg, #e94560, #ff6b6b);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    header p { color: #8892b0; font-size: 0.95rem; }
-    .status-bar {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-bottom: 20px;
-      font-size: 0.8rem;
-    }
-    .status-indicator { display: flex; align-items: center; gap: 5px; }
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #ff4444;
-    }
+    header h1 { font-size: 2rem; margin-bottom: 8px; background: linear-gradient(90deg, #e94560, #ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    header p { color: #8892b0; }
+    .status-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; font-size: 0.8rem; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff4444; display: inline-block; margin-right: 5px; }
     .status-dot.connected { background: #44ff44; }
-    .quick-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 20px;
-      justify-content: center;
-    }
-    .quick-btn {
-      padding: 10px 16px;
-      border: none;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 0.9rem;
-    }
-    .quick-btn:hover {
-      background: rgba(233, 69, 96, 0.6);
-      transform: translateY(-2px);
-    }
-    .quick-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .chat-container {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 16px;
-      padding: 20px;
-      min-height: 400px;
-      max-height: 500px;
-      overflow-y: auto;
-      margin-bottom: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    .message {
-      margin-bottom: 16px;
-      padding: 12px 16px;
-      border-radius: 12px;
-      line-height: 1.5;
-      animation: fadeIn 0.3s ease;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .user-message {
-      background: linear-gradient(135deg, #e94560, #ff6b6b);
-      margin-left: 40px;
-      text-align: right;
-    }
-    .bot-message {
-      background: rgba(255, 255, 255, 0.1);
-      margin-right: 40px;
-    }
-    .bot-message.error {
-      background: rgba(255, 68, 68, 0.2);
-      border: 1px solid rgba(255, 68, 68, 0.4);
-    }
-    .bot-message.welcome {
-      background: rgba(68, 255, 68, 0.1);
-      border: 1px solid rgba(68, 255, 68, 0.2);
-    }
-    .bot-message.empty {
-      background: rgba(255, 193, 7, 0.1);
-      border: 1px solid rgba(255, 193, 7, 0.2);
-    }
-    .loading-indicator {
-      display: flex;
-      gap: 4px;
-      padding: 12px 16px;
-      margin-right: 40px;
-    }
-    .loading-indicator .dot {
-      width: 8px;
-      height: 8px;
-      background: #e94560;
-      border-radius: 50%;
-      animation: bounce 1.4s infinite ease-in-out both;
-    }
-    .loading-indicator .dot:nth-child(1) { animation-delay: -0.32s; }
-    .loading-indicator .dot:nth-child(2) { animation-delay: -0.16s; }
-    @keyframes bounce {
-      0%, 80%, 100% { transform: scale(0); }
-      40% { transform: scale(1); }
-    }
+    .quick-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center; }
+    .quick-btn { padding: 10px 16px; border: none; border-radius: 20px; background: rgba(255,255,255,0.1); color: #fff; cursor: pointer; }
+    .quick-btn:hover { background: rgba(233,69,96,0.6); }
+    .quick-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .chat-container { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; min-height: 400px; max-height: 500px; overflow-y: auto; margin-bottom: 20px; }
+    .message { margin-bottom: 16px; padding: 12px 16px; border-radius: 12px; line-height: 1.5; }
+    .user-message { background: linear-gradient(135deg, #e94560, #ff6b6b); margin-left: 40px; text-align: right; }
+    .bot-message { background: rgba(255,255,255,0.1); margin-right: 40px; }
+    .bot-message.error { background: rgba(255,68,68,0.2); border: 1px solid rgba(255,68,68,0.4); }
+    .bot-message.welcome { background: rgba(68,255,68,0.1); border: 1px solid rgba(68,255,68,0.2); }
+    .bot-message.empty { background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.2); }
     .input-container { display: flex; gap: 10px; }
-    #message-input {
-      flex: 1;
-      padding: 14px 18px;
-      border: none;
-      border-radius: 25px;
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      font-size: 1rem;
-      outline: none;
-    }
-    #message-input:focus { background: rgba(255, 255, 255, 0.15); }
-    #message-input::placeholder { color: rgba(255, 255, 255, 0.5); }
-    #send-btn {
-      padding: 14px 24px;
-      border: none;
-      border-radius: 25px;
-      background: linear-gradient(135deg, #e94560, #ff6b6b);
-      color: #fff;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: 600;
-    }
-    #send-btn:hover:not(:disabled) {
-      transform: scale(1.05);
-      box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
-    }
+    #message-input { flex: 1; padding: 14px 18px; border: none; border-radius: 25px; background: rgba(255,255,255,0.1); color: #fff; font-size: 1rem; outline: none; }
+    #message-input::placeholder { color: rgba(255,255,255,0.5); }
+    #send-btn { padding: 14px 24px; border: none; border-radius: 25px; background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; cursor: pointer; font-weight: 600; }
     #send-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    #load-more-btn {
-      display: block;
-      margin: 10px auto;
-      padding: 10px 20px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 20px;
-      background: transparent;
-      color: #fff;
-      cursor: pointer;
-    }
-    #load-more-btn:hover { background: rgba(255, 255, 255, 0.1); }
+    #load-more-btn { display: block; margin: 10px auto; padding: 10px 20px; border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; background: transparent; color: #fff; cursor: pointer; }
     .hidden { display: none !important; }
-    .feed-section {
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    .feed-toggle {
-      width: 100%;
-      padding: 12px;
-      border: 1px dashed rgba(255, 255, 255, 0.3);
-      border-radius: 12px;
-      background: transparent;
-      color: #fff;
-      cursor: pointer;
-      font-size: 0.95rem;
-    }
-    .feed-toggle:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: #e94560;
-    }
-    .feed-form {
-      margin-top: 15px;
-      padding: 20px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-    }
-    .feed-form h3 { margin-bottom: 15px; font-size: 1.1rem; }
+    .config-error { background: rgba(255,68,68,0.2); border: 2px solid #ff4444; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+    .feed-section { margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .feed-toggle { width: 100%; padding: 12px; border: 1px dashed rgba(255,255,255,0.3); border-radius: 12px; background: transparent; color: #fff; cursor: pointer; }
+    .feed-form { margin-top: 15px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; }
     .form-group { margin-bottom: 12px; }
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 0.85rem;
-      color: #8892b0;
-    }
-    .form-group input {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      background: rgba(0, 0, 0, 0.2);
-      color: #fff;
-      font-size: 0.95rem;
-    }
-    .form-group input:focus { outline: none; border-color: #e94560; }
+    .form-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; color: #8892b0; }
+    .form-group input { width: 100%; padding: 10px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(0,0,0,0.2); color: #fff; }
     .form-row { display: flex; gap: 10px; }
     .form-row .form-group { flex: 1; }
-    .feed-submit {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      background: linear-gradient(135deg, #e94560, #ff6b6b);
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .feed-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-    #feed-result {
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 8px;
-      text-align: center;
-      font-size: 0.9rem;
-    }
-    #feed-result.feed-success { background: rgba(68, 255, 68, 0.1); color: #44ff44; }
-    #feed-result.feed-error { background: rgba(255, 68, 68, 0.1); color: #ff4444; }
-    .config-error {
-      background: rgba(255, 68, 68, 0.2);
-      border: 2px solid #ff4444;
-      padding: 20px;
-      border-radius: 12px;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .config-error h2 { color: #ff4444; margin-bottom: 10px; }
-    .config-error code {
-      display: block;
-      background: rgba(0, 0, 0, 0.3);
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 6px;
-      font-size: 0.85rem;
-    }
+    .feed-submit { width: 100%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; font-weight: 600; cursor: pointer; }
+    #feed-result { margin-top: 10px; padding: 10px; border-radius: 8px; text-align: center; }
+    #feed-result.success { background: rgba(68,255,68,0.1); color: #44ff44; }
+    #feed-result.error { background: rgba(255,68,68,0.1); color: #ff4444; }
   </style>
 </head>
 <body>
@@ -252,21 +53,11 @@
       <h1>💃 DanceMap</h1>
       <p>Find danseevents i København</p>
     </header>
-    
     <div class="status-bar">
-      <div class="status-indicator">
-        <div class="status-dot" id="status-dot"></div>
-        <span id="status-text">Forbinder...</span>
-      </div>
-      <div id="session-display" style="color: #8892b0;"></div>
+      <span><span class="status-dot" id="status-dot"></span><span id="status-text">Forbinder...</span></span>
     </div>
-    
-    <div id="config-error" class="config-error hidden">
-      <h2>⚠️ Konfigurationsfejl</h2>
-      <p id="config-error-message">Backend URL mangler.</p>
-    </div>
-    
-    <div class="quick-actions" id="quick-actions">
+    <div id="config-error" class="config-error hidden"></div>
+    <div class="quick-actions">
       <button class="quick-btn" data-action="all">Alle events</button>
       <button class="quick-btn" data-action="salsa">Salsa</button>
       <button class="quick-btn" data-action="bachata">Bachata</button>
@@ -274,378 +65,137 @@
       <button class="quick-btn" data-action="today">I dag</button>
       <button class="quick-btn" data-action="weekend">Weekend</button>
     </div>
-    
     <div class="chat-container" id="chat-container"></div>
-    
     <button id="load-more-btn" class="hidden">Vis flere</button>
-    
     <div class="input-container">
       <input type="text" id="message-input" placeholder="Søg efter events...">
       <button id="send-btn">Søg</button>
     </div>
-    
     <div class="feed-section">
       <button class="feed-toggle" id="feed-toggle">✨ Tilføj nyt event</button>
       <form class="feed-form hidden" id="feed-form">
-        <h3>Indsend event til godkendelse</h3>
+        <h3 style="margin-bottom:15px;">Indsend event</h3>
         <div class="form-row">
-          <div class="form-group">
-            <label for="feed-dato">Dato *</label>
-            <input type="date" id="feed-dato" name="dato" required>
-          </div>
-          <div class="form-group">
-            <label for="feed-starttid">Starttid *</label>
-            <input type="time" id="feed-starttid" name="starttid" value="20:00" required>
-          </div>
+          <div class="form-group"><label>Dato *</label><input type="date" name="dato" required></div>
+          <div class="form-group"><label>Tid *</label><input type="time" name="starttid" value="20:00" required></div>
         </div>
-        <div class="form-group">
-          <label for="feed-dansetype">Dansetype *</label>
-          <input type="text" id="feed-dansetype" name="dansetype" placeholder="F.eks. Salsa, Bachata" required>
-        </div>
-        <div class="form-group">
-          <label for="feed-sted">Sted *</label>
-          <input type="text" id="feed-sted" name="sted" placeholder="F.eks. Kedelhallen" required>
-        </div>
-        <div class="form-group">
-          <label for="feed-adresse">Adresse</label>
-          <input type="text" id="feed-adresse" name="adresse" placeholder="F.eks. Nyelandsvej 75A">
-        </div>
+        <div class="form-group"><label>Dansetype *</label><input type="text" name="dansetype" required></div>
+        <div class="form-group"><label>Sted *</label><input type="text" name="sted" required></div>
+        <div class="form-group"><label>Adresse</label><input type="text" name="adresse"></div>
         <div class="form-row">
-          <div class="form-group">
-            <label for="feed-by">By</label>
-            <input type="text" id="feed-by" name="by" value="København">
-          </div>
-          <div class="form-group">
-            <label for="feed-pris">Pris</label>
-            <input type="text" id="feed-pris" name="pris" placeholder="F.eks. 100 kr">
-          </div>
+          <div class="form-group"><label>By</label><input type="text" name="by" value="København"></div>
+          <div class="form-group"><label>Pris</label><input type="text" name="pris"></div>
         </div>
-        <div class="form-group">
-          <label for="feed-link">Link</label>
-          <input type="url" id="feed-link" name="link" placeholder="https://...">
-        </div>
-        <button type="submit" class="feed-submit">Send til godkendelse</button>
+        <button type="submit" class="feed-submit">Send</button>
         <div id="feed-result" class="hidden"></div>
       </form>
     </div>
   </div>
 
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- KONFIGURATION: INDSÆT DIN APPS SCRIPT URL HER                   -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
   <script>
-    // ╔════════════════════════════════════════════════════════════════╗
-    // ║  CONFIGURATION - EDIT THIS LINE WITH YOUR APPS SCRIPT URL     ║
-    // ╚════════════════════════════════════════════════════════════════╝
-    
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyYourActualDeploymentIdHere/exec';
-    
-    // ══════════════════════════════════════════════════════════════════
+    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwl9mCXSa7dLqnGCgPM_4Mytz0Ru0zzDTKVXgwBp7lDTLSoTfY0w9J_d8J9SOwShLwy/exec';
   </script>
+  <!-- ═══════════════════════════════════════════════════════════════ -->
 
+  <script src="dancemap-client.js"></script>
   <script>
-    // ============================================
-    // DanceMapClient v2.7 (Embedded)
-    // ============================================
-    const DanceMapClient = (function() {
-      'use strict';
-      
-      const CONFIG = { API_URL: '', TIMEOUT_MS: 30000, RETRY_COUNT: 2, RETRY_DELAY_MS: 1000 };
-      
-      const STATE = Object.freeze({
-        WELCOME: 'WELCOME', SEARCH: 'SEARCH', FEED: 'FEED', EMPTY: 'EMPTY',
-        ERROR: 'ERROR', PAGINATION: 'PAGINATION', SYSTEM: 'SYSTEM', IDLE: 'IDLE'
-      });
-      
-      let _sessionId = null;
-      let _initialized = false;
-      let _connected = false;
-      let _callbacks = {
-        onWelcome: null, onSearch: null, onEmpty: null, onPagination: null,
-        onFeed: null, onError: null, onSystem: null, onIdle: null, onAny: null
-      };
-      
-      function init(apiUrl, options = {}) {
-        if (!apiUrl) throw new Error('DanceMapClient: API URL is required');
-        if (typeof apiUrl !== 'string') throw new Error('DanceMapClient: API URL must be a string');
-        const trimmedUrl = apiUrl.trim();
-        if (!trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://'))
-          throw new Error('DanceMapClient: API URL must start with http:// or https://');
-        try { new URL(trimmedUrl); } catch (e) { throw new Error('DanceMapClient: Invalid URL format'); }
-        CONFIG.API_URL = trimmedUrl;
-        _sessionId = options.sessionId || _generateSessionId();
-        _initialized = true;
-        _connected = false;
-        if (options.callbacks) Object.assign(_callbacks, options.callbacks);
-        return { sessionId: _sessionId, initialized: true, apiUrl: CONFIG.API_URL };
-      }
-      
-      function _generateSessionId() {
-        return 's_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-      }
-      
-      function getStatus() {
-        return { initialized: _initialized, connected: _connected, apiUrl: CONFIG.API_URL || null, sessionId: _sessionId || null };
-      }
-      
-      async function ping() {
-        if (!_initialized) return { success: false, error: 'Client not initialized' };
-        if (!CONFIG.API_URL) return { success: false, error: 'API URL not configured' };
-        const startTime = Date.now();
-        try {
-          const result = await _request({ action: 'test' }, 0);
-          _connected = result.success !== false;
-          return { success: _connected, latency: Date.now() - startTime, response: result.raw || result };
-        } catch (e) {
-          _connected = false;
-          return { success: false, error: e.message, latency: Date.now() - startTime };
-        }
-      }
-      
-      async function _request(params, retries = CONFIG.RETRY_COUNT) {
-        if (!_initialized) return _createErrorResponse('DanceMapClient not initialized.');
-        if (!CONFIG.API_URL) return _createErrorResponse('API URL not configured.');
-        let url;
-        try { url = new URL(CONFIG.API_URL); } catch (e) { return _createErrorResponse('Invalid API URL'); }
-        params.sessionId = _sessionId;
-        Object.entries(params).forEach(([k, v]) => { if (v !== null && v !== undefined) url.searchParams.append(k, String(v)); });
-        try {
-          const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), CONFIG.TIMEOUT_MS);
-          const response = await fetch(url.toString(), { method: 'GET', signal: controller.signal });
-          clearTimeout(timeout);
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          const data = await response.json();
-          _connected = true;
-          return _processResponse(data);
-        } catch (error) {
-          _connected = false;
-          if (retries > 0 && !error.message.includes('abort')) {
-            await new Promise(r => setTimeout(r, CONFIG.RETRY_DELAY_MS));
-            return _request(params, retries - 1);
-          }
-          return _createErrorResponse(error.message);
-        }
-      }
-      
-      async function _postRequest(data) {
-        if (!_initialized) return _createErrorResponse('DanceMapClient not initialized.');
-        if (!CONFIG.API_URL) return _createErrorResponse('API URL not configured.');
-        data.sessionId = _sessionId;
-        try {
-          const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), CONFIG.TIMEOUT_MS);
-          const response = await fetch(CONFIG.API_URL, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data), signal: controller.signal
-          });
-          clearTimeout(timeout);
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          const result = await response.json();
-          _connected = true;
-          return _processResponse(result);
-        } catch (error) {
-          _connected = false;
-          return _createErrorResponse(error.message);
-        }
-      }
-      
-      function _processResponse(data) {
-        const response = {
-          success: data.success !== false, state: data.state || STATE.ERROR, text: data.text || '',
-          sessionId: data.sessionId || _sessionId, version: data.version || 'unknown',
-          timestamp: data.timestamp || Date.now(), eventCount: data.eventCount || 0,
-          displayedCount: data.displayedCount || 0, hasMore: data.hasMore || false, raw: data
-        };
-        if (data.sessionId) _sessionId = data.sessionId;
-        _routeToCallback(response);
-        return response;
-      }
-      
-      function _createErrorResponse(errorMessage) {
-        const response = {
-          success: false, state: STATE.ERROR, text: 'Der opstod en teknisk fejl. Prøv igen senere.',
-          sessionId: _sessionId, version: 'unknown', timestamp: Date.now(),
-          eventCount: 0, displayedCount: 0, hasMore: false, errorDetail: errorMessage, raw: null
-        };
-        _routeToCallback(response);
-        return response;
-      }
-      
-      function _routeToCallback(response) {
-        if (_callbacks.onAny) _callbacks.onAny(response);
-        const cb = _callbacks['on' + response.state.charAt(0) + response.state.slice(1).toLowerCase()];
-        if (cb) cb(response);
-      }
-      
-      async function sendMessage(message) { return _request({ message, firstLoad: 'false' }); }
-      async function loadInitial() { return _request({ message: '', firstLoad: 'true' }); }
-      async function loadMore() { return sendMessage('flere'); }
-      async function quickAction(type) {
-        const queries = { all: 'vis alle events', salsa: 'salsa', bachata: 'bachata', kizomba: 'kizomba',
-          zouk: 'zouk', tango: 'tango', today: 'i dag', tomorrow: 'i morgen', weekend: 'weekend', thisweek: 'denne uge' };
-        return sendMessage(queries[type] || type);
-      }
-      async function submitEvent(eventData) { return _postRequest(eventData); }
-      function setCallback(name, fn) { if (_callbacks.hasOwnProperty(name)) _callbacks[name] = fn; }
-      
-      return { init, getStatus, ping, STATE, sendMessage, loadInitial, loadMore, quickAction, submitEvent, setCallback };
-    })();
-  </script>
-
-  <script>
-    // ============================================
-    // Application Bootstrap
-    // ============================================
     (function() {
-      'use strict';
-      
-      const $ = id => document.getElementById(id);
-      const elements = {
-        chat: $('chat-container'), input: $('message-input'), sendBtn: $('send-btn'),
-        loadMore: $('load-more-btn'), statusDot: $('status-dot'), statusText: $('status-text'),
-        sessionDisplay: $('session-display'), configError: $('config-error'),
-        configErrorMsg: $('config-error-message'), feedToggle: $('feed-toggle'),
-        feedForm: $('feed-form'), feedResult: $('feed-result')
-      };
-      
+      const chat = document.getElementById('chat-container');
+      const input = document.getElementById('message-input');
+      const sendBtn = document.getElementById('send-btn');
+      const loadMoreBtn = document.getElementById('load-more-btn');
+      const statusDot = document.getElementById('status-dot');
+      const statusText = document.getElementById('status-text');
+      const configError = document.getElementById('config-error');
+      const feedToggle = document.getElementById('feed-toggle');
+      const feedForm = document.getElementById('feed-form');
+      const feedResult = document.getElementById('feed-result');
+
       function showError(msg) {
-        elements.configError.classList.remove('hidden');
-        elements.configErrorMsg.textContent = msg;
-        elements.sendBtn.disabled = true;
-        elements.input.disabled = true;
+        configError.textContent = msg;
+        configError.classList.remove('hidden');
+        sendBtn.disabled = true;
+        input.disabled = true;
         document.querySelectorAll('.quick-btn').forEach(b => b.disabled = true);
       }
-      
-      function updateStatus(connected) {
-        elements.statusDot.classList.toggle('connected', connected);
-        elements.statusText.textContent = connected ? 'Forbundet' : 'Ikke forbundet';
+
+      function setStatus(ok) {
+        statusDot.classList.toggle('connected', ok);
+        statusText.textContent = ok ? 'Forbundet' : 'Ikke forbundet';
       }
-      
-      function addMessage(text, className) {
+
+      function addMsg(text, cls) {
         if (!text) return;
-        const div = document.createElement('div');
-        div.className = 'message ' + className;
-        div.innerHTML = text.replace(/\n/g, '<br>');
-        elements.chat.appendChild(div);
-        elements.chat.scrollTop = elements.chat.scrollHeight;
+        const d = document.createElement('div');
+        d.className = 'message ' + cls;
+        d.innerHTML = text.replace(/\n/g, '<br>');
+        chat.appendChild(d);
+        chat.scrollTop = chat.scrollHeight;
       }
-      
-      function setLoading(on) {
-        elements.sendBtn.disabled = on;
-        elements.input.disabled = on;
-        document.querySelectorAll('.quick-btn').forEach(b => b.disabled = on);
-        const existing = elements.chat.querySelector('.loading-indicator');
-        if (on && !existing) {
-          const loader = document.createElement('div');
-          loader.className = 'loading-indicator';
-          loader.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
-          elements.chat.appendChild(loader);
-          elements.chat.scrollTop = elements.chat.scrollHeight;
-        } else if (!on && existing) {
-          existing.remove();
-        }
+
+      function clearChat() {
+        chat.innerHTML = '';
+        loadMoreBtn.classList.add('hidden');
       }
-      
-      function clearChat() { elements.chat.innerHTML = ''; elements.loadMore.classList.add('hidden'); }
-      
-      async function initialize() {
-        // Validate WEB_APP_URL
-        if (typeof WEB_APP_URL === 'undefined' || !WEB_APP_URL) {
-          showError('WEB_APP_URL er ikke defineret. Ret konfigurationen øverst i index.html.');
-          return;
-        }
-        if (WEB_APP_URL.includes('YourActualDeploymentIdHere')) {
-          showError('WEB_APP_URL indeholder placeholder. Indsæt din rigtige Apps Script URL.');
-          return;
-        }
-        
-        try {
-          const result = DanceMapClient.init(WEB_APP_URL, {
-            callbacks: {
-              onWelcome: r => { clearChat(); addMessage(r.text, 'bot-message welcome'); },
-              onSearch: r => { clearChat(); addMessage(r.text, 'bot-message'); elements.loadMore.classList.toggle('hidden', !r.hasMore); },
-              onEmpty: r => { addMessage(r.text, 'bot-message empty'); elements.loadMore.classList.add('hidden'); },
-              onPagination: r => { addMessage(r.text, 'bot-message'); elements.loadMore.classList.toggle('hidden', !r.hasMore); },
-              onFeed: r => {
-                elements.feedResult.className = r.success ? 'feed-success' : 'feed-error';
-                elements.feedResult.textContent = r.text;
-                elements.feedResult.classList.remove('hidden');
-                if (r.success) elements.feedForm.reset();
-                setTimeout(() => elements.feedResult.classList.add('hidden'), 5000);
-              },
-              onError: r => { addMessage(r.text, 'bot-message error'); updateStatus(false); }
-            }
-          });
-          
-          elements.sessionDisplay.textContent = 'Session: ' + result.sessionId.substring(0, 15) + '...';
-          
-          // Test connection
-          const ping = await DanceMapClient.ping();
-          updateStatus(ping.success);
-          
-          if (!ping.success) {
-            showError('Kunne ikke forbinde til backend: ' + (ping.error || 'Ukendt fejl'));
-            return;
+
+      // ══════════════════════════════════════════════════
+      // INIT - DENNE BLOK KØRER FØR NOGET ANDET
+      // ══════════════════════════════════════════════════
+      if (typeof window.WEB_APP_URL === 'undefined' || !window.WEB_APP_URL) {
+        showError('FEJL: WEB_APP_URL er ikke defineret.');
+        return;
+      }
+
+      try {
+        DanceMapClient.init(window.WEB_APP_URL, {
+          callbacks: {
+            onWelcome: r => { clearChat(); addMsg(r.text, 'bot-message welcome'); },
+            onSearch: r => { clearChat(); addMsg(r.text, 'bot-message'); loadMoreBtn.classList.toggle('hidden', !r.hasMore); },
+            onEmpty: r => { addMsg(r.text, 'bot-message empty'); loadMoreBtn.classList.add('hidden'); },
+            onPagination: r => { addMsg(r.text, 'bot-message'); loadMoreBtn.classList.toggle('hidden', !r.hasMore); },
+            onFeed: r => { feedResult.className = r.success ? 'success' : 'error'; feedResult.textContent = r.text; feedResult.classList.remove('hidden'); if(r.success) feedForm.reset(); },
+            onError: r => { addMsg(r.text, 'bot-message error'); setStatus(false); }
           }
-          
-          // Load welcome
-          await DanceMapClient.loadInitial();
-          
-        } catch (e) {
-          showError(e.message);
-        }
-      }
-      
-      // Event listeners
-      elements.sendBtn.addEventListener('click', async () => {
-        const msg = elements.input.value.trim();
-        if (!msg) return;
-        elements.input.value = '';
-        addMessage(msg, 'user-message');
-        setLoading(true);
-        await DanceMapClient.sendMessage(msg);
-        setLoading(false);
-      });
-      
-      elements.input.addEventListener('keypress', e => { if (e.key === 'Enter') elements.sendBtn.click(); });
-      
-      document.querySelectorAll('.quick-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          clearChat();
-          setLoading(true);
-          await DanceMapClient.quickAction(btn.dataset.action);
-          setLoading(false);
         });
+      } catch (e) {
+        showError('Init fejl: ' + e.message);
+        return;
+      }
+
+      // Test forbindelse
+      DanceMapClient.ping().then(r => {
+        setStatus(r.success);
+        if (r.success) DanceMapClient.loadInitial();
+        else showError('Kunne ikke forbinde til backend.');
       });
-      
-      elements.loadMore.addEventListener('click', async () => {
-        elements.loadMore.classList.add('hidden');
-        setLoading(true);
-        await DanceMapClient.loadMore();
-        setLoading(false);
+
+      // Event handlers
+      sendBtn.onclick = async () => {
+        const msg = input.value.trim();
+        if (!msg) return;
+        input.value = '';
+        addMsg(msg, 'user-message');
+        await DanceMapClient.sendMessage(msg);
+      };
+
+      input.onkeypress = e => { if (e.key === 'Enter') sendBtn.click(); };
+
+      document.querySelectorAll('.quick-btn').forEach(btn => {
+        btn.onclick = async () => { clearChat(); await DanceMapClient.quickAction(btn.dataset.action); };
       });
-      
-      elements.feedToggle.addEventListener('click', () => elements.feedForm.classList.toggle('hidden'));
-      
-      elements.feedForm.addEventListener('submit', async e => {
+
+      loadMoreBtn.onclick = async () => { loadMoreBtn.classList.add('hidden'); await DanceMapClient.loadMore(); };
+
+      feedToggle.onclick = () => feedForm.classList.toggle('hidden');
+
+      feedForm.onsubmit = async e => {
         e.preventDefault();
         const fd = new FormData(e.target);
-        const btn = e.target.querySelector('.feed-submit');
-        btn.disabled = true;
-        btn.textContent = 'Sender...';
-        await DanceMapClient.submitEvent({
-          dato: fd.get('dato'), starttid: fd.get('starttid'), dansetype: fd.get('dansetype'),
-          sted: fd.get('sted'), adresse: fd.get('adresse'), by: fd.get('by'),
-          pris: fd.get('pris'), link: fd.get('link')
-        });
-        btn.disabled = false;
-        btn.textContent = 'Send til godkendelse';
-      });
-      
-      // Start
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initialize);
-      } else {
-        initialize();
-      }
+        await DanceMapClient.submitEvent(Object.fromEntries(fd));
+      };
     })();
   </script>
 </body>
