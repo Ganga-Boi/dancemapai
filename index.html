@@ -1,218 +1,303 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="da">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>DanceMap</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="icon" href="/dancemap-icon.svg" />
-
   <style>
-    :root {
-      --bg: #0b0f14;
-      --card: #121826;
-      --text: #e8eef7;
-      --muted: #9aa4b2;
-      --accent: #1e88e5;
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#0b0f14; color:#e8eef7; }
+    
+    .wrap { 
+      max-width: 480px; 
+      margin: 0 auto; 
+      height: 100vh; 
+      display: flex; 
+      flex-direction: column;
     }
-
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    
+    .header { 
+      padding: 16px; 
+      border-bottom: 1px solid #1a2432; 
+      background: #0e141d;
     }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      display: flex;
-      justify-content: center;
+    .header h1 { margin: 0 0 2px; font-size: 18px; font-weight: 600; }
+    .header .sub { font-size: 12px; opacity: .65; }
+    
+    .chat { 
+      flex: 1; 
+      overflow-y: auto; 
+      padding: 16px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 12px;
     }
-
-    .wrap {
-      width: 100%;
-      max-width: 720px;
-      padding: 16px;
+    
+    .row { display: flex; }
+    .row.user { justify-content: flex-end; }
+    .row.bot { justify-content: flex-start; }
+    
+    .bubble { 
+      max-width: 85%; 
+      padding: 10px 14px; 
+      border-radius: 16px; 
+      line-height: 1.4; 
+      white-space: pre-wrap; 
+      word-wrap: break-word; 
+      font-size: 14px;
     }
-
-    /* HEADER */
-    .title {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 6px;
+    .user .bubble { 
+      background: #1e3a5f; 
+      border-bottom-right-radius: 4px;
     }
-
-    .logo {
+    .bot .bubble { 
+      background: #1a2432; 
+      border-bottom-left-radius: 4px;
+    }
+    
+    .more-btn {
+      align-self: flex-start;
+      margin-top: -4px;
+      padding: 8px 14px;
+      font-size: 13px;
+      background: #0e141d;
+      border: 1px solid #2a3b54;
+      border-radius: 12px;
+      color: #9fc5ff;
+      cursor: pointer;
+    }
+    .more-btn:hover { background: #142235; }
+    .more-btn:disabled { opacity: .5; cursor: not-allowed; }
+    
+    .bar { 
+      display: flex; 
+      gap: 10px; 
+      padding: 12px 16px; 
+      border-top: 1px solid #1a2432; 
+      background: #0e141d;
+    }
+    
+    .bar input { 
+      flex: 1; 
+      padding: 12px 14px; 
+      border-radius: 20px; 
+      border: 1px solid #1a2432; 
+      background: #0b1017; 
+      color: #e8eef7; 
+      font-size: 14px;
+      outline: none;
+    }
+    .bar input:focus { border-color: #2a3b54; }
+    .bar input::placeholder { color: #5a6a7a; }
+    
+    .send-btn {
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      background: #ffffff;
-      padding: 6px;
-      box-shadow: 0 0 0 2px rgba(30,136,229,0.6);
+      border: none;
+      background: #1e3a5f;
+      color: #e8eef7;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
     }
-
-    .title span {
-      font-size: 1.25rem;
-      font-weight: 600;
-    }
-
-    .subtitle {
-      font-size: 0.9rem;
-      color: var(--muted);
-      margin-bottom: 16px;
-    }
-
-    /* CARD */
-    .card {
-      background: var(--card);
-      border-radius: 14px;
-      padding: 16px;
-      min-height: 240px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .bubble {
-      background: #0f1623;
-      border-radius: 12px;
-      padding: 12px 14px;
-      line-height: 1.45;
-      white-space: pre-line;
-    }
-
-    /* INPUT */
-    .input-row {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    input {
-      flex: 1;
-      background: #0f1623;
-      border: none;
-      border-radius: 10px;
-      padding: 12px;
-      color: var(--text);
-      font-size: 1rem;
-    }
-
-    input::placeholder {
-      color: var(--muted);
-    }
-
-    button {
-      background: var(--accent);
-      border: none;
-      border-radius: 10px;
-      padding: 0 16px;
-      color: white;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      opacity: 0.6;
-      cursor: default;
-    }
-
-    .more {
-      margin-top: 8px;
-      align-self: flex-start;
-      background: transparent;
-      color: var(--accent);
-      border: none;
-      padding: 6px 0;
-      font-size: 0.95rem;
-      cursor: pointer;
-    }
+    .send-btn:hover { background: #2a4a70; }
+    .send-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .send-btn svg { width: 20px; height: 20px; }
+    
+    a { color: #9fc5ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
-
 <body>
   <div class="wrap">
-
-    <div class="title">
-      <img src="/dancemap-icon.svg" alt="DanceMap" class="logo" />
-      <span>DanceMap</span>
+    <div class="header">
+      <h1>DanceMap</h1>
+      <div class="sub">Kun danseevents i København</div>
     </div>
 
-    <div class="subtitle">Kun danseevents i København</div>
+    <div id="chat" class="chat" aria-live="polite"></div>
 
-    <div class="card">
-      <div class="bubble" id="output">
-        Jeg viser kun danseevents i København. Prøv fx "salsa i dag".
-      </div>
-
-      <button class="more" id="moreBtn" style="display:none;">Vis flere</button>
-
-      <div class="input-row">
-        <input
-          id="queryInput"
-          type="text"
-          placeholder="Skriv fx: salsa i dag"
-        />
-        <button id="sendBtn">Send</button>
-      </div>
+    <div class="bar">
+      <input id="q" type="text" placeholder="Skriv fx: salsa i dag" autocomplete="off" />
+      <button id="sendBtn" class="send-btn" type="button" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
     </div>
-
   </div>
 
   <script>
-    // 🔗 RIGTIG API-URL (sat ind)
-    const API_URL = 'https://script.google.com/macros/s/AKfycbw-zzGb2H_JqfNLQvtzLNm01oJ7KDIP1IigC-PPBGvMwOTMTpXg9YDrS5YPNwCC4v1L/exec';
+    const API_URL = 'REPLACE_WITH_YOUR_APPS_SCRIPT_WEB_APP_URL';
 
-    let currentPage = 0;
-    let lastQuery = '';
-
-    const output = document.getElementById('output');
-    const input = document.getElementById('queryInput');
+    const chatEl = document.getElementById('chat');
+    const qEl = document.getElementById('q');
     const sendBtn = document.getElementById('sendBtn');
-    const moreBtn = document.getElementById('moreBtn');
+
+    let lastQuery = '';
+    let currentPage = 0;
+    let hasMore = false;
+    let isLoading = false;
+    let currentMoreBtn = null;
+
+    function addUserMessage(text) {
+      const row = document.createElement('div');
+      row.className = 'row user';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = text;
+      row.appendChild(bubble);
+      chatEl.appendChild(row);
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    function addBotMessage(text, showMore) {
+      const row = document.createElement('div');
+      row.className = 'row bot';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = text;
+      row.appendChild(bubble);
+      chatEl.appendChild(row);
+
+      // Fjern tidligere "Vis flere"-knap
+      if (currentMoreBtn) {
+        currentMoreBtn.remove();
+        currentMoreBtn = null;
+      }
+
+      // Tilføj "Vis flere"-knap hvis relevant
+      if (showMore) {
+        const btn = document.createElement('button');
+        btn.className = 'more-btn';
+        btn.textContent = 'Vis flere';
+        btn.addEventListener('click', handleMore);
+        chatEl.appendChild(btn);
+        currentMoreBtn = btn;
+      }
+
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    function appendToBotMessage(text, showMore) {
+      // Fjern "Vis flere"-knap før append
+      if (currentMoreBtn) {
+        currentMoreBtn.remove();
+        currentMoreBtn = null;
+      }
+
+      const row = document.createElement('div');
+      row.className = 'row bot';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = text;
+      row.appendChild(bubble);
+      chatEl.appendChild(row);
+
+      if (showMore) {
+        const btn = document.createElement('button');
+        btn.className = 'more-btn';
+        btn.textContent = 'Vis flere';
+        btn.addEventListener('click', handleMore);
+        chatEl.appendChild(btn);
+        currentMoreBtn = btn;
+      }
+
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    function setLoading(on) {
+      isLoading = on;
+      sendBtn.disabled = on;
+      if (currentMoreBtn) currentMoreBtn.disabled = on;
+    }
 
     async function callApi(query, page) {
+      const url = new URL(API_URL);
+      url.searchParams.set('query', query);
+      url.searchParams.set('page', String(page));
+      const res = await fetch(url.toString(), { method: 'GET' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json();
+    }
+
+    async function handleSend() {
+      const trimmed = (qEl.value || '').trim();
+      if (!trimmed || isLoading) return;
+
+      addUserMessage(trimmed);
+      qEl.value = '';
+      lastQuery = trimmed;
+      currentPage = 0;
+      hasMore = false;
+
+      setLoading(true);
+
       try {
-        const url = new URL(API_URL);
-        url.searchParams.set('query', query);
-        url.searchParams.set('page', page);
+        const data = await callApi(trimmed, 0);
 
-        const res = await fetch(url.toString());
-        const data = await res.json();
-
-        if (!data.success) {
-          output.textContent = 'Der opstod en teknisk fejl. Prøv igen senere.';
-          moreBtn.style.display = 'none';
+        if (!data || typeof data.success !== 'boolean') {
+          addBotMessage('Der opstod en teknisk fejl. Prøv igen senere.', false);
           return;
         }
 
-        if (page === 0) {
-          output.textContent = data.text;
-        } else {
-          output.textContent += '\n\n' + data.text;
+        if (!data.success) {
+          addBotMessage(data.text || 'Der opstod en teknisk fejl. Prøv igen senere.', false);
+          return;
         }
 
-        moreBtn.style.display = data.hasMore ? 'inline-block' : 'none';
+        hasMore = !!data.hasMore;
+        addBotMessage(data.text || 'Der er ingen danseevents, der matcher din forespørgsel.', hasMore);
 
       } catch (e) {
-        output.textContent = 'Der opstod en teknisk fejl. Prøv igen senere.';
-        moreBtn.style.display = 'none';
+        addBotMessage('Der opstod en teknisk fejl. Prøv igen senere.', false);
+      } finally {
+        setLoading(false);
       }
     }
 
-    sendBtn.onclick = () => {
-      const q = input.value.trim();
-      if (!q) return;
-      currentPage = 0;
-      lastQuery = q;
-      callApi(q, currentPage);
-    };
+    async function handleMore() {
+      if (isLoading || !hasMore) return;
 
-    moreBtn.onclick = () => {
-      currentPage++;
-      callApi(lastQuery, currentPage);
-    };
+      currentPage += 1;
+      setLoading(true);
+
+      try {
+        const data = await callApi(lastQuery, currentPage);
+
+        if (!data || !data.success) {
+          appendToBotMessage('Der opstod en teknisk fejl. Prøv igen senere.', false);
+          hasMore = false;
+          return;
+        }
+
+        hasMore = !!data.hasMore;
+        appendToBotMessage(data.text, hasMore);
+
+      } catch (e) {
+        appendToBotMessage('Der opstod en teknisk fejl. Prøv igen senere.', false);
+        hasMore = false;
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    sendBtn.addEventListener('click', handleSend);
+
+    qEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSend();
+      }
+    });
+
+    // Starttekst
+    addBotMessage('Jeg viser kun danseevents i København. Prøv fx "salsa i dag".', false);
   </script>
 </body>
 </html>
