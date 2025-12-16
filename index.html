@@ -133,7 +133,7 @@
   </div>
 
   <script>
-    const API_URL = 'REPLACE_WITH_YOUR_APPS_SCRIPT_WEB_APP_URL';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw-zzGb2H_JqfNLQvtzLNm01oJ7KDIP1IigC-PPBGvMwOTMTpXg9YDrS5YPNwCC4v1L/exec';
 
     const chatEl = document.getElementById('chat');
     const qEl = document.getElementById('q');
@@ -165,13 +165,11 @@
       row.appendChild(bubble);
       chatEl.appendChild(row);
 
-      // Fjern tidligere "Vis flere"-knap
       if (currentMoreBtn) {
         currentMoreBtn.remove();
         currentMoreBtn = null;
       }
 
-      // Tilføj "Vis flere"-knap hvis relevant
       if (showMore) {
         const btn = document.createElement('button');
         btn.className = 'more-btn';
@@ -185,7 +183,6 @@
     }
 
     function appendToBotMessage(text, showMore) {
-      // Fjern "Vis flere"-knap før append
       if (currentMoreBtn) {
         currentMoreBtn.remove();
         currentMoreBtn = null;
@@ -296,7 +293,6 @@
       }
     });
 
-    // Starttekst
     addBotMessage('Jeg viser kun danseevents i København. Prøv fx "salsa i dag".', false);
   </script>
 </body>
