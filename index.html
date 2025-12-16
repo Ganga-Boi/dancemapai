@@ -56,6 +56,11 @@
       border-bottom-left-radius: 4px;
     }
     
+    .typing .bubble {
+      font-style: italic;
+      opacity: .65;
+    }
+    
     .more-btn {
       align-self: flex-start;
       margin-top: -4px;
@@ -144,6 +149,7 @@
     let hasMore = false;
     let isLoading = false;
     let currentMoreBtn = null;
+    let typingRow = null;
 
     function addUserMessage(text) {
       const row = document.createElement('div');
@@ -156,7 +162,29 @@
       chatEl.scrollTop = chatEl.scrollHeight;
     }
 
+    function showTyping() {
+      removeTyping();
+      const row = document.createElement('div');
+      row.className = 'row bot typing';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = 'DanceMap skriver …';
+      row.appendChild(bubble);
+      chatEl.appendChild(row);
+      typingRow = row;
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    function removeTyping() {
+      if (typingRow) {
+        typingRow.remove();
+        typingRow = null;
+      }
+    }
+
     function addBotMessage(text, showMore) {
+      removeTyping();
+
       const row = document.createElement('div');
       row.className = 'row bot';
       const bubble = document.createElement('div');
@@ -183,6 +211,8 @@
     }
 
     function appendToBotMessage(text, showMore) {
+      removeTyping();
+
       if (currentMoreBtn) {
         currentMoreBtn.remove();
         currentMoreBtn = null;
@@ -234,6 +264,7 @@
       hasMore = false;
 
       setLoading(true);
+      showTyping();
 
       try {
         const data = await callApi(trimmed, 0);
@@ -263,6 +294,7 @@
 
       currentPage += 1;
       setLoading(true);
+      showTyping();
 
       try {
         const data = await callApi(lastQuery, currentPage);
