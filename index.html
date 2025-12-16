@@ -1,4 +1,4 @@
-denne her?<!doctype html>
+<!doctype html>
 <html lang="da">
 <head>
   <meta charset="utf-8" />
@@ -15,7 +15,6 @@ denne her?<!doctype html>
       height: 100vh; 
       display: flex; 
       flex-direction: column;
-      position: relative;
     }
     
     .header { 
@@ -41,18 +40,6 @@ denne her?<!doctype html>
     .header-text { flex: 1; }
     .header-text h1 { margin: 0 0 1px; font-size: 18px; font-weight: 600; }
     .header-text .sub { font-size: 12px; opacity: .65; }
-    
-    .submit-toggle {
-      padding: 6px 12px;
-      font-size: 12px;
-      background: transparent;
-      border: 1px solid #2a3b54;
-      border-radius: 16px;
-      color: #9fc5ff;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .submit-toggle:hover { background: #142235; }
     
     .chat { 
       flex: 1; 
@@ -145,7 +132,7 @@ denne her?<!doctype html>
     a { color: #9fc5ff; text-decoration: none; }
     a:hover { text-decoration: underline; }
 
-    /* Submit Modal */
+    /* Admin Modal */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -217,7 +204,6 @@ denne her?<!doctype html>
     .form-group textarea:focus {
       border-color: #2a3b54;
     }
-    .form-group textarea { resize: vertical; min-height: 60px; }
     
     .form-row {
       display: flex;
@@ -258,7 +244,6 @@ denne her?<!doctype html>
         <h1>DanceMap</h1>
         <div class="sub">Kun danseevents i København</div>
       </div>
-      <button class="submit-toggle" id="openSubmit">+ Foreslå event</button>
     </div>
 
     <div id="chat" class="chat" aria-live="polite"></div>
@@ -274,23 +259,34 @@ denne her?<!doctype html>
     </div>
   </div>
 
-  <!-- Submit Modal -->
-  <div class="modal-overlay" id="modalOverlay">
+  <!-- Admin Modal (kun synlig med ?admin=1) -->
+  <div class="modal-overlay" id="adminModal">
     <div class="modal">
       <div class="modal-header">
-        <h2>Foreslå et event</h2>
-        <button class="modal-close" id="closeModal">&times;</button>
+        <h2>Admin: Tilføj event</h2>
+        <button class="modal-close" id="closeAdmin">&times;</button>
       </div>
       
-      <form id="submitForm">
+      <form id="adminForm">
         <div class="form-group">
-          <label>Eventnavn <span class="req">*</span></label>
-          <input type="text" id="eventName" required />
+          <label>Dato <span class="req">*</span></label>
+          <input type="date" id="adminDato" required />
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Starttid <span class="req">*</span></label>
+            <input type="time" id="adminStarttid" required />
+          </div>
+          <div class="form-group">
+            <label>Sluttid</label>
+            <input type="time" id="adminSluttid" />
+          </div>
         </div>
         
         <div class="form-group">
           <label>Dansetype <span class="req">*</span></label>
-          <select id="danceType" required>
+          <select id="adminDansetype" required>
             <option value="">Vælg...</option>
             <option value="Salsa">Salsa</option>
             <option value="Bachata">Bachata</option>
@@ -301,43 +297,45 @@ denne her?<!doctype html>
             <option value="West Coast Swing">West Coast Swing</option>
             <option value="Lindy Hop">Lindy Hop</option>
             <option value="Latin">Latin</option>
-            <option value="Anden">Anden</option>
           </select>
         </div>
         
         <div class="form-group">
-          <label>Dato <span class="req">*</span></label>
-          <input type="date" id="eventDate" required />
-        </div>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label>Starttid <span class="req">*</span></label>
-            <input type="time" id="timeStart" required />
-          </div>
-          <div class="form-group">
-            <label>Sluttid</label>
-            <input type="time" id="timeEnd" />
-          </div>
+          <label>Sted <span class="req">*</span></label>
+          <input type="text" id="adminSted" required />
         </div>
         
         <div class="form-group">
-          <label>Sted / Venue <span class="req">*</span></label>
-          <input type="text" id="venue" required />
+          <label>Adresse</label>
+          <input type="text" id="adminAdresse" />
         </div>
         
         <div class="form-group">
-          <label>Link (valgfrit)</label>
-          <input type="url" id="eventLink" placeholder="https://..." />
+          <label>Pris</label>
+          <input type="text" id="adminPris" placeholder="Fx: 100 kr eller Gratis" />
         </div>
         
         <div class="form-group">
-          <label>Kommentar (valgfrit)</label>
-          <textarea id="comment" placeholder="Evt. ekstra info..."></textarea>
+          <label>Arrangør</label>
+          <input type="text" id="adminArrangoer" />
         </div>
         
-        <button type="submit" class="submit-btn" id="submitBtn">Send forslag</button>
-        <div id="submitStatus" class="submit-status"></div>
+        <div class="form-group">
+          <label>Link</label>
+          <input type="url" id="adminLink" placeholder="https://..." />
+        </div>
+        
+        <div class="form-group">
+          <label>Recurring</label>
+          <select id="adminRecurring">
+            <option value="none">Ingen</option>
+            <option value="weekly">Ugentlig</option>
+            <option value="festival">Festival</option>
+          </select>
+        </div>
+        
+        <button type="submit" class="submit-btn" id="adminSubmitBtn">Tilføj til Events</button>
+        <div id="adminStatus" class="submit-status"></div>
       </form>
     </div>
   </div>
@@ -348,12 +346,11 @@ denne her?<!doctype html>
     const chatEl = document.getElementById('chat');
     const qEl = document.getElementById('q');
     const sendBtn = document.getElementById('sendBtn');
-    const modalOverlay = document.getElementById('modalOverlay');
-    const openSubmitBtn = document.getElementById('openSubmit');
-    const closeModalBtn = document.getElementById('closeModal');
-    const submitForm = document.getElementById('submitForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const submitStatus = document.getElementById('submitStatus');
+    const adminModal = document.getElementById('adminModal');
+    const closeAdminBtn = document.getElementById('closeAdmin');
+    const adminForm = document.getElementById('adminForm');
+    const adminSubmitBtn = document.getElementById('adminSubmitBtn');
+    const adminStatus = document.getElementById('adminStatus');
 
     let lastQuery = '';
     let currentPage = 0;
@@ -361,6 +358,82 @@ denne her?<!doctype html>
     let isLoading = false;
     let currentMoreBtn = null;
     let typingRow = null;
+
+    // ─────────────────────────────────────────
+    // ADMIN MODE (via ?admin=1)
+    // ─────────────────────────────────────────
+    const isAdmin = new URLSearchParams(window.location.search).get('admin') === '1';
+
+    if (isAdmin) {
+      // Åbn admin modal med Ctrl+Shift+A
+      document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+          e.preventDefault();
+          adminModal.classList.add('open');
+          adminStatus.textContent = '';
+          adminStatus.className = 'submit-status';
+        }
+      });
+    }
+
+    closeAdminBtn.addEventListener('click', () => {
+      adminModal.classList.remove('open');
+    });
+
+    adminModal.addEventListener('click', (e) => {
+      if (e.target === adminModal) {
+        adminModal.classList.remove('open');
+      }
+    });
+
+    adminForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      adminSubmitBtn.disabled = true;
+      adminStatus.textContent = 'Sender...';
+      adminStatus.className = 'submit-status';
+
+      const payload = {
+        action: 'admin-submit',
+        dato: document.getElementById('adminDato').value,
+        starttid: document.getElementById('adminStarttid').value,
+        sluttid: document.getElementById('adminSluttid').value,
+        dansetype: document.getElementById('adminDansetype').value,
+        sted: document.getElementById('adminSted').value,
+        adresse: document.getElementById('adminAdresse').value,
+        pris: document.getElementById('adminPris').value,
+        arrangoer: document.getElementById('adminArrangoer').value,
+        link: document.getElementById('adminLink').value,
+        recurring: document.getElementById('adminRecurring').value
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          adminStatus.textContent = data.text;
+          adminStatus.className = 'submit-status success';
+          adminForm.reset();
+          setTimeout(() => {
+            adminModal.classList.remove('open');
+          }, 1500);
+        } else {
+          adminStatus.textContent = data.text || 'Der opstod en fejl.';
+          adminStatus.className = 'submit-status error';
+        }
+      } catch (err) {
+        adminStatus.textContent = 'Der opstod en teknisk fejl.';
+        adminStatus.className = 'submit-status error';
+      } finally {
+        adminSubmitBtn.disabled = false;
+      }
+    });
 
     // ─────────────────────────────────────────
     // CHAT FUNCTIONS
@@ -540,75 +613,11 @@ denne her?<!doctype html>
     });
 
     // ─────────────────────────────────────────
-    // SUBMIT MODAL FUNCTIONS
+    // INIT (opdateret velkomsttekst)
     // ─────────────────────────────────────────
-    openSubmitBtn.addEventListener('click', () => {
-      modalOverlay.classList.add('open');
-      submitStatus.textContent = '';
-      submitStatus.className = 'submit-status';
-    });
-
-    closeModalBtn.addEventListener('click', () => {
-      modalOverlay.classList.remove('open');
-    });
-
-    modalOverlay.addEventListener('click', (e) => {
-      if (e.target === modalOverlay) {
-        modalOverlay.classList.remove('open');
-      }
-    });
-
-    submitForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      submitBtn.disabled = true;
-      submitStatus.textContent = 'Sender...';
-      submitStatus.className = 'submit-status';
-
-      const payload = {
-        action: 'submit',
-        eventName: document.getElementById('eventName').value.trim(),
-        danceType: document.getElementById('danceType').value,
-        date: document.getElementById('eventDate').value,
-        timeStart: document.getElementById('timeStart').value,
-        timeEnd: document.getElementById('timeEnd').value,
-        venue: document.getElementById('venue').value.trim(),
-        link: document.getElementById('eventLink').value.trim(),
-        comment: document.getElementById('comment').value.trim()
-      };
-
-      try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-          submitStatus.textContent = data.text;
-          submitStatus.className = 'submit-status success';
-          submitForm.reset();
-          setTimeout(() => {
-            modalOverlay.classList.remove('open');
-          }, 2000);
-        } else {
-          submitStatus.textContent = data.text || 'Der opstod en fejl.';
-          submitStatus.className = 'submit-status error';
-        }
-      } catch (err) {
-        submitStatus.textContent = 'Der opstod en teknisk fejl. Prøv igen senere.';
-        submitStatus.className = 'submit-status error';
-      } finally {
-        submitBtn.disabled = false;
-      }
-    });
-
-    // ─────────────────────────────────────────
-    // INIT
-    // ─────────────────────────────────────────
-    addBotMessage('Jeg viser kun danseevents i København. Prøv fx "salsa i dag".', false);
+    addBotMessage('Jeg viser danseevents i København. Søg fx: "salsa i dag", "bachata i weekenden" eller "kizomba fredag".', false);
   </script>
 </body>
 </html>
+
+
