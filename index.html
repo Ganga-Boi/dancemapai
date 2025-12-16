@@ -1,4 +1,4 @@
-<!doctype html>
+denne her?<!doctype html>
 <html lang="da">
 <head>
   <meta charset="utf-8" />
@@ -15,6 +15,7 @@
       height: 100vh; 
       display: flex; 
       flex-direction: column;
+      position: relative;
     }
     
     .header { 
@@ -37,8 +38,21 @@
         height: 44px;
       }
     }
+    .header-text { flex: 1; }
     .header-text h1 { margin: 0 0 1px; font-size: 18px; font-weight: 600; }
     .header-text .sub { font-size: 12px; opacity: .65; }
+    
+    .submit-toggle {
+      padding: 6px 12px;
+      font-size: 12px;
+      background: transparent;
+      border: 1px solid #2a3b54;
+      border-radius: 16px;
+      color: #9fc5ff;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .submit-toggle:hover { background: #142235; }
     
     .chat { 
       flex: 1; 
@@ -130,6 +144,110 @@
     
     a { color: #9fc5ff; text-decoration: none; }
     a:hover { text-decoration: underline; }
+
+    /* Submit Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      z-index: 100;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    
+    .modal {
+      width: 100%;
+      max-width: 480px;
+      max-height: 85vh;
+      background: #0e141d;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      padding: 20px 16px 24px;
+      overflow-y: auto;
+      animation: slideUp .25s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .modal-header h2 { margin: 0; font-size: 18px; font-weight: 600; }
+    .modal-close {
+      background: none;
+      border: none;
+      color: #9fc5ff;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+    
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+      opacity: .8;
+    }
+    .form-group label .req { color: #ff6b6b; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #1a2432;
+      background: #0b1017;
+      color: #e8eef7;
+      font-size: 14px;
+      outline: none;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: #2a3b54;
+    }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+    
+    .form-row {
+      display: flex;
+      gap: 10px;
+    }
+    .form-row .form-group { flex: 1; }
+    
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: #1e3a5f;
+      color: #e8eef7;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+    .submit-btn:hover { background: #2a4a70; }
+    .submit-btn:disabled { opacity: .5; cursor: not-allowed; }
+    
+    .submit-status {
+      text-align: center;
+      padding: 12px;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    .submit-status.success { color: #4ade80; }
+    .submit-status.error { color: #ff6b6b; }
   </style>
 </head>
 <body>
@@ -140,6 +258,7 @@
         <h1>DanceMap</h1>
         <div class="sub">Kun danseevents i København</div>
       </div>
+      <button class="submit-toggle" id="openSubmit">+ Foreslå event</button>
     </div>
 
     <div id="chat" class="chat" aria-live="polite"></div>
@@ -155,12 +274,86 @@
     </div>
   </div>
 
+  <!-- Submit Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Foreslå et event</h2>
+        <button class="modal-close" id="closeModal">&times;</button>
+      </div>
+      
+      <form id="submitForm">
+        <div class="form-group">
+          <label>Eventnavn <span class="req">*</span></label>
+          <input type="text" id="eventName" required />
+        </div>
+        
+        <div class="form-group">
+          <label>Dansetype <span class="req">*</span></label>
+          <select id="danceType" required>
+            <option value="">Vælg...</option>
+            <option value="Salsa">Salsa</option>
+            <option value="Bachata">Bachata</option>
+            <option value="Kizomba">Kizomba</option>
+            <option value="Tango">Tango</option>
+            <option value="Swing">Swing</option>
+            <option value="Zouk">Zouk</option>
+            <option value="West Coast Swing">West Coast Swing</option>
+            <option value="Lindy Hop">Lindy Hop</option>
+            <option value="Latin">Latin</option>
+            <option value="Anden">Anden</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Dato <span class="req">*</span></label>
+          <input type="date" id="eventDate" required />
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Starttid <span class="req">*</span></label>
+            <input type="time" id="timeStart" required />
+          </div>
+          <div class="form-group">
+            <label>Sluttid</label>
+            <input type="time" id="timeEnd" />
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Sted / Venue <span class="req">*</span></label>
+          <input type="text" id="venue" required />
+        </div>
+        
+        <div class="form-group">
+          <label>Link (valgfrit)</label>
+          <input type="url" id="eventLink" placeholder="https://..." />
+        </div>
+        
+        <div class="form-group">
+          <label>Kommentar (valgfrit)</label>
+          <textarea id="comment" placeholder="Evt. ekstra info..."></textarea>
+        </div>
+        
+        <button type="submit" class="submit-btn" id="submitBtn">Send forslag</button>
+        <div id="submitStatus" class="submit-status"></div>
+      </form>
+    </div>
+  </div>
+
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbw-zzGb2H_JqfNLQvtzLNm01oJ7KDIP1IigC-PPBGvMwOTMTpXg9YDrS5YPNwCC4v1L/exec';
 
     const chatEl = document.getElementById('chat');
     const qEl = document.getElementById('q');
     const sendBtn = document.getElementById('sendBtn');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const openSubmitBtn = document.getElementById('openSubmit');
+    const closeModalBtn = document.getElementById('closeModal');
+    const submitForm = document.getElementById('submitForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitStatus = document.getElementById('submitStatus');
 
     let lastQuery = '';
     let currentPage = 0;
@@ -169,6 +362,9 @@
     let currentMoreBtn = null;
     let typingRow = null;
 
+    // ─────────────────────────────────────────
+    // CHAT FUNCTIONS
+    // ─────────────────────────────────────────
     function addUserMessage(text) {
       const row = document.createElement('div');
       row.className = 'row user';
@@ -343,6 +539,75 @@
       }
     });
 
+    // ─────────────────────────────────────────
+    // SUBMIT MODAL FUNCTIONS
+    // ─────────────────────────────────────────
+    openSubmitBtn.addEventListener('click', () => {
+      modalOverlay.classList.add('open');
+      submitStatus.textContent = '';
+      submitStatus.className = 'submit-status';
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      modalOverlay.classList.remove('open');
+    });
+
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        modalOverlay.classList.remove('open');
+      }
+    });
+
+    submitForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      submitBtn.disabled = true;
+      submitStatus.textContent = 'Sender...';
+      submitStatus.className = 'submit-status';
+
+      const payload = {
+        action: 'submit',
+        eventName: document.getElementById('eventName').value.trim(),
+        danceType: document.getElementById('danceType').value,
+        date: document.getElementById('eventDate').value,
+        timeStart: document.getElementById('timeStart').value,
+        timeEnd: document.getElementById('timeEnd').value,
+        venue: document.getElementById('venue').value.trim(),
+        link: document.getElementById('eventLink').value.trim(),
+        comment: document.getElementById('comment').value.trim()
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          submitStatus.textContent = data.text;
+          submitStatus.className = 'submit-status success';
+          submitForm.reset();
+          setTimeout(() => {
+            modalOverlay.classList.remove('open');
+          }, 2000);
+        } else {
+          submitStatus.textContent = data.text || 'Der opstod en fejl.';
+          submitStatus.className = 'submit-status error';
+        }
+      } catch (err) {
+        submitStatus.textContent = 'Der opstod en teknisk fejl. Prøv igen senere.';
+        submitStatus.className = 'submit-status error';
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    // ─────────────────────────────────────────
+    // INIT
+    // ─────────────────────────────────────────
     addBotMessage('Jeg viser kun danseevents i København. Prøv fx "salsa i dag".', false);
   </script>
 </body>
