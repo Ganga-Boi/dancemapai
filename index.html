@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>DanceMap</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="icon" href="/dancemap-icon.svg" />
+  <link rel="icon" href="/dancemap-icon.png" />
 
   <style>
     :root {
@@ -34,12 +34,12 @@
       padding: 16px;
     }
 
-    /* HEADER / TITLE */
+    /* HEADER */
     .title {
       display: flex;
       align-items: center;
       gap: 14px;
-      margin-bottom: 12px;
+      margin-bottom: 6px;
     }
 
     .logo {
@@ -55,7 +55,6 @@
     .title span {
       font-size: 1.25rem;
       font-weight: 600;
-      letter-spacing: 0.2px;
     }
 
     .subtitle {
@@ -80,6 +79,7 @@
       border-radius: 12px;
       padding: 12px 14px;
       line-height: 1.45;
+      white-space: pre-line;
     }
 
     /* INPUT */
@@ -161,7 +161,8 @@
   </div>
 
   <script>
-    const API_URL = 'DIN_APPS_SCRIPT_WEB_APP_URL';
+    // 🔗 RIGTIG API-URL (sat ind)
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw-zzGb2H_JqfNLQvtzLNm01oJ7KDIP1IigC-PPBGvMwOTMTpXg9YDrS5YPNwCC4v1L/exec';
 
     let currentPage = 0;
     let lastQuery = '';
