@@ -1,0 +1,27 @@
+<!--?xml version="1.0" encoding="UTF-8"?-->
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" aria-label="DanceMap logo" role="img">
+
+  <!-- Outer blue ring -->
+  <circle cx="256" cy="256" r="240" fill="#0b3c6f" stroke="#1e88e5" stroke-width="32"></circle>
+
+  <!-- Robot head background -->
+  <rect x="132" y="170" rx="48" ry="48" width="248" height="170" fill="#0b3c6f" stroke="#ffffff" stroke-width="22"></rect>
+
+  <!-- Eyes -->
+  <circle cx="210" cy="255" r="22" fill="#ffffff"></circle>
+  <circle cx="302" cy="255" r="22" fill="#ffffff"></circle>
+
+  <!-- Side ears -->
+  <ellipse cx="116" cy="255" rx="18" ry="28" fill="#ffffff"></ellipse>
+  <ellipse cx="396" cy="255" rx="18" ry="28" fill="#ffffff"></ellipse>
+
+  <!-- Top dot -->
+  <circle cx="256" cy="132" r="16" fill="#ffffff"></circle>
+
+  <!-- Chin / bottom -->
+  <path d="M192 360 L320 360 L256 420 Z" fill="#ffffff"></path>
+
+  <!-- Chin dot -->
+  <circle cx="256" cy="382" r="14" fill="#0b3c6f"></circle>
+
+</svg>
