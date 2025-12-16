@@ -1,202 +1,177 @@
-<!DOCTYPE html>
+<!-- index.html — TRIN 8.2 UI v1.0 (Frontend) -->
+<!doctype html>
 <html lang="da">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>DanceMap</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; color: #fff; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    header { text-align: center; padding: 30px 0; }
-    header h1 { font-size: 2rem; margin-bottom: 8px; background: linear-gradient(90deg, #e94560, #ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    header p { color: #8892b0; }
-    .status-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; font-size: 0.8rem; }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff4444; display: inline-block; margin-right: 5px; }
-    .status-dot.connected { background: #44ff44; }
-    .quick-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; justify-content: center; }
-    .quick-btn { padding: 10px 16px; border: none; border-radius: 20px; background: rgba(255,255,255,0.1); color: #fff; cursor: pointer; }
-    .quick-btn:hover { background: rgba(233,69,96,0.6); }
-    .quick-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .chat-container { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; min-height: 400px; max-height: 500px; overflow-y: auto; margin-bottom: 20px; }
-    .message { margin-bottom: 16px; padding: 12px 16px; border-radius: 12px; line-height: 1.5; }
-    .user-message { background: linear-gradient(135deg, #e94560, #ff6b6b); margin-left: 40px; text-align: right; }
-    .bot-message { background: rgba(255,255,255,0.1); margin-right: 40px; }
-    .bot-message.error { background: rgba(255,68,68,0.2); border: 1px solid rgba(255,68,68,0.4); }
-    .bot-message.welcome { background: rgba(68,255,68,0.1); border: 1px solid rgba(68,255,68,0.2); }
-    .bot-message.empty { background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.2); }
-    .input-container { display: flex; gap: 10px; }
-    #message-input { flex: 1; padding: 14px 18px; border: none; border-radius: 25px; background: rgba(255,255,255,0.1); color: #fff; font-size: 1rem; outline: none; }
-    #message-input::placeholder { color: rgba(255,255,255,0.5); }
-    #send-btn { padding: 14px 24px; border: none; border-radius: 25px; background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; cursor: pointer; font-weight: 600; }
-    #send-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    #load-more-btn { display: block; margin: 10px auto; padding: 10px 20px; border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; background: transparent; color: #fff; cursor: pointer; }
-    .hidden { display: none !important; }
-    .config-error { background: rgba(255,68,68,0.2); border: 2px solid #ff4444; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
-    .feed-section { margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
-    .feed-toggle { width: 100%; padding: 12px; border: 1px dashed rgba(255,255,255,0.3); border-radius: 12px; background: transparent; color: #fff; cursor: pointer; }
-    .feed-form { margin-top: 15px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; }
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; color: #8892b0; }
-    .form-group input { width: 100%; padding: 10px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: rgba(0,0,0,0.2); color: #fff; }
-    .form-row { display: flex; gap: 10px; }
-    .form-row .form-group { flex: 1; }
-    .feed-submit { width: 100%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #e94560, #ff6b6b); color: #fff; font-weight: 600; cursor: pointer; }
-    #feed-result { margin-top: 10px; padding: 10px; border-radius: 8px; text-align: center; }
-    #feed-result.success { background: rgba(68,255,68,0.1); color: #44ff44; }
-    #feed-result.error { background: rgba(255,68,68,0.1); color: #ff4444; }
+    :root { color-scheme: dark; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#0b0f14; color:#e8eef7; }
+    .wrap { max-width: 820px; margin: 0 auto; padding: 18px 14px 22px; }
+    .title { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin: 6px 0 14px; }
+    .title h1 { margin:0; font-size: 20px; font-weight: 650; letter-spacing: .2px; }
+    .title .sub { opacity:.75; font-size: 13px; }
+    .card { background:#0f1620; border:1px solid #1a2432; border-radius: 14px; overflow:hidden; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+    .chat { padding: 14px; height: min(62vh, 540px); overflow:auto; }
+    .row { display:flex; margin: 10px 0; }
+    .row.user { justify-content:flex-end; }
+    .row.bot { justify-content:flex-start; }
+    .bubble { max-width: 92%; padding: 10px 12px; border-radius: 14px; line-height: 1.35; white-space: pre-wrap; word-wrap: break-word; border:1px solid transparent; }
+    .user .bubble { background:#142235; border-color:#233955; }
+    .bot .bubble { background:#0c121a; border-color:#1a2432; }
+    .meta { margin-top: 6px; font-size: 12px; opacity:.7; display:flex; gap:10px; align-items:center; }
+    .bar { display:flex; gap:10px; padding: 12px; border-top:1px solid #1a2432; background:#0e141d; }
+    input[type="text"] { flex:1; border-radius: 12px; border:1px solid #1a2432; background:#0b1017; color:#e8eef7; padding: 12px 12px; outline:none; }
+    input[type="text"]:focus { border-color:#2a3b54; }
+    button { border-radius: 12px; border:1px solid #1a2432; background:#101a26; color:#e8eef7; padding: 12px 14px; cursor:pointer; }
+    button:disabled { opacity:.55; cursor:not-allowed; }
+    .actions { display:flex; gap:10px; padding: 0 12px 12px; }
+    .hint { padding: 10px 12px 12px; font-size: 12px; opacity:.7; }
+    .hr { height:1px; background:#1a2432; margin: 10px 0 0; }
+    a { color:#9fc5ff; text-decoration:none; }
+    a:hover { text-decoration:underline; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>💃 DanceMap</h1>
-      <p>Find danseevents i København</p>
-    </header>
-    <div class="status-bar">
-      <span><span class="status-dot" id="status-dot"></span><span id="status-text">Forbinder...</span></span>
+  <div class="wrap">
+    <div class="title">
+      <h1>DanceMap</h1>
+      <div class="sub">Kun danseevents i København</div>
     </div>
-    <div id="config-error" class="config-error hidden"></div>
-    <div class="quick-actions">
-      <button class="quick-btn" data-action="all">Alle events</button>
-      <button class="quick-btn" data-action="salsa">Salsa</button>
-      <button class="quick-btn" data-action="bachata">Bachata</button>
-      <button class="quick-btn" data-action="kizomba">Kizomba</button>
-      <button class="quick-btn" data-action="today">I dag</button>
-      <button class="quick-btn" data-action="weekend">Weekend</button>
-    </div>
-    <div class="chat-container" id="chat-container"></div>
-    <button id="load-more-btn" class="hidden">Vis flere</button>
-    <div class="input-container">
-      <input type="text" id="message-input" placeholder="Søg efter events...">
-      <button id="send-btn">Søg</button>
-    </div>
-    <div class="feed-section">
-      <button class="feed-toggle" id="feed-toggle">✨ Tilføj nyt event</button>
-      <form class="feed-form hidden" id="feed-form">
-        <h3 style="margin-bottom:15px;">Indsend event</h3>
-        <div class="form-row">
-          <div class="form-group"><label>Dato *</label><input type="date" name="dato" required></div>
-          <div class="form-group"><label>Tid *</label><input type="time" name="starttid" value="20:00" required></div>
+
+    <div class="card">
+      <div id="chat" class="chat" aria-live="polite"></div>
+
+      <div class="actions">
+        <button id="moreBtn" type="button" disabled>Vis flere</button>
+        <div class="meta">
+          <span id="statusText"></span>
         </div>
-        <div class="form-group"><label>Dansetype *</label><input type="text" name="dansetype" required></div>
-        <div class="form-group"><label>Sted *</label><input type="text" name="sted" required></div>
-        <div class="form-group"><label>Adresse</label><input type="text" name="adresse"></div>
-        <div class="form-row">
-          <div class="form-group"><label>By</label><input type="text" name="by" value="København"></div>
-          <div class="form-group"><label>Pris</label><input type="text" name="pris"></div>
-        </div>
-        <button type="submit" class="feed-submit">Send</button>
-        <div id="feed-result" class="hidden"></div>
-      </form>
+      </div>
+
+      <div class="bar">
+        <input id="q" type="text" placeholder="Skriv fx: salsa i dag" autocomplete="off" />
+        <button id="sendBtn" type="button">Send</button>
+      </div>
+
+      <div class="hint">
+        Gyldige eksempler: “salsa i dag”, “bachata i weekenden”, “events næste uge”.
+      </div>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════════════ -->
-  <!-- KONFIGURATION: INDSÆT DIN APPS SCRIPT URL HER                   -->
-  <!-- ═══════════════════════════════════════════════════════════════ -->
   <script>
-    window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwl9mCXSa7dLqnGCgPM_4Mytz0Ru0zzDTKVXgwBp7lDTLSoTfY0w9J_d8J9SOwShLwy/exec';
-  </script>
-  <!-- ═══════════════════════════════════════════════════════════════ -->
+    // TRIN 8.2: Indsæt din Apps Script Web App URL her:
+    // Eksempel: https://script.google.com/macros/s/XXXXX/exec
+    const API_URL = 'REPLACE_WITH_YOUR_APPS_SCRIPT_WEB_APP_URL';
 
-  <script src="dancemap-client.js"></script>
-  <script>
-    (function() {
-      const chat = document.getElementById('chat-container');
-      const input = document.getElementById('message-input');
-      const sendBtn = document.getElementById('send-btn');
-      const loadMoreBtn = document.getElementById('load-more-btn');
-      const statusDot = document.getElementById('status-dot');
-      const statusText = document.getElementById('status-text');
-      const configError = document.getElementById('config-error');
-      const feedToggle = document.getElementById('feed-toggle');
-      const feedForm = document.getElementById('feed-form');
-      const feedResult = document.getElementById('feed-result');
+    const chatEl = document.getElementById('chat');
+    const qEl = document.getElementById('q');
+    const sendBtn = document.getElementById('sendBtn');
+    const moreBtn = document.getElementById('moreBtn');
+    const statusText = document.getElementById('statusText');
 
-      function showError(msg) {
-        configError.textContent = msg;
-        configError.classList.remove('hidden');
-        sendBtn.disabled = true;
-        input.disabled = true;
-        document.querySelectorAll('.quick-btn').forEach(b => b.disabled = true);
+    let lastQuery = '';
+    let currentPage = 0;
+    let hasMore = false;
+    let isLoading = false;
+
+    function addMessage(role, text) {
+      const row = document.createElement('div');
+      row.className = 'row ' + role;
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+
+      bubble.textContent = text;
+
+      row.appendChild(bubble);
+      chatEl.appendChild(row);
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    function setLoading(on, label) {
+      isLoading = on;
+      sendBtn.disabled = on;
+      moreBtn.disabled = on || !hasMore;
+      statusText.textContent = label || '';
+    }
+
+    async function callApi(query, page) {
+      const url = new URL(API_URL);
+      url.searchParams.set('query', query);
+      url.searchParams.set('page', String(page));
+
+      const res = await fetch(url.toString(), { method: 'GET' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json();
+    }
+
+    async function runQuery(query, page, isMore) {
+      const trimmed = (query || '').trim();
+      if (!trimmed) return;
+
+      if (!isMore) {
+        addMessage('user', trimmed);
+        lastQuery = trimmed;
+        currentPage = 0;
+        hasMore = false;
+        moreBtn.disabled = true;
       }
 
-      function setStatus(ok) {
-        statusDot.classList.toggle('connected', ok);
-        statusText.textContent = ok ? 'Forbundet' : 'Ikke forbundet';
-      }
-
-      function addMsg(text, cls) {
-        if (!text) return;
-        const d = document.createElement('div');
-        d.className = 'message ' + cls;
-        d.innerHTML = text.replace(/\n/g, '<br>');
-        chat.appendChild(d);
-        chat.scrollTop = chat.scrollHeight;
-      }
-
-      function clearChat() {
-        chat.innerHTML = '';
-        loadMoreBtn.classList.add('hidden');
-      }
-
-      // ══════════════════════════════════════════════════
-      // INIT - DENNE BLOK KØRER FØR NOGET ANDET
-      // ══════════════════════════════════════════════════
-      if (typeof window.WEB_APP_URL === 'undefined' || !window.WEB_APP_URL) {
-        showError('FEJL: WEB_APP_URL er ikke defineret.');
-        return;
-      }
+      setLoading(true, 'Henter…');
 
       try {
-        DanceMapClient.init(window.WEB_APP_URL, {
-          callbacks: {
-            onWelcome: r => { clearChat(); addMsg(r.text, 'bot-message welcome'); },
-            onSearch: r => { clearChat(); addMsg(r.text, 'bot-message'); loadMoreBtn.classList.toggle('hidden', !r.hasMore); },
-            onEmpty: r => { addMsg(r.text, 'bot-message empty'); loadMoreBtn.classList.add('hidden'); },
-            onPagination: r => { addMsg(r.text, 'bot-message'); loadMoreBtn.classList.toggle('hidden', !r.hasMore); },
-            onFeed: r => { feedResult.className = r.success ? 'success' : 'error'; feedResult.textContent = r.text; feedResult.classList.remove('hidden'); if(r.success) feedForm.reset(); },
-            onError: r => { addMsg(r.text, 'bot-message error'); setStatus(false); }
-          }
-        });
+        const data = await callApi(trimmed, page);
+
+        // API-kontrakt TRIN 8.1: { success, text, hasMore }
+        if (!data || typeof data.success !== 'boolean') {
+          addMessage('bot', 'Der opstod en teknisk fejl. Prøv igen senere.');
+          hasMore = false;
+          return;
+        }
+
+        if (!data.success) {
+          addMessage('bot', data.text || 'Der opstod en teknisk fejl. Prøv igen senere.');
+          hasMore = false;
+          return;
+        }
+
+        addMessage('bot', data.text || 'Der er ingen danseevents, der matcher din forespørgsel.');
+        hasMore = !!data.hasMore;
+        moreBtn.disabled = !hasMore;
+        if (hasMore) statusText.textContent = 'Der er flere events.';
       } catch (e) {
-        showError('Init fejl: ' + e.message);
-        return;
+        addMessage('bot', 'Der opstod en teknisk fejl. Prøv igen senere.');
+        hasMore = false;
+      } finally {
+        setLoading(false, hasMore ? 'Der er flere events.' : '');
       }
+    }
 
-      // Test forbindelse
-      DanceMapClient.ping().then(r => {
-        setStatus(r.success);
-        if (r.success) DanceMapClient.loadInitial();
-        else showError('Kunne ikke forbinde til backend.');
-      });
+    sendBtn.addEventListener('click', () => {
+      if (isLoading) return;
+      runQuery(qEl.value, 0, false);
+      qEl.value = '';
+      qEl.focus();
+    });
 
-      // Event handlers
-      sendBtn.onclick = async () => {
-        const msg = input.value.trim();
-        if (!msg) return;
-        input.value = '';
-        addMsg(msg, 'user-message');
-        await DanceMapClient.sendMessage(msg);
-      };
-
-      input.onkeypress = e => { if (e.key === 'Enter') sendBtn.click(); };
-
-      document.querySelectorAll('.quick-btn').forEach(btn => {
-        btn.onclick = async () => { clearChat(); await DanceMapClient.quickAction(btn.dataset.action); };
-      });
-
-      loadMoreBtn.onclick = async () => { loadMoreBtn.classList.add('hidden'); await DanceMapClient.loadMore(); };
-
-      feedToggle.onclick = () => feedForm.classList.toggle('hidden');
-
-      feedForm.onsubmit = async e => {
+    qEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
         e.preventDefault();
-        const fd = new FormData(e.target);
-        await DanceMapClient.submitEvent(Object.fromEntries(fd));
-      };
-    })();
+        sendBtn.click();
+      }
+    });
+
+    moreBtn.addEventListener('click', () => {
+      if (isLoading || !hasMore) return;
+      currentPage += 1;
+      runQuery(lastQuery, currentPage, true);
+    });
+
+    // Starttekst (ingen smalltalk)
+    addMessage('bot', 'Jeg viser kun danseevents i København. Prøv fx "salsa i dag".');
   </script>
 </body>
 </html>
