@@ -1,73 +1,221 @@
 <!doctype html>
 <html lang="da">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DanceMap</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DanceMap</title>
 
-  <style>
-    :root { color-scheme: dark; }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#0b0f14; color:#e8eef7; }
+<style>
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: #0b0f14;
+  color: #e8eef7;
+}
 
-    .wrap { max-width:480px; margin:0 auto; height:100vh; display:flex; flex-direction:column; }
+.wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 
-    .header { padding:14px 16px; border-bottom:1px solid #1a2432; background:#0e141d; display:flex; align-items:center; gap:10px; }
-    .header-avatar { width:40px; height:40px; border-radius:50%; flex-shrink:0; }
-    @media (min-width:600px){ .header-avatar{ width:44px; height:44px; } }
-    .header-text h1 { margin:0 0 2px; font-size:18px; font-weight:600; }
-    .header-text .sub { font-size:12px; opacity:.65; }
+/* HEADER */
+.header {
+  padding: 14px 16px;
+  border-bottom: 1px solid #1a2432;
+  background: #0e141d;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+.header-text { flex: 1; }
+.header-text h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+.header-text .sub {
+  font-size: 12px;
+  opacity: .65;
+}
+.admin-btn {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid #2a3b54;
+  background: #142235;
+  color: #9fc5ff;
+  cursor: pointer;
+}
 
-    .chat { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
-    .row{ display:flex; }
-    .row.user{ justify-content:flex-end; }
-    .row.bot{ justify-content:flex-start; }
-    .bubble{ max-width:85%; padding:10px 14px; border-radius:16px; line-height:1.4; white-space:pre-wrap; font-size:14px; }
-    .user .bubble{ background:#1e3a5f; border-bottom-right-radius:4px; }
-    .bot .bubble{ background:#1a2432; border-bottom-left-radius:4px; }
-    .typing .bubble{ font-style:italic; opacity:.6; }
+/* CHAT */
+.chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.row { display: flex; }
+.row.user { justify-content: flex-end; }
+.row.bot { justify-content: flex-start; }
+.bubble {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+.user .bubble {
+  background: #1e3a5f;
+  border-bottom-right-radius: 4px;
+}
+.bot .bubble {
+  background: #1a2432;
+  border-bottom-left-radius: 4px;
+}
 
-    .more-btn{ align-self:flex-start; padding:8px 14px; font-size:13px; background:#0e141d; border:1px solid #2a3b54; border-radius:12px; color:#9fc5ff; cursor:pointer; }
+/* INPUT BAR */
+.bar {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid #1a2432;
+  background: #0e141d;
+}
+.bar input {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 20px;
+  border: 1px solid #1a2432;
+  background: #0b1017;
+  color: #e8eef7;
+}
+.send-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: #1e3a5f;
+  color: #fff;
+  cursor: pointer;
+}
 
-    .bar{ display:flex; gap:10px; padding:12px 16px; border-top:1px solid #1a2432; background:#0e141d; }
-    .bar input{ flex:1; padding:12px 14px; border-radius:20px; border:1px solid #1a2432; background:#0b1017; color:#e8eef7; font-size:14px; outline:none; }
-    .send-btn{ width:44px; height:44px; border-radius:50%; border:none; background:#1e3a5f; color:#e8eef7; cursor:pointer; }
+/* ADMIN MODAL */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.7);
+  z-index: 100;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
 
-    /* ADMIN MODAL */
-    .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:100; align-items:flex-end; justify-content:center; }
-    .modal-overlay.open{ display:flex; }
-    .modal{ width:100%; max-width:480px; max-height:85vh; background:#0e141d; border-top-left-radius:20px; border-top-right-radius:20px; padding:20px 16px 24px; overflow-y:auto; }
-    .modal-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-    .modal-header h2{ margin:0; font-size:18px; font-weight:600; }
-    .modal-close{ background:none; border:none; color:#9fc5ff; font-size:24px; cursor:pointer; }
+.modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  background: #0e141d;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px 16px 24px;
+  overflow-y: auto;
+}
 
-    .form-group{ margin-bottom:14px; }
-    .form-group label{ display:block; font-size:13px; margin-bottom:6px; opacity:.8; }
-    .form-group input,.form-group select{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid #1a2432; background:#0b1017; color:#e8eef7; font-size:14px; }
-    .form-row{ display:flex; gap:10px; }
-    .form-row .form-group{ flex:1; }
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.modal-close {
+  background: none;
+  border: none;
+  color: #9fc5ff;
+  font-size: 24px;
+  cursor: pointer;
+}
 
-    .submit-btn{ width:100%; padding:14px; border-radius:12px; border:none; background:#1e3a5f; color:#e8eef7; font-size:15px; cursor:pointer; }
-    .submit-status{ text-align:center; padding:12px; font-size:14px; margin-top:10px; }
-    .submit-status.success{ color:#4ade80; }
-    .submit-status.error{ color:#ff6b6b; }
-  </style>
+.form-group { margin-bottom: 12px; }
+.form-group label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+  opacity: .8;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #1a2432;
+  background: #0b1017;
+  color: #e8eef7;
+  font-size: 14px;
+}
+textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+}
+.form-row .form-group { flex: 1; }
+
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #1e3a5f;
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.submit-status {
+  text-align: center;
+  padding: 10px;
+  font-size: 14px;
+}
+.submit-status.success { color: #4ade80; }
+.submit-status.error { color: #ff6b6b; }
+</style>
 </head>
 
 <body>
 <div class="wrap">
   <div class="header">
-    <img class="header-avatar" src="./dancemap-icon.svg" alt="DanceMap" />
+    <img src="./dancemap-icon.svg" class="header-avatar" />
     <div class="header-text">
       <h1>DanceMap</h1>
       <div class="sub">Kun danseevents i København</div>
     </div>
+    <button class="admin-btn" id="openAdmin">Admin</button>
   </div>
 
   <div id="chat" class="chat"></div>
 
   <div class="bar">
-    <input id="q" type="text" placeholder='Skriv fx: "salsa i dag"' autocomplete="off" />
+    <input id="q" placeholder='Skriv fx: "salsa i dag"' />
     <button id="sendBtn" class="send-btn">➤</button>
   </div>
 </div>
@@ -76,37 +224,76 @@
 <div class="modal-overlay" id="adminModal">
   <div class="modal">
     <div class="modal-header">
-      <h2>Admin: Tilføj event</h2>
+      <h2>Admin – Tilføj event</h2>
       <button class="modal-close" id="closeAdmin">&times;</button>
     </div>
 
+    <div class="form-group">
+      <label>Copy/paste event-tekst (kun reference)</label>
+      <textarea placeholder="Indsæt fx tekst fra Facebook her"></textarea>
+    </div>
+
     <form id="adminForm">
-      <div class="form-group"><label>Dato *</label><input type="date" id="adminDato" required></div>
+      <div class="form-group">
+        <label>Dato *</label>
+        <input type="date" id="dato" required>
+      </div>
 
       <div class="form-row">
-        <div class="form-group"><label>Starttid *</label><input type="time" id="adminStarttid" required></div>
-        <div class="form-group"><label>Sluttid</label><input type="time" id="adminSluttid"></div>
+        <div class="form-group">
+          <label>Starttid *</label>
+          <input type="time" id="starttid" required>
+        </div>
+        <div class="form-group">
+          <label>Sluttid</label>
+          <input type="time" id="sluttid">
+        </div>
       </div>
 
       <div class="form-group">
         <label>Dansetype *</label>
-        <select id="adminDansetype" required>
+        <select id="dansetype" required>
           <option value="">Vælg…</option>
-          <option>Salsa</option><option>Bachata</option><option>Kizomba</option>
-          <option>Tango</option><option>Swing</option><option>Zouk</option>
-          <option>West Coast Swing</option><option>Lindy Hop</option><option>Latin</option>
+          <option>Salsa</option>
+          <option>Bachata</option>
+          <option>Kizomba</option>
+          <option>Tango</option>
+          <option>Swing</option>
+          <option>Zouk</option>
+          <option>West Coast Swing</option>
+          <option>Lindy Hop</option>
+          <option>Latin</option>
         </select>
       </div>
 
-      <div class="form-group"><label>Sted *</label><input type="text" id="adminSted" required></div>
-      <div class="form-group"><label>Adresse</label><input type="text" id="adminAdresse"></div>
-      <div class="form-group"><label>Pris</label><input type="text" id="adminPris"></div>
-      <div class="form-group"><label>Arrangør</label><input type="text" id="adminArrangoer"></div>
-      <div class="form-group"><label>Link</label><input type="url" id="adminLink"></div>
+      <div class="form-group">
+        <label>Sted *</label>
+        <input id="sted" required>
+      </div>
+
+      <div class="form-group">
+        <label>Adresse</label>
+        <input id="adresse">
+      </div>
+
+      <div class="form-group">
+        <label>Pris</label>
+        <input id="pris">
+      </div>
+
+      <div class="form-group">
+        <label>Arrangør</label>
+        <input id="arrangoer">
+      </div>
+
+      <div class="form-group">
+        <label>Link</label>
+        <input id="link">
+      </div>
 
       <div class="form-group">
         <label>Recurring</label>
-        <select id="adminRecurring">
+        <select id="recurring">
           <option value="none">Ingen</option>
           <option value="weekly">Ugentlig</option>
           <option value="festival">Festival</option>
@@ -120,121 +307,95 @@
 </div>
 
 <script>
-  const API_URL = 'https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec';
 
-  const chatEl = document.getElementById('chat');
-  const qEl = document.getElementById('q');
-  const sendBtn = document.getElementById('sendBtn');
+const chat = document.getElementById('chat');
+const q = document.getElementById('q');
+const sendBtn = document.getElementById('sendBtn');
 
-  const adminModal = document.getElementById('adminModal');
-  const closeAdmin = document.getElementById('closeAdmin');
-  const adminForm = document.getElementById('adminForm');
-  const adminStatus = document.getElementById('adminStatus');
+function add(type, text) {
+  const r = document.createElement('div');
+  r.className = 'row ' + type;
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  b.textContent = text;
+  r.appendChild(b);
+  chat.appendChild(r);
+  chat.scrollTop = chat.scrollHeight;
+}
 
-  const f = {
-    dato: document.getElementById('adminDato'),
-    start: document.getElementById('adminStarttid'),
-    slut: document.getElementById('adminSluttid'),
-    dans: document.getElementById('adminDansetype'),
-    sted: document.getElementById('adminSted'),
-    adr: document.getElementById('adminAdresse'),
-    pris: document.getElementById('adminPris'),
-    arr: document.getElementById('adminArrangoer'),
-    link: document.getElementById('adminLink'),
-    rec: document.getElementById('adminRecurring')
+async function callApi(query, page) {
+  const u = new URL(API_URL);
+  u.searchParams.set('query', query);
+  u.searchParams.set('page', page);
+  const r = await fetch(u);
+  return r.json();
+}
+
+sendBtn.onclick = async () => {
+  if (!q.value.trim()) return;
+  add('user', q.value);
+  const t = q.value;
+  q.value = '';
+  add('bot', 'DanceMap skriver …');
+  const d = await callApi(t, 0);
+  chat.lastChild.remove();
+  add('bot', d.text || 'Ingen events.');
+};
+
+q.addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendBtn.click();
+});
+
+add('bot', 'Jeg viser danseevents i København. Søg fx: "salsa i dag", "bachata i weekenden" eller "kizomba fredag".');
+
+/* ADMIN */
+const adminModal = document.getElementById('adminModal');
+document.getElementById('openAdmin').onclick = () => adminModal.classList.add('open');
+document.getElementById('closeAdmin').onclick = () => adminModal.classList.remove('open');
+adminModal.onclick = e => { if (e.target === adminModal) adminModal.classList.remove('open'); };
+
+document.getElementById('adminForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const status = document.getElementById('adminStatus');
+  status.textContent = 'Sender…';
+  status.className = 'submit-status';
+
+  const payload = {
+    action: 'admin-submit',
+    dato: dato.value,
+    starttid: starttid.value,
+    sluttid: sluttid.value,
+    dansetype: dansetype.value,
+    sted: sted.value,
+    adresse: adresse.value,
+    pris: pris.value,
+    arrangoer: arrangoer.value,
+    link: link.value,
+    recurring: recurring.value
   };
 
-  /* ADMIN HOTKEY — Ctrl + Shift + M */
-  const isAdmin = new URLSearchParams(location.search).get('admin') === '1';
-  if (isAdmin) {
-    document.addEventListener('keydown', (e) => {
-      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'm') {
-        e.preventDefault();
-        adminModal.classList.add('open');
-        f.dato.focus();
-      }
+  try {
+    const r = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
-  }
+    const d = await r.json();
 
-  closeAdmin.onclick = () => adminModal.classList.remove('open');
-  adminModal.onclick = e => { if (e.target === adminModal) adminModal.classList.remove('open'); };
-
-  adminForm.onsubmit = async (e) => {
-    e.preventDefault();
-    adminStatus.textContent = 'Sender…';
-    adminStatus.className = 'submit-status';
-
-    const payload = {
-      action: 'admin-submit',
-      dato: f.dato.value,
-      starttid: f.start.value,
-      sluttid: f.slut.value,
-      dansetype: f.dans.value,
-      sted: f.sted.value,
-      adresse: f.adr.value,
-      pris: f.pris.value,
-      arrangoer: f.arr.value,
-      link: f.link.value,
-      recurring: f.rec.value
-    };
-
-    try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        adminStatus.textContent = data.text;
-        adminStatus.className = 'submit-status success';
-        adminForm.reset();
-        f.dato.focus();
-      } else {
-        adminStatus.textContent = data.text || 'Fejl';
-        adminStatus.className = 'submit-status error';
-      }
-    } catch {
-      adminStatus.textContent = 'Der opstod en teknisk fejl.';
-      adminStatus.className = 'submit-status error';
+    if (d.success) {
+      status.textContent = d.text;
+      status.className = 'submit-status success';
+      e.target.reset();
+    } else {
+      status.textContent = d.text || 'Fejl';
+      status.className = 'submit-status error';
     }
-  };
-
-  /* CHAT */
-  function addRow(type, text) {
-    const r = document.createElement('div');
-    r.className = 'row ' + type;
-    const b = document.createElement('div');
-    b.className = 'bubble';
-    b.textContent = text;
-    r.appendChild(b);
-    chatEl.appendChild(r);
-    chatEl.scrollTop = chatEl.scrollHeight;
+  } catch {
+    status.textContent = 'Teknisk fejl';
+    status.className = 'submit-status error';
   }
-
-  async function callApi(q, p) {
-    const u = new URL(API_URL);
-    u.searchParams.set('query', q);
-    u.searchParams.set('page', p);
-    const r = await fetch(u.toString());
-    return r.json();
-  }
-
-  sendBtn.onclick = async () => {
-    const t = qEl.value.trim();
-    if (!t) return;
-    addRow('user', t);
-    qEl.value = '';
-    addRow('bot', 'DanceMap skriver …');
-    const d = await callApi(t, 0);
-    chatEl.lastChild.remove();
-    addRow('bot', d.text || 'Ingen events fundet.');
-  };
-
-  qEl.addEventListener('keydown', e => { if (e.key === 'Enter') sendBtn.click(); });
-
-  addRow('bot', 'Jeg viser danseevents i København. Søg fx: "salsa i dag", "bachata i weekenden" eller "kizomba fredag".');
+};
 </script>
 </body>
 </html>
