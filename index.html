@@ -24,7 +24,6 @@ body{margin:0;font-family:system-ui;background:#0b0f14;color:#e8eef7}
 .bar{display:flex;gap:10px;padding:12px;border-top:1px solid #1a2432;background:#0e141d}
 .bar input{flex:1;padding:12px;border-radius:20px;border:1px solid #1a2432;background:#0b1017;color:#e8eef7}
 .send-btn{width:44px;height:44px;border-radius:50%;border:none;background:#1e3a5f;color:#fff}
-.more-btn{align-self:flex-start;padding:8px 14px;border-radius:12px;border:1px solid #2a3b54;background:#0e141d;color:#9fc5ff}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:flex-end;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:#0e141d;width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:16px}
@@ -54,7 +53,6 @@ textarea{width:100%;min-height:160px;border-radius:10px;border:1px solid #1a2432
   </div>
 </div>
 
-<!-- ADMIN -->
 <div id="adminModal" class="modal-overlay">
   <div class="modal">
     <h3>Admin – Paste / URL</h3>
@@ -65,13 +63,13 @@ textarea{width:100%;min-height:160px;border-radius:10px;border:1px solid #1a2432
 </div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec';
+const API_URL = 'DIN_WEBAPP_URL_HER';
 
 const chat=document.getElementById('chat');
 const q=document.getElementById('q');
 const send=document.getElementById('send');
 
-let lastQuery='',page=0,hasMore=false,loading=false,typingEl=null,moreBtn=null;
+let lastQuery='',page=0,hasMore=false,loading=false;
 
 function add(text,cls){
   const r=document.createElement('div');
@@ -84,30 +82,14 @@ function add(text,cls){
   chat.scrollTop=chat.scrollHeight;
 }
 
-function typing(){
-  if(typingEl)return;
-  typingEl=document.createElement('div');
-  typingEl.className='row bot typing';
-  const b=document.createElement('div');
-  b.className='bubble';
-  b.textContent='DanceMap skriver …';
-  typingEl.appendChild(b);
-  chat.appendChild(typingEl);
-}
-
-function stopTyping(){
-  if(typingEl){typingEl.remove();typingEl=null;}
-}
-
 async function callApi(query,p){
   const u=new URL(API_URL);
-  u.searchParams.set('query',query);
+  u.searchParams.set('message',query);
   u.searchParams.set('page',p);
   u.searchParams.set('_ts',Date.now());
   const r=await fetch(u,{cache:'no-store'});
   const t=await r.text();
-  if(!r.ok)throw'HTTP';
-  if(t.trim().startsWith('<'))throw'HTML';
+  if(!r.ok||t.trim().startsWith('<'))throw'ERR';
   return JSON.parse(t);
 }
 
@@ -117,48 +99,21 @@ async function sendQuery(){
   q.value='';
   add(text,'user');
   lastQuery=text;page=0;hasMore=false;
-  loading=true;typing();
+  loading=true;
 
   try{
     const d=await callApi(text,0);
-    stopTyping();
     if(!d.success){add(d.text,'bot');return;}
-    hasMore=!!d.hasMore;
     add(d.text,'bot');
-    if(hasMore){
-      moreBtn=document.createElement('button');
-      moreBtn.className='more-btn';
-      moreBtn.textContent='Vis flere';
-      moreBtn.onclick=more;
-      chat.appendChild(moreBtn);
-    }
+    hasMore=!!d.hasMore;
   }catch{
-    stopTyping();
     add('Der opstod en teknisk fejl. Prøv igen senere.','bot');
-  }finally{loading=false;}
-}
-
-async function more(){
-  if(!hasMore||loading)return;
-  loading=true;page++;typing();
-  try{
-    const d=await callApi(lastQuery,page);
-    stopTyping();
-    if(!d.success){add(d.text,'bot');hasMore=false;return;}
-    add(d.text,'bot');
-    hasMore=!!d.hasMore;
-    if(!hasMore&&moreBtn)moreBtn.remove();
-  }catch{
-    stopTyping();
-    add('Der opstod en teknisk fejl.','bot');
-    hasMore=false;
   }finally{loading=false;}
 }
 
 send.onclick=sendQuery;
 q.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();sendQuery();}};
 
-// ADMIN
 const isAdmin=new URLSearchParams(location.search).get('admin')==='1';
 const adminModal=document.getElementById('adminModal');
 const adminPayload=document.getElementById('adminPayload');
@@ -185,7 +140,7 @@ adminSubmit.onclick=async()=>{
       body:JSON.stringify({action:'admin-import',payload:p})
     });
     const t=await r.text();
-    if(t.trim().startsWith('<'))throw'HTML';
+    if(t.trim().startsWith('<'))throw'ERR';
     const d=JSON.parse(t);
     adminStatus.textContent=d.text;
     adminStatus.className='submit-status '+(d.success?'success':'error');
