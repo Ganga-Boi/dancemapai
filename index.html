@@ -1,361 +1,341 @@
-// ═══════════════════════════════════════════════════════════
-// DanceMap API – Stable + Admin Import + Tidsfortolkning
-// Sheet kolonner (FAST):
-// Dato | Starttid | Sluttid | Dansetype | Sted | Adresse | By | Pris | Arrangør | Link | Status | Recurring | SourceURL
-// doGet: query only
-// doPost: admin-import only
-// ═══════════════════════════════════════════════════════════
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DanceMap</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#0b0f14; color:#e8eef7; }
+    .wrap { max-width:480px; margin:0 auto; height:100vh; display:flex; flex-direction:column; }
+    .header { padding:14px 16px; border-bottom:1px solid #1a2432; background:#0e141d; display:flex; align-items:center; gap:10px; }
+    .header-avatar { width:40px; height:40px; border-radius:50%; }
+    @media (min-width:600px){ .header-avatar{width:44px;height:44px;} }
+    .header-text h1{margin:0;font-size:18px;font-weight:600}
+    .header-text .sub{font-size:12px;opacity:.65}
+    .chat{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+    .row{display:flex}
+    .row.user{justify-content:flex-end}
+    .row.bot{justify-content:flex-start}
+    .bubble{max-width:85%;padding:10px 14px;border-radius:16px;white-space:pre-wrap;font-size:14px}
+    .user .bubble{background:#1e3a5f;border-bottom-right-radius:4px}
+    .bot .bubble{background:#1a2432;border-bottom-left-radius:4px}
+    .typing .bubble{font-style:italic;opacity:.65}
+    .more-btn{align-self:flex-start;padding:8px 14px;border-radius:12px;border:1px solid #2a3b54;background:#0e141d;color:#9fc5ff;cursor:pointer}
+    .more-btn:hover{background:#142235}
+    .more-btn:disabled{opacity:.5;cursor:not-allowed}
+    .bar{display:flex;gap:10px;padding:12px 16px;border-top:1px solid #1a2432;background:#0e141d}
+    .bar input{flex:1;padding:12px 14px;border-radius:20px;border:1px solid #1a2432;background:#0b1017;color:#e8eef7;font-size:14px;outline:none}
+    .bar input:focus{border-color:#2a3b54}
+    .bar input::placeholder{color:#5a6a7a}
+    .send-btn{width:44px;height:44px;border-radius:50%;border:none;background:#1e3a5f;color:#e8eef7;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .send-btn:hover{background:#2a4a70}
+    .send-btn:disabled{opacity:.5;cursor:not-allowed}
+    .send-btn svg{width:20px;height:20px}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:flex-end;justify-content:center}
+    .modal-overlay.open{display:flex}
+    .modal{width:100%;max-width:480px;background:#0e141d;border-top-left-radius:20px;border-top-right-radius:20px;padding:20px 16px 24px;animation:slideUp .18s ease-out}
+    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .modal-header h2{margin:0;font-size:18px;font-weight:600}
+    .modal-close{background:none;border:none;color:#9fc5ff;font-size:24px;cursor:pointer;padding:0;line-height:1}
+    .form-group{margin-bottom:12px}
+    .form-group label{display:block;font-size:13px;margin-bottom:6px;opacity:.8}
+    .form-group textarea{width:100%;min-height:180px;padding:10px 12px;border-radius:10px;border:1px solid #1a2432;background:#0b1017;color:#e8eef7;font-size:14px;outline:none;resize:vertical}
+    .form-group textarea:focus{border-color:#2a3b54}
+    .submit-btn{width:100%;padding:14px;border-radius:12px;border:none;background:#1e3a5f;color:#e8eef7;font-size:15px;font-weight:500;cursor:pointer}
+    .submit-btn:hover{background:#2a4a70}
+    .submit-btn:disabled{opacity:.5;cursor:not-allowed}
+    .submit-status{text-align:center;padding:10px;font-size:14px;margin-top:10px}
+    .submit-status.success{color:#4ade80}
+    .submit-status.error{color:#ff6b6b}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <img class="header-avatar" src="./dancemap-icon.svg" alt="DanceMap" />
+    <div class="header-text">
+      <h1>DanceMap</h1>
+      <div class="sub">Kun danseevents i København</div>
+    </div>
+  </div>
 
-const SHEET_ID = '1zaqt2KrR-dZrJoFx3-EP7eIe-ITka55oT9fvnIZaBMU';
-const EVENTS_SHEET = 'Events';
-const PAGE_SIZE = 5;
+  <div id="chat" class="chat" aria-live="polite"></div>
 
-function doGet(e) {
+  <div class="bar">
+    <input id="q" type="text" placeholder="Skriv fx: salsa i dag" autocomplete="off" />
+    <button id="sendBtn" class="send-btn" type="button" aria-label="Send">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- Admin Modal (kun synlig med ?admin=1) -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Admin: Paste → Event</h2>
+      <button class="modal-close" id="closeAdmin">&times;</button>
+    </div>
+
+    <div class="form-group">
+      <label>Paste tekst (fx FB) eller URL</label>
+      <textarea id="adminPayload" placeholder="Paste her…&#10;&#10;Eksempel:&#10;Kedelhallen&#10;2025-01-20 20:30-02:00&#10;Salsa&#10;Nyelandsvej 75A&#10;https://..."></textarea>
+    </div>
+
+    <button type="button" class="submit-btn" id="adminSubmitBtn">Tilføj til Events</button>
+    <div id="adminStatus" class="submit-status"></div>
+  </div>
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec';
+
+const chatEl = document.getElementById('chat');
+const qEl = document.getElementById('q');
+const sendBtn = document.getElementById('sendBtn');
+const adminModal = document.getElementById('adminModal');
+const closeAdminBtn = document.getElementById('closeAdmin');
+const adminPayloadEl = document.getElementById('adminPayload');
+const adminSubmitBtn = document.getElementById('adminSubmitBtn');
+const adminStatus = document.getElementById('adminStatus');
+
+let lastQuery = '';
+let currentPage = 0;
+let hasMore = false;
+let isLoading = false;
+let currentMoreBtn = null;
+let typingRow = null;
+
+const isAdmin = new URLSearchParams(window.location.search).get('admin') === '1';
+
+function addUserMessage(text) {
+  const row = document.createElement('div');
+  row.className = 'row user';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = text;
+  row.appendChild(bubble);
+  chatEl.appendChild(row);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function showTyping() {
+  removeTyping();
+  const row = document.createElement('div');
+  row.className = 'row bot typing';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = 'DanceMap skriver …';
+  row.appendChild(bubble);
+  chatEl.appendChild(row);
+  typingRow = row;
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function removeTyping() {
+  if (typingRow) {
+    typingRow.remove();
+    typingRow = null;
+  }
+}
+
+function addBotMessage(text, showMore) {
+  removeTyping();
+
+  const row = document.createElement('div');
+  row.className = 'row bot';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = text;
+  row.appendChild(bubble);
+  chatEl.appendChild(row);
+
+  if (currentMoreBtn) {
+    currentMoreBtn.remove();
+    currentMoreBtn = null;
+  }
+
+  if (showMore) {
+    const btn = document.createElement('button');
+    btn.className = 'more-btn';
+    btn.textContent = 'Vis flere';
+    btn.addEventListener('click', handleMore);
+    chatEl.appendChild(btn);
+    currentMoreBtn = btn;
+  }
+
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function setLoading(on) {
+  isLoading = on;
+  sendBtn.disabled = on;
+  if (currentMoreBtn) currentMoreBtn.disabled = on;
+  adminSubmitBtn.disabled = on;
+}
+
+async function callApi(query, page) {
+  const url = new URL(API_URL);
+  url.searchParams.set('query', query);
+  url.searchParams.set('page', String(page));
+  url.searchParams.set('_ts', String(Date.now()));
+
+  const res = await fetch(url.toString(), { method: 'GET', cache: 'no-store' });
+  const raw = await res.text();
+
+  if (!res.ok) throw new Error('HTTP_' + res.status);
+  if (raw.trim().startsWith('<')) throw new Error('HTML_RESPONSE');
+
+  return JSON.parse(raw);
+}
+
+async function handleSend() {
+  const trimmed = (qEl.value || '').trim();
+  if (!trimmed || isLoading) return;
+
+  addUserMessage(trimmed);
+  qEl.value = '';
+  lastQuery = trimmed;
+  currentPage = 0;
+  hasMore = false;
+
+  setLoading(true);
+  showTyping();
+
   try {
-    const query = String(e.parameter.query || '').trim();
-    const page = parseInt(e.parameter.page || '0', 10);
+    const data = await callApi(trimmed, 0);
 
-    const result = handleQuery(query, page);
-    return out(result);
+    if (!data || typeof data.success !== 'boolean') {
+      addBotMessage('Der opstod en teknisk fejl. Prøv igen senere.', false);
+      return;
+    }
 
-  } catch (err) {
-    return out({ success: false, text: 'Der opstod en teknisk fejl. Prøv igen senere.', hasMore: false });
+    if (!data.success) {
+      addBotMessage(data.text || 'Der opstod en teknisk fejl. Prøv igen senere.', false);
+      return;
+    }
+
+    hasMore = !!data.hasMore;
+    addBotMessage(data.text || 'Der er ingen danseevents, der matcher din forespørgsel.', hasMore);
+
+  } catch (e) {
+    addBotMessage('Der opstod en teknisk fejl. Prøv igen senere.', false);
+  } finally {
+    setLoading(false);
   }
 }
 
-function doPost(e) {
+async function handleMore() {
+  if (isLoading || !hasMore) return;
+
+  currentPage += 1;
+  setLoading(true);
+  showTyping();
+
   try {
-    const raw = (e && e.postData && e.postData.contents) ? e.postData.contents : '';
-    const data = safeJson(raw);
+    const data = await callApi(lastQuery, currentPage);
 
-    if (!data || !data.action) return out({ success: false, text: 'Manglende action parameter.', hasMore: false });
-    if (data.action !== 'admin-import') return out({ success: false, text: 'Ukendt action: ' + String(data.action), hasMore: false });
+    if (!data || !data.success) {
+      addBotMessage('Der opstod en teknisk fejl. Prøv igen senere.', false);
+      hasMore = false;
+      return;
+    }
 
-    const payload = String(data.payload || '').trim();
-    if (!payload) return out({ success: false, text: 'Tomt input.', hasMore: false });
+    hasMore = !!data.hasMore;
+    addBotMessage(data.text, hasMore);
 
-    const parsed = parseAdmin(payload);
-    if (!parsed.success) return out(parsed);
+  } catch (e) {
+    addBotMessage('Der opstod en teknisk fejl. Prøv igen senere.', false);
+    hasMore = false;
+  } finally {
+    setLoading(false);
+  }
+}
 
-    const write = writeEvent(parsed.event);
-    return out(write);
+sendBtn.addEventListener('click', handleSend);
 
+qEl.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    handleSend();
+  }
+});
+
+// ADMIN: åbnes kun med ?admin=1 (Ctrl+Shift+A)
+if (isAdmin) {
+  window.addEventListener('keydown', (e) => {
+    const k = (e.key || '').toLowerCase();
+    if (e.ctrlKey && e.shiftKey && k === 'a') {
+      e.preventDefault();
+      e.stopPropagation();
+      adminModal.classList.toggle('open');
+      adminStatus.textContent = '';
+      adminStatus.className = 'submit-status';
+      setTimeout(() => adminPayloadEl.focus(), 0);
+    }
+  }, true);
+}
+
+closeAdminBtn.addEventListener('click', () => adminModal.classList.remove('open'));
+adminModal.addEventListener('click', (e) => { if (e.target === adminModal) adminModal.classList.remove('open'); });
+
+adminSubmitBtn.addEventListener('click', async () => {
+  if (isLoading) return;
+
+  const payload = (adminPayloadEl.value || '').trim();
+  if (!payload) return;
+
+  adminSubmitBtn.disabled = true;
+  adminStatus.textContent = 'Sender...';
+  adminStatus.className = 'submit-status';
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'admin-import', payload })
+    });
+
+    const raw = await res.text();
+    if (!res.ok) throw new Error('HTTP_' + res.status);
+    if (raw.trim().startsWith('<')) throw new Error('HTML_RESPONSE');
+
+    const data = JSON.parse(raw);
+
+    if (data.success) {
+      adminStatus.textContent = data.text || '✅ OK';
+      adminStatus.className = 'submit-status success';
+      adminPayloadEl.value = '';
+    } else {
+      adminStatus.textContent = data.text || 'Der opstod en fejl.';
+      adminStatus.className = 'submit-status error';
+    }
   } catch (err) {
-    return out({ success: false, text: 'Der opstod en teknisk fejl. Prøv igen senere.', hasMore: false });
+    adminStatus.textContent = 'Der opstod en teknisk fejl.';
+    adminStatus.className = 'submit-status error';
+  } finally {
+    adminSubmitBtn.disabled = false;
   }
-}
+});
 
-// ─────────────────────────────────────────────
-// QUERY HANDLER (med tidsfortolkning)
-// ─────────────────────────────────────────────
-function handleQuery(query, page) {
-  const q = String(query || '').toLowerCase().trim();
-  
-  if (!q || q === 'hej' || q === 'hi' || q === 'hello') {
-    return { success: true, text: 'Jeg viser kun danseevents i København. Prøv fx "salsa i dag".', hasMore: false };
-  }
+// INIT
+addBotMessage('Jeg viser danseevents i København. Søg fx: "salsa i dag", "bachata i weekenden" eller "kizomba fredag".', false);
+</script>
+</body>
+</html>
+```
 
-  // Parse dansetype
-  const danceTypes = ['salsa','bachata','kizomba','tango','swing','zouk','west coast swing','lindy hop','latin'];
-  const foundDance = danceTypes.find(d => q.includes(d)) || null;
+---
 
-  // Parse datointerval
-  const dateRange = parseDateRange(q);
-
-  // Hvis hverken dansetype eller datointerval fundet
-  if (!foundDance && !dateRange) {
-    return { success: true, text: 'Jeg viser kun danseevents i København. Prøv fx "salsa i dag".', hasMore: false };
-  }
-
-  // Brug default datointerval hvis ikke angivet (14 dage frem)
-  const range = dateRange || defaultDateRange();
-
-  const sh = sheet();
-  const rows = sh.getDataRange().getValues().slice(1);
-
-  const matches = rows.filter(r => {
-    // Status = active
-    const status = String(r[10] || '').toLowerCase();
-    if (status !== 'active') return false;
-
-    // By = København
-    const by = String(r[6] || '').toLowerCase();
-    if (!(by.includes('københavn') || by.includes('koebenhavn'))) return false;
-
-    // Dato inden for interval
-    const dato = new Date(r[0]);
-    if (isNaN(dato.getTime())) return false;
-    dato.setHours(0, 0, 0, 0);
-    if (dato < range.start || dato > range.end) return false;
-
-    // Dansetype (hvis angivet)
-    if (foundDance) {
-      const dansetype = String(r[3] || '').toLowerCase();
-      if (!dansetype.includes(foundDance)) return false;
-    }
-
-    return true;
-  });
-
-  // Sorter: dato → starttid → dansetype
-  matches.sort(function(a, b) {
-    const da = new Date(a[0]).getTime();
-    const db = new Date(b[0]).getTime();
-    if (da !== db) return da - db;
-
-    const ta = String(a[1] || '');
-    const tb = String(b[1] || '');
-    if (ta !== tb) return ta.localeCompare(tb);
-
-    return String(a[3] || '').localeCompare(String(b[3] || ''), 'da');
-  });
-
-  // Deduplikering (dato + sted + starttid)
-  const seen = {};
-  const unique = matches.filter(r => {
-    const key = String(r[0]) + '_' + String(r[4]).toLowerCase() + '_' + String(r[1]);
-    if (seen[key]) return false;
-    seen[key] = true;
-    return true;
-  });
-
-  const start = page * PAGE_SIZE;
-  const slice = unique.slice(start, start + PAGE_SIZE);
-
-  if (slice.length === 0 && page === 0) {
-    return {
-      success: true,
-      text: 'Der er ingen danseevents, der matcher din forespørgsel.\nPrøv fx "salsa i weekenden" eller "bachata i dag".',
-      hasMore: false
-    };
-  }
-
-  return {
-    success: true,
-    text: slice.map(format).join('\n\n'),
-    hasMore: start + PAGE_SIZE < unique.length
-  };
-}
-
-// ─────────────────────────────────────────────
-// TIDSFORTOLKNING
-// ─────────────────────────────────────────────
-function parseDateRange(q) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  // "i dag"
-  if (q.includes('i dag')) {
-    return { start: today, end: today };
-  }
-
-  // "i morgen"
-  if (q.includes('i morgen')) {
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return { start: tomorrow, end: tomorrow };
-  }
-
-  // "weekend"
-  if (q.includes('weekend')) {
-    const saturday = nextWeekday(today, 6);
-    const sunday = new Date(saturday);
-    sunday.setDate(saturday.getDate() + 1);
-    return { start: saturday, end: sunday };
-  }
-
-  // "næste uge"
-  if (q.includes('næste uge') || q.includes('naeste uge')) {
-    const nextMonday = nextWeekday(today, 1);
-    const nextSunday = new Date(nextMonday);
-    nextSunday.setDate(nextMonday.getDate() + 6);
-    return { start: nextMonday, end: nextSunday };
-  }
-
-  // Ugedage
-  const weekdays = {
-    'mandag': 1,
-    'tirsdag': 2,
-    'onsdag': 3,
-    'torsdag': 4,
-    'fredag': 5,
-    'lørdag': 6,
-    'loerdag': 6,
-    'lordag': 6,
-    'søndag': 0,
-    'soendag': 0,
-    'sondag': 0
-  };
-
-  for (var day in weekdays) {
-    if (q.includes(day)) {
-      var target = nextWeekday(today, weekdays[day]);
-      return { start: target, end: target };
-    }
-  }
-
-  return null;
-}
-
-function nextWeekday(from, targetDay) {
-  const result = new Date(from);
-  const currentDay = result.getDay();
-  var daysToAdd = targetDay - currentDay;
-  if (daysToAdd <= 0) daysToAdd += 7;
-  result.setDate(result.getDate() + daysToAdd);
-  result.setHours(0, 0, 0, 0);
-  return result;
-}
-
-function defaultDateRange() {
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 14);
-  return { start: start, end: end };
-}
-
-// ─────────────────────────────────────────────
-// ADMIN PARSER
-// ─────────────────────────────────────────────
-function parseAdmin(payload) {
-  const txt = String(payload || '');
-
-  const date = txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);
-  const time = txt.match(/\b([01]\d|2[0-3]):([0-5]\d)(?:\s*[-–]\s*([01]\d|2[0-3]):([0-5]\d))?\b/);
-  if (!date || !time) return { success: false, text: 'Mangler dato (YYYY-MM-DD) eller tid (HH:MM).', hasMore: false };
-
-  const starttid = time[1] + ':' + time[2];
-  const sluttid = (time[3] && time[4]) ? (time[3] + ':' + time[4]) : '';
-
-  const link = (txt.match(/https?:\/\/\S+/) || [''])[0];
-
-  const types = ['Salsa','Bachata','Kizomba','Tango','Swing','Zouk','West Coast Swing','Lindy Hop','Latin'];
-  var dansetype = '';
-  for (var i = 0; i < types.length; i++) {
-    if (new RegExp('\\b' + types[i].replace(/\s+/g,'\\s+') + '\\b', 'i').test(txt)) { dansetype = types[i]; break; }
-  }
-  if (!dansetype) dansetype = 'Salsa';
-
-  const lines = txt.split('\n').map(function(s) { return s.trim(); }).filter(Boolean);
-  var sted = '';
-  for (var j = 0; j < lines.length; j++) {
-    var l = lines[j];
-    if (l === date[0]) continue;
-    if (l.includes(starttid)) continue;
-    if (link && l.includes(link)) continue;
-    if (new RegExp('\\b' + dansetype.replace(/\s+/g,'\\s+') + '\\b', 'i').test(l)) continue;
-    sted = l;
-    break;
-  }
-  if (!sted) sted = 'Ukendt sted';
-
-  var adresse = '';
-  for (var k = 0; k < lines.length; k++) {
-    var l2 = lines[k];
-    if (/\d/.test(l2) && l2 !== date[0] && !l2.includes(starttid) && (!link || !l2.includes(link))) {
-      adresse = l2;
-      break;
-    }
-  }
-
-  var pris = '';
-  if (/\bgratis\b/i.test(txt)) pris = 'Gratis';
-  var price = txt.match(/\b(\d{1,4})\s*(kr|dkk)\b/i);
-  if (!pris && price) pris = price[1] + ' ' + price[2].toLowerCase();
-
-  var sourceURL = link;
-
-  return {
-    success: true,
-    text: '',
-    hasMore: false,
-    event: [
-      date[0],
-      starttid,
-      sluttid,
-      dansetype,
-      sted,
-      adresse,
-      'København',
-      pris,
-      '',
-      link,
-      'active',
-      'none',
-      sourceURL
-    ]
-  };
-}
-
-// ─────────────────────────────────────────────
-// WRITE + DEDUP (dato + sted + starttid)
-// ─────────────────────────────────────────────
-function writeEvent(eventRow) {
-  const sh = sheet();
-  const rows = sh.getDataRange().getValues().slice(1);
-
-  const keyDato = String(eventRow[0]).trim();
-  const keyStart = String(eventRow[1]).trim();
-  const keySted = String(eventRow[4]).trim().toLowerCase();
-
-  const dup = rows.some(function(r) {
-    return String(r[0]).trim() === keyDato &&
-           String(r[1]).trim() === keyStart &&
-           String(r[4]).trim().toLowerCase() === keySted;
-  });
-
-  if (dup) return { success: false, text: 'Dublet – event findes allerede.', hasMore: false };
-
-  sh.appendRow(eventRow);
-  return { success: true, text: '✅ Event tilføjet direkte til Events.', hasMore: false };
-}
-
-// ─────────────────────────────────────────────
-// FORMAT
-// ─────────────────────────────────────────────
-function format(r) {
-  const dato = formatDato(r[0]);
-  const tid = formatTid(r[1], r[2]);
-  const festival = (String(r[11]) === 'festival') ? ' (Festival)' : '';
-
-  var out = '🗓 ' + dato + festival + '\n' +
-            '🕗 ' + tid + '\n' +
-            '💃 ' + String(r[3] || '') + '\n' +
-            '📍 ' + String(r[4] || '') + (r[5] ? ', ' + String(r[5]) : '');
-
-  if (r[7]) out += '\n💰 ' + String(r[7]);
-  if (r[9]) out += '\n🔗 ' + String(r[9]);
-
-  return out;
-}
-
-function formatDato(d) {
-  const dage = ['Søndag','Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag'];
-  const mdr = ['januar','februar','marts','april','maj','juni','juli','august','september','oktober','november','december'];
-  const date = new Date(d);
-  if (isNaN(date.getTime())) return String(d);
-  return dage[date.getDay()] + ' ' + date.getDate() + '. ' + mdr[date.getMonth()];
-}
-
-function formatTid(start, slut) {
-  var s = String(start || '');
-  if (slut) s += '–' + String(slut);
-  return s;
-}
-
-// ─────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────
-function sheet() {
-  return SpreadsheetApp.openById(SHEET_ID).getSheetByName(EVENTS_SHEET);
-}
-
-function safeJson(s) {
-  try { return JSON.parse(s); } catch (e) { return null; }
-}
-
-function out(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
-}
+**Mappestruktur:**
+```
+/public
+├── index.html
+├── dancemap-icon.svg
+└── Code.gs (deploy til Apps Script)
