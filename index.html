@@ -4,13 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>DanceMap</title>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }
     body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#0b0f14; color:#e8eef7; }
     .wrap { max-width:480px; margin:0 auto; height:100vh; display:flex; flex-direction:column; }
     .header { padding:14px 16px; border-bottom:1px solid #1a2432; background:#0e141d; display:flex; align-items:center; gap:10px; }
-    .header-avatar { width:40px; height:40px; border-radius:50%; }
+    .header-avatar { width:40px; height:40px; border-radius:50%; cursor:pointer; }
     @media (min-width:600px){ .header-avatar{width:44px;height:44px;} }
     .header-text h1{margin:0;font-size:18px;font-weight:600}
     .header-text .sub{font-size:12px;opacity:.65}
@@ -35,14 +36,14 @@
     .send-btn svg{width:20px;height:20px}
     .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:flex-end;justify-content:center}
     .modal-overlay.open{display:flex}
-    .modal{width:100%;max-width:480px;background:#0e141d;border-top-left-radius:20px;border-top-right-radius:20px;padding:20px 16px 24px;animation:slideUp .18s ease-out}
+    .modal{width:100%;max-width:480px;background:#0e141d;border-top-left-radius:20px;border-top-right-radius:20px;padding:20px 16px 24px;animation:slideUp .18s ease-out;max-height:90vh;overflow-y:auto}
     @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
     .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
     .modal-header h2{margin:0;font-size:18px;font-weight:600}
     .modal-close{background:none;border:none;color:#9fc5ff;font-size:24px;cursor:pointer;padding:0;line-height:1}
     .form-group{margin-bottom:12px}
     .form-group label{display:block;font-size:13px;margin-bottom:6px;opacity:.8}
-    .form-group textarea{width:100%;min-height:180px;padding:10px 12px;border-radius:10px;border:1px solid #1a2432;background:#0b1017;color:#e8eef7;font-size:14px;outline:none;resize:vertical}
+    .form-group textarea{width:100%;min-height:150px;padding:10px 12px;border-radius:10px;border:1px solid #1a2432;background:#0b1017;color:#e8eef7;font-size:14px;outline:none;resize:vertical}
     .form-group textarea:focus{border-color:#2a3b54}
     .submit-btn{width:100%;padding:14px;border-radius:12px;border:none;background:#1e3a5f;color:#e8eef7;font-size:15px;font-weight:500;cursor:pointer}
     .submit-btn:hover{background:#2a4a70}
@@ -50,6 +51,12 @@
     .submit-status{text-align:center;padding:10px;font-size:14px;margin-top:10px}
     .submit-status.success{color:#4ade80}
     .submit-status.error{color:#ff6b6b}
+    .upload-row{display:flex;gap:10px;margin-bottom:12px}
+    .upload-btn{flex:1;padding:12px;border-radius:10px;border:1px dashed #2a3b54;background:transparent;color:#9fc5ff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+    .upload-btn:hover{background:#142235;border-color:#3a4b64}
+    .upload-btn svg{width:18px;height:18px}
+    .ocr-status{font-size:12px;color:#9fc5ff;text-align:center;padding:8px;opacity:.8}
+    .image-preview{max-width:100%;max-height:120px;border-radius:8px;margin-bottom:10px;display:none}
   </style>
 </head>
 <body>
@@ -79,13 +86,28 @@
 <div class="modal-overlay" id="adminModal">
   <div class="modal">
     <div class="modal-header">
-      <h2>Admin: Paste → Event</h2>
+      <h2>Admin: Tilføj Event</h2>
       <button class="modal-close" id="closeAdmin">&times;</button>
     </div>
 
+    <div class="upload-row">
+      <button type="button" class="upload-btn" id="uploadBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <polyline points="21 15 16 10 5 21"></polyline>
+        </svg>
+        Upload billede
+      </button>
+      <input type="file" id="fileInput" accept="image/*" style="display:none" />
+    </div>
+
+    <img id="imagePreview" class="image-preview" />
+    <div id="ocrStatus" class="ocr-status" style="display:none"></div>
+
     <div class="form-group">
-      <label>Paste tekst (fx FB) eller URL</label>
-      <textarea id="adminPayload" placeholder="Paste her…&#10;&#10;Eksempel:&#10;Kedelhallen&#10;2025-01-20 20:30-02:00&#10;Salsa&#10;Nyelandsvej 75A&#10;https://..."></textarea>
+      <label>Paste tekst eller billede (Ctrl+V)</label>
+      <textarea id="adminPayload" placeholder="Paste tekst her…&#10;&#10;Eller upload/paste et skærmbillede&#10;&#10;Eksempel:&#10;Kedelhallen&#10;2025-01-20 20:30-02:00&#10;Salsa&#10;https://..."></textarea>
     </div>
 
     <button type="button" class="submit-btn" id="adminSubmitBtn">Tilføj til Events</button>
@@ -104,6 +126,10 @@ const closeAdminBtn = document.getElementById('closeAdmin');
 const adminPayloadEl = document.getElementById('adminPayload');
 const adminSubmitBtn = document.getElementById('adminSubmitBtn');
 const adminStatus = document.getElementById('adminStatus');
+const uploadBtn = document.getElementById('uploadBtn');
+const fileInput = document.getElementById('fileInput');
+const imagePreview = document.getElementById('imagePreview');
+const ocrStatus = document.getElementById('ocrStatus');
 
 let lastQuery = '';
 let currentPage = 0;
@@ -265,7 +291,7 @@ qEl.addEventListener('keydown', (e) => {
   }
 });
 
-// ADMIN: Tryk på DanceMap-logoet 3 gange hurtigt
+// ADMIN: Triple-click på logo
 let logoClickCount = 0;
 let logoClickTimer = null;
 document.querySelector('.header-avatar').addEventListener('click', () => {
@@ -276,6 +302,8 @@ document.querySelector('.header-avatar').addEventListener('click', () => {
     adminModal.classList.add('open');
     adminStatus.textContent = '';
     adminStatus.className = 'submit-status';
+    imagePreview.style.display = 'none';
+    ocrStatus.style.display = 'none';
     setTimeout(() => adminPayloadEl.focus(), 0);
   } else {
     clearTimeout(logoClickTimer);
@@ -286,6 +314,65 @@ document.querySelector('.header-avatar').addEventListener('click', () => {
 closeAdminBtn.addEventListener('click', () => adminModal.classList.remove('open'));
 adminModal.addEventListener('click', (e) => { if (e.target === adminModal) adminModal.classList.remove('open'); });
 
+// OCR funktion
+async function processImage(imageSource) {
+  ocrStatus.style.display = 'block';
+  ocrStatus.textContent = 'Læser billede...';
+  
+  try {
+    const result = await Tesseract.recognize(imageSource, 'dan+eng', {
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          ocrStatus.textContent = `Læser billede... ${Math.round(m.progress * 100)}%`;
+        }
+      }
+    });
+    
+    const text = result.data.text.trim();
+    if (text) {
+      adminPayloadEl.value = text;
+      ocrStatus.textContent = '✅ Tekst fundet!';
+      setTimeout(() => { ocrStatus.style.display = 'none'; }, 2000);
+    } else {
+      ocrStatus.textContent = '⚠️ Ingen tekst fundet i billedet';
+    }
+  } catch (err) {
+    ocrStatus.textContent = '❌ Kunne ikke læse billedet';
+  }
+}
+
+// Upload knap
+uploadBtn.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file && file.type.startsWith('image/')) {
+    imagePreview.src = URL.createObjectURL(file);
+    imagePreview.style.display = 'block';
+    processImage(file);
+  }
+  fileInput.value = '';
+});
+
+// Paste billede (Ctrl+V) i modal
+adminModal.addEventListener('paste', (e) => {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      e.preventDefault();
+      const file = item.getAsFile();
+      imagePreview.src = URL.createObjectURL(file);
+      imagePreview.style.display = 'block';
+      processImage(file);
+      return;
+    }
+  }
+  // Hvis det er tekst, lad default paste ske
+});
+
+// Admin submit
 adminSubmitBtn.addEventListener('click', async () => {
   if (isLoading) return;
 
@@ -313,6 +400,7 @@ adminSubmitBtn.addEventListener('click', async () => {
       adminStatus.textContent = data.text || '✅ OK';
       adminStatus.className = 'submit-status success';
       adminPayloadEl.value = '';
+      imagePreview.style.display = 'none';
     } else {
       adminStatus.textContent = data.text || 'Der opstod en fejl.';
       adminStatus.className = 'submit-status error';
