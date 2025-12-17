@@ -81,20 +81,11 @@
     </div>
 
     <form id="adminForm">
-      <div class="form-group">
-        <label>Dato *</label>
-        <input type="date" id="adminDato" required />
-      </div>
+      <div class="form-group"><label>Dato *</label><input type="date" id="adminDato" required></div>
 
       <div class="form-row">
-        <div class="form-group">
-          <label>Starttid *</label>
-          <input type="time" id="adminStarttid" required />
-        </div>
-        <div class="form-group">
-          <label>Sluttid</label>
-          <input type="time" id="adminSluttid" />
-        </div>
+        <div class="form-group"><label>Starttid *</label><input type="time" id="adminStarttid" required></div>
+        <div class="form-group"><label>Sluttid</label><input type="time" id="adminSluttid"></div>
       </div>
 
       <div class="form-group">
@@ -107,30 +98,11 @@
         </select>
       </div>
 
-      <div class="form-group">
-        <label>Sted *</label>
-        <input type="text" id="adminSted" required />
-      </div>
-
-      <div class="form-group">
-        <label>Adresse</label>
-        <input type="text" id="adminAdresse" />
-      </div>
-
-      <div class="form-group">
-        <label>Pris</label>
-        <input type="text" id="adminPris" />
-      </div>
-
-      <div class="form-group">
-        <label>Arrangør</label>
-        <input type="text" id="adminArrangoer" />
-      </div>
-
-      <div class="form-group">
-        <label>Link</label>
-        <input type="url" id="adminLink" />
-      </div>
+      <div class="form-group"><label>Sted *</label><input type="text" id="adminSted" required></div>
+      <div class="form-group"><label>Adresse</label><input type="text" id="adminAdresse"></div>
+      <div class="form-group"><label>Pris</label><input type="text" id="adminPris"></div>
+      <div class="form-group"><label>Arrangør</label><input type="text" id="adminArrangoer"></div>
+      <div class="form-group"><label>Link</label><input type="url" id="adminLink"></div>
 
       <div class="form-group">
         <label>Recurring</label>
@@ -172,14 +144,13 @@
     rec: document.getElementById('adminRecurring')
   };
 
-  // ADMIN MODE
+  /* ADMIN HOTKEY — Ctrl + Shift + M */
   const isAdmin = new URLSearchParams(location.search).get('admin') === '1';
   if (isAdmin) {
-    document.addEventListener('keydown', e => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'm') {
         e.preventDefault();
         adminModal.classList.add('open');
-        restoreAdminMemory();
         f.dato.focus();
       }
     });
@@ -188,31 +159,7 @@
   closeAdmin.onclick = () => adminModal.classList.remove('open');
   adminModal.onclick = e => { if (e.target === adminModal) adminModal.classList.remove('open'); };
 
-  // ENTER = næste felt | SHIFT+ENTER = submit
-  const order = [f.dato,f.start,f.slut,f.dans,f.sted,f.adr,f.pris,f.arr,f.link,f.rec];
-  order.forEach((el, i) => {
-    el.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (e.shiftKey) adminForm.requestSubmit();
-        else (order[i+1] || order[0]).focus();
-      }
-    });
-  });
-
-  function rememberAdminMemory() {
-    localStorage.setItem('dm_admin_mem', JSON.stringify({
-      sted: f.sted.value, adr: f.adr.value, arr: f.arr.value
-    }));
-  }
-  function restoreAdminMemory() {
-    const m = JSON.parse(localStorage.getItem('dm_admin_mem') || '{}');
-    if (m.sted) f.sted.value = m.sted;
-    if (m.adr) f.adr.value = m.adr;
-    if (m.arr) f.arr.value = m.arr;
-  }
-
-  adminForm.onsubmit = async e => {
+  adminForm.onsubmit = async (e) => {
     e.preventDefault();
     adminStatus.textContent = 'Sender…';
     adminStatus.className = 'submit-status';
@@ -232,16 +179,20 @@
     };
 
     try {
-      const r = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-      const d = await r.json();
-      if (d.success) {
-        adminStatus.textContent = d.text;
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        adminStatus.textContent = data.text;
         adminStatus.className = 'submit-status success';
-        rememberAdminMemory();
         adminForm.reset();
         f.dato.focus();
       } else {
-        adminStatus.textContent = d.text || 'Fejl';
+        adminStatus.textContent = data.text || 'Fejl';
         adminStatus.className = 'submit-status error';
       }
     } catch {
@@ -250,27 +201,40 @@
     }
   };
 
-  // CHAT (uændret)
-  function addRow(type, text){
-    const r=document.createElement('div'); r.className='row '+type;
-    const b=document.createElement('div'); b.className='bubble'; b.textContent=text;
-    r.appendChild(b); chatEl.appendChild(r); chatEl.scrollTop=chatEl.scrollHeight;
+  /* CHAT */
+  function addRow(type, text) {
+    const r = document.createElement('div');
+    r.className = 'row ' + type;
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.textContent = text;
+    r.appendChild(b);
+    chatEl.appendChild(r);
+    chatEl.scrollTop = chatEl.scrollHeight;
   }
-  async function callApi(q,p){
-    const u=new URL(API_URL); u.searchParams.set('query',q); u.searchParams.set('page',p);
-    const r=await fetch(u.toString()); return r.json();
+
+  async function callApi(q, p) {
+    const u = new URL(API_URL);
+    u.searchParams.set('query', q);
+    u.searchParams.set('page', p);
+    const r = await fetch(u.toString());
+    return r.json();
   }
-  sendBtn.onclick = async ()=>{
-    const t=qEl.value.trim(); if(!t) return;
-    addRow('user',t); qEl.value='';
-    addRow('bot','DanceMap skriver …');
-    const d=await callApi(t,0);
+
+  sendBtn.onclick = async () => {
+    const t = qEl.value.trim();
+    if (!t) return;
+    addRow('user', t);
+    qEl.value = '';
+    addRow('bot', 'DanceMap skriver …');
+    const d = await callApi(t, 0);
     chatEl.lastChild.remove();
     addRow('bot', d.text || 'Ingen events fundet.');
   };
-  qEl.addEventListener('keydown',e=>{ if(e.key==='Enter') sendBtn.click(); });
 
-  addRow('bot','Jeg viser danseevents i København. Søg fx: "salsa i dag", "bachata i weekenden" eller "kizomba fredag".');
+  qEl.addEventListener('keydown', e => { if (e.key === 'Enter') sendBtn.click(); });
+
+  addRow('bot', 'Jeg viser danseevents i København. Søg fx: "salsa i dag", "bachata i weekenden" eller "kizomba fredag".');
 </script>
 </body>
 </html>
