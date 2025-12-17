@@ -75,7 +75,7 @@
   </div>
 </div>
 
-<!-- Admin Modal (kun synlig med ?admin=1) -->
+<!-- Admin Modal -->
 <div class="modal-overlay" id="adminModal">
   <div class="modal">
     <div class="modal-header">
@@ -111,8 +111,6 @@ let hasMore = false;
 let isLoading = false;
 let currentMoreBtn = null;
 let typingRow = null;
-
-const isAdmin = new URLSearchParams(window.location.search).get('admin') === '1';
 
 function addUserMessage(text) {
   const row = document.createElement('div');
@@ -267,20 +265,23 @@ qEl.addEventListener('keydown', (e) => {
   }
 });
 
-// ADMIN: åbnes kun med ?admin=1 (Ctrl+Shift+A)
-if (isAdmin) {
-  window.addEventListener('keydown', (e) => {
-    const k = (e.key || '').toLowerCase();
-    if (e.ctrlKey && e.shiftKey && k === 'e') {
-      e.preventDefault();
-      e.stopPropagation();
-      adminModal.classList.toggle('open');
-      adminStatus.textContent = '';
-      adminStatus.className = 'submit-status';
-      setTimeout(() => adminPayloadEl.focus(), 0);
-    }
-  }, true);
-}
+// ADMIN: Tryk på DanceMap-logoet 3 gange hurtigt
+let logoClickCount = 0;
+let logoClickTimer = null;
+document.querySelector('.header-avatar').addEventListener('click', () => {
+  logoClickCount++;
+  if (logoClickCount === 3) {
+    logoClickCount = 0;
+    clearTimeout(logoClickTimer);
+    adminModal.classList.add('open');
+    adminStatus.textContent = '';
+    adminStatus.className = 'submit-status';
+    setTimeout(() => adminPayloadEl.focus(), 0);
+  } else {
+    clearTimeout(logoClickTimer);
+    logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 500);
+  }
+});
 
 closeAdminBtn.addEventListener('click', () => adminModal.classList.remove('open'));
 adminModal.addEventListener('click', (e) => { if (e.target === adminModal) adminModal.classList.remove('open'); });
@@ -329,13 +330,3 @@ addBotMessage('Jeg viser danseevents i København. Søg fx: "salsa i dag", "bach
 </script>
 </body>
 </html>
-```
-
----
-
-**Mappestruktur:**
-```
-/public
-├── index.html
-├── dancemap-icon.svg
-└── Code.gs (deploy til Apps Script)
