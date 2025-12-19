@@ -4,6 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>DanceMap</title>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WYGJJJV2E6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-WYGJJJV2E6');
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -194,6 +202,10 @@
         <label>Dato *</label>
         <input type="date" id="fieldDato" required />
       </div>
+      <div class="field-row">
+        <label>Event navn</label>
+        <input type="text" id="fieldNavn" placeholder="Fx Julefiesta, Salsa Fridays" />
+      </div>
       <div class="field-row two-col">
         <div>
           <label>Start *</label>
@@ -265,7 +277,7 @@ let lastQ = '', page = 0, hasMore = false, loading = false, moreBtn = null, tess
 
 // Field references
 const fields = {
-  dato: $('fieldDato'), start: $('fieldStart'), slut: $('fieldSlut'),
+  dato: $('fieldDato'), navn: $('fieldNavn'), start: $('fieldStart'), slut: $('fieldSlut'),
   dans: $('fieldDans'), sted: $('fieldSted'), adresse: $('fieldAdresse'),
   by: $('fieldBy'), pris: $('fieldPris')
 };
@@ -277,6 +289,7 @@ function parseEvents(text) {
     const parsed = {};
     event.split('\n').forEach(line => {
       if (line.startsWith('🗓')) parsed.dato = line.replace('🗓', '').trim();
+      else if (line.startsWith('📌')) parsed.navn = line.replace('📌', '').trim();
       else if (line.startsWith('🕗')) parsed.tid = line.replace('🕗', '').trim();
       else if (line.startsWith('💃')) parsed.type = line.replace('💃', '').trim();
       else if (line.startsWith('📍')) parsed.sted = line.replace('📍', '').trim();
@@ -289,6 +302,7 @@ function parseEvents(text) {
 function renderEvents(events) {
   return events.map(e => `<div class="event-card">
     <div class="event-row title"><span class="icon">📅</span><span>${esc(e.dato)}</span></div>
+    ${e.navn ? `<div class="event-row title"><span class="icon">📌</span><span>${esc(e.navn)}</span></div>` : ''}
     ${e.tid ? `<div class="event-row"><span class="icon">🕐</span><span>${esc(e.tid)}</span></div>` : ''}
     ${e.sted ? `<div class="event-row"><span class="icon">📍</span><span>${esc(e.sted)}</span></div>` : ''}
     ${e.pris ? `<div class="event-row"><span class="icon">💰</span><span>${esc(e.pris)}</span></div>` : ''}
@@ -343,6 +357,12 @@ async function doSearch() {
   lastQ = q; page = 0; hasMore = false; loading = true;
   sendBtn.disabled = true;
   showLoading();
+  
+  // Track søgning i GA
+  if (typeof gtag !== 'undefined') {
+    gtag('event', 'search', { search_term: q });
+  }
+  
   try {
     const data = await search(q, 0);
     hasMore = !!data.hasMore;
@@ -391,6 +411,7 @@ function openAdmin() {
 
 function clearFields() {
   fields.dato.value = '';
+  fields.navn.value = '';
   fields.start.value = '';
   fields.slut.value = '';
   fields.dans.value = 'Salsa';
@@ -438,7 +459,7 @@ const VENUES = ['kaffesalonen', 'kedelhallen', 'kube', 'bachata house', 'copenha
 
 function parseTextToFields(txt) {
   const t = txt.toLowerCase();
-  const result = { dato: '', start: '', slut: '', dans: 'Salsa', sted: '', adresse: '', by: 'København', pris: '' };
+  const result = { dato: '', navn: '', start: '', slut: '', dans: 'Salsa', sted: '', adresse: '', by: 'København', pris: '' };
   
   // Dato
   const isoMatch = txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);
@@ -451,6 +472,26 @@ function parseTextToFields(txt) {
       const month = MONTHS[danskMatch[2].toLowerCase()];
       const year = danskMatch[3] || new Date().getFullYear();
       result.dato = `${year}-${month}-${day}`;
+    }
+  }
+  
+  // Event navn
+  const navnPatterns = [
+    /julefiesta|julefest/i,
+    /nytårsfest|new\s*year/i,
+    /salsason/i,
+    /havana\s*nights?/i,
+    /latin\s*nights?/i,
+    /salsa\s*(?:fridays?|sundays?|matinee)/i,
+    /bachata\s*(?:nights?|social|dropin)/i,
+    /festival|fiesta/i,
+    /dance\s*night/i
+  ];
+  for (const pattern of navnPatterns) {
+    const match = txt.match(pattern);
+    if (match) {
+      result.navn = match[0].charAt(0).toUpperCase() + match[0].slice(1);
+      break;
     }
   }
   
@@ -492,11 +533,21 @@ function parseTextToFields(txt) {
   else if (t.includes('vesterbro')) result.by = 'Vesterbro';
   else if (t.includes('amager')) result.by = 'Amager';
   
-  // Pris
-  if (/\bgratis\b/i.test(txt)) {
+  // Pris - forbedret
+  const cleanTxt = txt.replace(/gratis\s+(parkering|garderobe)/gi, '___');
+  const onlinePrice = cleanTxt.match(/online[:\s]*(\d+)\s*(?:kr|dkk)/i);
+  const doorPrice = cleanTxt.match(/(?:i\s*døren|døren)[:\s]*(\d+)\s*(?:kr|dkk)?/i);
+  
+  if (onlinePrice && doorPrice) {
+    result.pris = onlinePrice[1] + ' kr (online) / ' + doorPrice[1] + ' kr (dør)';
+  } else if (onlinePrice) {
+    result.pris = onlinePrice[1] + ' kr';
+  } else if (doorPrice) {
+    result.pris = doorPrice[1] + ' kr';
+  } else if (/\bgratis\b/i.test(cleanTxt)) {
     result.pris = 'Gratis';
   } else {
-    const prisMatch = txt.match(/\b(\d{2,3})\s*(?:kr|dkk)/i);
+    const prisMatch = cleanTxt.match(/\b(\d{2,3})\s*(?:kr|dkk)/i);
     if (prisMatch) result.pris = prisMatch[1] + ' kr';
   }
   
@@ -544,13 +595,17 @@ function updatePreview() {
   if (fields.by.value && fields.by.value !== 'København') stedStr += ', ' + fields.by.value;
   
   const preview = $('previewContent');
-  preview.innerHTML = `
-    <div class="line"><span class="icon">🗓</span><span>${esc(datoStr)}</span></div>
+  let html = `<div class="line"><span class="icon">🗓</span><span>${esc(datoStr)}</span></div>`;
+  if (fields.navn.value) {
+    html += `<div class="line"><span class="icon">📌</span><span>${esc(fields.navn.value)}</span></div>`;
+  }
+  html += `
     <div class="line"><span class="icon">🕗</span><span>${esc(tidStr)}</span></div>
     <div class="line"><span class="icon">💃</span><span>${esc(fields.dans.value || 'Salsa')}</span></div>
     <div class="line"><span class="icon">📍</span><span>${esc(stedStr)}</span></div>
     ${fields.pris.value ? `<div class="line"><span class="icon">💰</span><span>${esc(fields.pris.value)}</span></div>` : ''}
   `;
+  preview.innerHTML = html;
 }
 
 // Opdater preview ved feltændringer
@@ -571,6 +626,7 @@ $('parseBtn').onclick = () => {
   const parsed = parseTextToFields(txt);
   
   fields.dato.value = parsed.dato;
+  fields.navn.value = parsed.navn;
   fields.start.value = parsed.start;
   fields.slut.value = parsed.slut;
   fields.dans.value = parsed.dans;
@@ -670,6 +726,7 @@ $('adminSubmitBtn').onclick = async () => {
   const formattedDate = `${dage[dateObj.getDay()]} ${parseInt(dateParts[2])}. ${mdr[parseInt(dateParts[1]) - 1]} ${dateParts[0]}`;
   
   let payloadText = formattedDate + '\n';
+  if (fields.navn.value) payloadText += fields.navn.value + '\n';
   payloadText += fields.start.value;
   if (fields.slut.value) payloadText += '-' + fields.slut.value;
   payloadText += '\n' + fields.dans.value;
@@ -695,6 +752,12 @@ $('adminSubmitBtn').onclick = async () => {
     status.style.display = 'block';
     status.textContent = data.text || (data.success ? '✅ Tilføjet' : '❌ Fejl');
     status.className = 'submit-status ' + (data.success ? 'success' : 'error');
+    
+    // Track admin import i GA
+    if (typeof gtag !== 'undefined' && data.success) {
+      gtag('event', 'admin_import', { event_venue: fields.sted.value });
+    }
+    
     if (data.success) {
       clearFields();
       step1.style.display = 'block';
