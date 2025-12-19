@@ -457,7 +457,21 @@ const DANCE_ALIASES = {
 
 const VENUES = ['kaffesalonen', 'kedelhallen', 'kube', 'bachata house', 'copenhagen salsa academy', 'csa', 
   'cubansk danseskole', 'dgi-byen', 'dansehallerne', 'salsa libre', 'elstudio', 'the old irish pub', 
-  'rosie mcgees', 'club mambo', 'lunatica', 'cafe globen'];
+  'rosie mcgees', 'club mambo', 'lunatica', 'cafe globen', 'kulturhuset islands brygge', 'kulturhuset', 
+  'islands brygge kulturhus', 'huset-kbh', 'huset kbh', 'pumpehuset', 'vega', 'rust', 'loppen'];
+
+const VENUE_ADDRESSES = {
+  'kaffesalonen': { adresse: 'Peblinge Dossering 7', by: 'København' },
+  'kedelhallen': { adresse: 'Nyelandsvej 75A', by: 'Frederiksberg' },
+  'copenhagen salsa academy': { adresse: 'Kastanie Allé 20', by: 'Vanløse' },
+  'csa': { adresse: 'Kastanie Allé 20', by: 'Vanløse' },
+  'cubansk danseskole': { adresse: 'Blegdamsvej 1B', by: 'Nørrebro' },
+  'kulturhuset islands brygge': { adresse: 'Islands Brygge 18', by: 'København' },
+  'kulturhuset': { adresse: 'Islands Brygge 18', by: 'København' },
+  'dgi-byen': { adresse: 'Tietgensgade 65', by: 'København' },
+  'the old irish pub': { adresse: 'Vesterbrogade 2D', by: 'København' },
+  'rosie mcgees': { adresse: 'Vesterbrogade 2A', by: 'København' }
+};
 
 function parseTextToFields(txt) {
   const t = txt.toLowerCase();
@@ -479,6 +493,7 @@ function parseTextToFields(txt) {
   
   // Event navn
   const navnPatterns = [
+    /salsa\s*jam(?:\s+feat\.?\s+[\w\s']+)?/i,
     /julefiesta|julefest/i,
     /nytårsfest|new\s*year/i,
     /salsason/i,
@@ -487,7 +502,9 @@ function parseTextToFields(txt) {
     /salsa\s*(?:fridays?|sundays?|matinee)/i,
     /bachata\s*(?:nights?|social|dropin)/i,
     /festival|fiesta/i,
-    /dance\s*night/i
+    /dance\s*night/i,
+    /crash\s*course|bootcamp/i,
+    /lazos\s*d['']?\s*cuba/i
   ];
   for (const pattern of navnPatterns) {
     const match = txt.match(pattern);
@@ -519,33 +536,48 @@ function parseTextToFields(txt) {
   for (const venue of VENUES) {
     if (t.includes(venue)) {
       result.sted = venue.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      // Udfyld adresse og by hvis vi kender stedet
+      if (VENUE_ADDRESSES[venue]) {
+        if (!result.adresse) result.adresse = VENUE_ADDRESSES[venue].adresse;
+        result.by = VENUE_ADDRESSES[venue].by;
+      }
       break;
     }
   }
   
-  // Adresse
+  // Adresse (kun hvis ikke allerede sat fra VENUE_ADDRESSES)
   const addrMatch = txt.match(/([A-ZÆØÅa-zæøå][a-zæøå]*(?:vej|gade|allé|alle|plads)\s+\d+[A-Za-z]?)/i);
   if (addrMatch) result.adresse = addrMatch[1];
   
-  // By
-  if (t.includes('frederiksberg')) result.by = 'Frederiksberg';
-  else if (t.includes('vanløse')) result.by = 'Vanløse';
-  else if (t.includes('nørrebro')) result.by = 'Nørrebro';
-  else if (t.includes('østerbro')) result.by = 'Østerbro';
-  else if (t.includes('vesterbro')) result.by = 'Vesterbro';
-  else if (t.includes('amager')) result.by = 'Amager';
+  // By (kun hvis ikke allerede sat fra VENUE_ADDRESSES)
+  if (result.by === 'København') {
+    if (t.includes('frederiksberg')) result.by = 'Frederiksberg';
+    else if (t.includes('vanløse')) result.by = 'Vanløse';
+    else if (t.includes('nørrebro')) result.by = 'Nørrebro';
+    else if (t.includes('østerbro')) result.by = 'Østerbro';
+    else if (t.includes('vesterbro')) result.by = 'Vesterbro';
+    else if (t.includes('amager')) result.by = 'Amager';
+    else if (t.includes('islands brygge')) result.by = 'Islands Brygge';
+  }
   
   // Pris - forbedret
   const cleanTxt = txt.replace(/gratis\s+(parkering|garderobe)/gi, '___');
-  const onlinePrice = cleanTxt.match(/online[:\s]*(\d+)\s*(?:kr|dkk)/i);
-  const doorPrice = cleanTxt.match(/(?:i\s*døren|døren)[:\s]*(\d+)\s*(?:kr|dkk)?/i);
   
-  if (onlinePrice && doorPrice) {
-    result.pris = onlinePrice[1] + ' kr (online) / ' + doorPrice[1] + ' kr (dør)';
+  // Forsalg + dør pris (fx "120 kr. + gebyr / Køb i døren: 150 kr")
+  const forsalgMatch = cleanTxt.match(/(?:billet|forsalg)[:\s]*(\d+)\s*(?:kr|dkk)/i);
+  const doorMatch = cleanTxt.match(/(?:i\s*døren|døren|køb\s*i\s*døren)[:\s]*(\d+)\s*(?:kr|dkk)?/i);
+  const onlinePrice = cleanTxt.match(/online[:\s]*(\d+)\s*(?:kr|dkk)/i);
+  
+  if (forsalgMatch && doorMatch) {
+    result.pris = forsalgMatch[1] + ' kr (forsalg) / ' + doorMatch[1] + ' kr (dør)';
+  } else if (onlinePrice && doorMatch) {
+    result.pris = onlinePrice[1] + ' kr (online) / ' + doorMatch[1] + ' kr (dør)';
+  } else if (doorMatch) {
+    result.pris = doorMatch[1] + ' kr';
+  } else if (forsalgMatch) {
+    result.pris = forsalgMatch[1] + ' kr';
   } else if (onlinePrice) {
     result.pris = onlinePrice[1] + ' kr';
-  } else if (doorPrice) {
-    result.pris = doorPrice[1] + ' kr';
   } else if (/\bgratis\b/i.test(cleanTxt)) {
     result.pris = 'Gratis';
   } else {
