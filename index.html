@@ -113,6 +113,29 @@
     .submit-status.success { color: #3fb950; background: rgba(63,185,80,0.1); }
     .submit-status.error { color: #f85149; background: rgba(248,81,73,0.1); }
     
+    .back-btn { background: none; border: none; color: #7d8590; font-size: 14px; cursor: pointer; margin-bottom: 16px; padding: 0; }
+    .back-btn:hover { color: #c9d1d9; }
+    
+    .field-row { margin-bottom: 14px; }
+    .field-row label { display: block; font-size: 12px; margin-bottom: 6px; color: #7d8590; }
+    .field-row input, .field-row select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #30363d; background: #0d1117; color: #e6edf3; font-size: 14px; font-family: inherit; outline: none; }
+    .field-row input:focus, .field-row select:focus { border-color: #6366f1; }
+    .field-row.two-col { display: flex; gap: 12px; }
+    .field-row.two-col > div { flex: 1; }
+    
+    .field-warnings { margin-bottom: 14px; padding: 12px; background: rgba(248,81,73,0.1); border-radius: 10px; font-size: 13px; color: #f85149; display: none; }
+    .field-warnings.show { display: block; }
+    
+    .admin-intro { font-size: 13px; color: #7d8590; margin-bottom: 16px; line-height: 1.5; }
+    .admin-confirm { font-size: 12px; color: #7d8590; margin-bottom: 14px; line-height: 1.4; text-align: center; }
+    
+    .preview-card { background: #21262d; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; }
+    .preview-label { font-size: 11px; color: #7d8590; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .preview-content { font-size: 14px; color: #c9d1d9; line-height: 1.6; }
+    .preview-content .line { display: flex; gap: 8px; margin-bottom: 4px; }
+    .preview-content .line:last-child { margin-bottom: 0; }
+    .preview-content .icon { width: 20px; text-align: center; }
+    
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     .loading-text { animation: pulse 1.5s ease-in-out infinite; }
   </style>
@@ -145,22 +168,88 @@
       <h2>Tilføj Event</h2>
       <button class="modal-close" id="closeAdmin">&times;</button>
     </div>
-    <button type="button" class="upload-btn" id="uploadBtn">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-      Upload billede
-    </button>
-    <input type="file" id="fileInput" accept="image/*" style="display:none" />
-    <img id="imagePreview" class="image-preview" />
-    <div id="ocrStatus" class="ocr-status" style="display:none"></div>
-    <div class="form-group">
-      <label>Paste tekst eller billede (Ctrl+V)</label>
-      <textarea id="adminPayload" placeholder="Paste event-tekst her..."></textarea>
+    
+    <!-- Trin 1: Upload/paste -->
+    <div id="adminStep1">
+      <p class="admin-intro">DanceMap forsøger at udtrække dato, tid, dansetype og sted. Du godkender og retter altid selv før eventet gemmes.</p>
+      <button type="button" class="upload-btn" id="uploadBtn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Upload billede
+      </button>
+      <input type="file" id="fileInput" accept="image/*" style="display:none" />
+      <img id="imagePreview" class="image-preview" />
+      <div id="ocrStatus" class="ocr-status" style="display:none"></div>
+      <div class="form-group">
+        <label>Paste tekst eller billede (Ctrl+V)</label>
+        <textarea id="adminPayload" placeholder="Paste event-tekst her..."></textarea>
+      </div>
+      <button type="button" class="submit-btn" id="parseBtn">Parse tekst →</button>
     </div>
-    <div class="checkbox-group">
-      <input type="checkbox" id="recurringCheck" />
-      <label for="recurringCheck">Gentager ugentligt</label>
+    
+    <!-- Trin 2: Rediger felter -->
+    <div id="adminStep2" style="display:none">
+      <button type="button" class="back-btn" id="backBtn">← Tilbage</button>
+      
+      <div class="field-row">
+        <label>Dato *</label>
+        <input type="date" id="fieldDato" required />
+      </div>
+      <div class="field-row two-col">
+        <div>
+          <label>Start *</label>
+          <input type="time" id="fieldStart" required />
+        </div>
+        <div>
+          <label>Slut</label>
+          <input type="time" id="fieldSlut" />
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Dansetype</label>
+        <select id="fieldDans">
+          <option value="Salsa">Salsa</option>
+          <option value="Bachata">Bachata</option>
+          <option value="Kizomba">Kizomba</option>
+          <option value="Zouk">Zouk</option>
+          <option value="Tango">Tango</option>
+          <option value="Swing">Swing</option>
+          <option value="Latin">Latin</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label>Sted *</label>
+        <input type="text" id="fieldSted" placeholder="Fx Kedelhallen" required />
+      </div>
+      <div class="field-row">
+        <label>Adresse</label>
+        <input type="text" id="fieldAdresse" placeholder="Fx Nyelandsvej 75A" />
+      </div>
+      <div class="field-row">
+        <label>By</label>
+        <input type="text" id="fieldBy" value="København" />
+      </div>
+      <div class="field-row">
+        <label>Pris</label>
+        <input type="text" id="fieldPris" placeholder="Fx 80 kr" />
+      </div>
+      
+      <div id="fieldWarnings" class="field-warnings"></div>
+      
+      <div id="previewCard" class="preview-card">
+        <div class="preview-label">Forhåndsvisning</div>
+        <div id="previewContent"></div>
+      </div>
+      
+      <div class="checkbox-group">
+        <input type="checkbox" id="recurringCheck" />
+        <label for="recurringCheck">Gentager ugentligt</label>
+      </div>
+      
+      <p class="admin-confirm">Ved at tilføje eventet bekræfter du, at oplysningerne er gennemgået og korrekte.</p>
+      
+      <button type="button" class="submit-btn" id="adminSubmitBtn">Tilføj Event</button>
     </div>
-    <button type="button" class="submit-btn" id="adminSubmitBtn">Tilføj Event</button>
+    
     <div id="adminStatus" class="submit-status" style="display:none"></div>
   </div>
 </div>
@@ -171,7 +260,15 @@ const $ = id => document.getElementById(id);
 const chat = $('chat'), input = $('q'), sendBtn = $('sendBtn');
 const modal = $('adminModal'), payload = $('adminPayload'), status = $('adminStatus');
 const recurring = $('recurringCheck'), preview = $('imagePreview'), ocrStatus = $('ocrStatus');
+const step1 = $('adminStep1'), step2 = $('adminStep2'), warnings = $('fieldWarnings');
 let lastQ = '', page = 0, hasMore = false, loading = false, moreBtn = null, tesseractLoaded = false;
+
+// Field references
+const fields = {
+  dato: $('fieldDato'), start: $('fieldStart'), slut: $('fieldSlut'),
+  dans: $('fieldDans'), sted: $('fieldSted'), adresse: $('fieldAdresse'),
+  by: $('fieldBy'), pris: $('fieldPris')
+};
 
 function esc(t) { return t.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
@@ -280,16 +377,221 @@ document.querySelector('.header').onclick = () => {
 
 function openAdmin() {
   modal.classList.add('open');
+  step1.style.display = 'block';
+  step2.style.display = 'none';
   status.style.display = 'none';
   preview.style.display = 'none';
   ocrStatus.style.display = 'none';
+  warnings.classList.remove('show');
   recurring.checked = false;
   payload.value = '';
+  clearFields();
   payload.focus();
+}
+
+function clearFields() {
+  fields.dato.value = '';
+  fields.start.value = '';
+  fields.slut.value = '';
+  fields.dans.value = 'Salsa';
+  fields.sted.value = '';
+  fields.adresse.value = '';
+  fields.by.value = 'København';
+  fields.pris.value = '';
+  warnings.classList.remove('show');
+  $('previewContent').innerHTML = '';
 }
 
 $('closeAdmin').onclick = () => modal.classList.remove('open');
 modal.onclick = e => { if (e.target === modal) modal.classList.remove('open'); };
+$('backBtn').onclick = () => { step1.style.display = 'block'; step2.style.display = 'none'; status.style.display = 'none'; };
+
+// ═══════════════════════════════════════════════════════════
+// PARSING LOGIC (client-side)
+// ═══════════════════════════════════════════════════════════
+
+const MONTHS = {
+  'januar': '01', 'februar': '02', 'marts': '03', 'april': '04', 'maj': '05', 'juni': '06',
+  'juli': '07', 'august': '08', 'september': '09', 'oktober': '10', 'november': '11', 'december': '12',
+  'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'jun': '06', 'jul': '07',
+  'aug': '08', 'sep': '09', 'okt': '10', 'nov': '11', 'dec': '12',
+  'january': '01', 'february': '02', 'march': '03', 'may': '05', 'june': '06',
+  'july': '07', 'october': '10'
+};
+
+// Samme aliaser som backend (Code.gs)
+const DANCE_ALIASES = {
+  'rueda de casino': 'Salsa', 'rueda': 'Salsa', 'cuban': 'Salsa', 'cubansk': 'Salsa',
+  'son cubano': 'Salsa', 'son': 'Salsa', 'timba': 'Salsa', 'casino': 'Salsa',
+  'cha cha cha': 'Cha cha chá', 'chachacha': 'Cha cha chá', 'merengue': 'Merengue',
+  'bachata dominicana': 'Bachata', 'dominican bachata': 'Bachata',
+  'sensual bachata': 'Bachata', 'bachata sensual': 'Bachata', 'bachata': 'Bachata',
+  'salsa': 'Salsa', 'kizomba': 'Kizomba', 'urban kiz': 'Kizomba', 'urbankiz': 'Kizomba',
+  'tango': 'Tango', 'argentinsk tango': 'Tango',
+  'lindy hop': 'Swing', 'west coast swing': 'Swing', 'wcs': 'Swing', 'swing': 'Swing',
+  'zouk': 'Zouk', 'brazilian zouk': 'Zouk', 'latin': 'Latin'
+};
+
+const VENUES = ['kaffesalonen', 'kedelhallen', 'kube', 'bachata house', 'copenhagen salsa academy', 'csa', 
+  'cubansk danseskole', 'dgi-byen', 'dansehallerne', 'salsa libre', 'elstudio', 'the old irish pub', 
+  'rosie mcgees', 'club mambo', 'lunatica', 'cafe globen'];
+
+function parseTextToFields(txt) {
+  const t = txt.toLowerCase();
+  const result = { dato: '', start: '', slut: '', dans: 'Salsa', sted: '', adresse: '', by: 'København', pris: '' };
+  
+  // Dato
+  const isoMatch = txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);
+  if (isoMatch) {
+    result.dato = isoMatch[0];
+  } else {
+    const danskMatch = txt.match(/\b(\d{1,2})\.?\s*(januar|februar|marts|april|maj|juni|juli|august|september|oktober|november|december|jan|feb|mar|apr|jun|jul|aug|sep|okt|nov|dec)\.?\s*(20\d{2})?\b/i);
+    if (danskMatch) {
+      const day = danskMatch[1].padStart(2, '0');
+      const month = MONTHS[danskMatch[2].toLowerCase()];
+      const year = danskMatch[3] || new Date().getFullYear();
+      result.dato = `${year}-${month}-${day}`;
+    }
+  }
+  
+  // Tid
+  const times = txt.match(/\b([01]?\d|2[0-3])[\.:,]([0-5]\d)\b/g);
+  if (times && times.length > 0) {
+    result.start = times[0].replace(/[\.,]/g, ':').replace(/^(\d):/, '0$1:');
+    if (times.length > 1) {
+      result.slut = times[times.length - 1].replace(/[\.,]/g, ':').replace(/^(\d):/, '0$1:');
+    }
+  }
+  
+  // Dans - brug aliaser fra backend
+  const aliasKeys = Object.keys(DANCE_ALIASES).sort((a, b) => b.length - a.length);
+  for (const alias of aliasKeys) {
+    if (t.includes(alias)) {
+      result.dans = DANCE_ALIASES[alias];
+      break;
+    }
+  }
+  
+  // Sted
+  for (const venue of VENUES) {
+    if (t.includes(venue)) {
+      result.sted = venue.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      break;
+    }
+  }
+  
+  // Adresse
+  const addrMatch = txt.match(/([A-ZÆØÅa-zæøå][a-zæøå]*(?:vej|gade|allé|alle|plads)\s+\d+[A-Za-z]?)/i);
+  if (addrMatch) result.adresse = addrMatch[1];
+  
+  // By
+  if (t.includes('frederiksberg')) result.by = 'Frederiksberg';
+  else if (t.includes('vanløse')) result.by = 'Vanløse';
+  else if (t.includes('nørrebro')) result.by = 'Nørrebro';
+  else if (t.includes('østerbro')) result.by = 'Østerbro';
+  else if (t.includes('vesterbro')) result.by = 'Vesterbro';
+  else if (t.includes('amager')) result.by = 'Amager';
+  
+  // Pris
+  if (/\bgratis\b/i.test(txt)) {
+    result.pris = 'Gratis';
+  } else {
+    const prisMatch = txt.match(/\b(\d{2,3})\s*(?:kr|dkk)/i);
+    if (prisMatch) result.pris = prisMatch[1] + ' kr';
+  }
+  
+  return result;
+}
+
+function validateFields() {
+  const warns = [];
+  
+  if (!fields.dato.value) warns.push('❌ Dato mangler');
+  if (!fields.start.value) warns.push('❌ Starttid mangler');
+  if (!fields.sted.value) warns.push('❌ Sted mangler');
+  if (fields.sted.value && fields.sted.value.length < 3) warns.push('⚠️ Sted ser forkert ud');
+  
+  // Tjek om slut < start (mulig fejl)
+  if (fields.start.value && fields.slut.value) {
+    const s = fields.start.value.replace(':', '');
+    const e = fields.slut.value.replace(':', '');
+    if (parseInt(e) < parseInt(s) && parseInt(e) > 600) {
+      warns.push('⚠️ Sluttid er før starttid – er det korrekt?');
+    }
+  }
+  
+  return warns;
+}
+
+function updatePreview() {
+  const dage = ['Søn', 'Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør'];
+  const mdr = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+  
+  let datoStr = '—';
+  if (fields.dato.value) {
+    const d = new Date(fields.dato.value);
+    if (!isNaN(d.getTime())) {
+      datoStr = dage[d.getDay()] + ' ' + d.getDate() + '. ' + mdr[d.getMonth()];
+      if (recurring.checked) datoStr += ' 🔁';
+    }
+  }
+  
+  let tidStr = fields.start.value || '—';
+  if (fields.slut.value) tidStr += '–' + fields.slut.value;
+  
+  let stedStr = fields.sted.value || '—';
+  if (fields.adresse.value) stedStr += ', ' + fields.adresse.value;
+  if (fields.by.value && fields.by.value !== 'København') stedStr += ', ' + fields.by.value;
+  
+  const preview = $('previewContent');
+  preview.innerHTML = `
+    <div class="line"><span class="icon">🗓</span><span>${esc(datoStr)}</span></div>
+    <div class="line"><span class="icon">🕗</span><span>${esc(tidStr)}</span></div>
+    <div class="line"><span class="icon">💃</span><span>${esc(fields.dans.value || 'Salsa')}</span></div>
+    <div class="line"><span class="icon">📍</span><span>${esc(stedStr)}</span></div>
+    ${fields.pris.value ? `<div class="line"><span class="icon">💰</span><span>${esc(fields.pris.value)}</span></div>` : ''}
+  `;
+}
+
+// Opdater preview ved feltændringer
+Object.values(fields).forEach(field => {
+  field.addEventListener('input', updatePreview);
+  field.addEventListener('change', updatePreview);
+});
+recurring.addEventListener('change', updatePreview);
+
+// ═══════════════════════════════════════════════════════════
+// EVENT HANDLERS
+// ═══════════════════════════════════════════════════════════
+
+$('parseBtn').onclick = () => {
+  const txt = payload.value.trim();
+  if (!txt) return;
+  
+  const parsed = parseTextToFields(txt);
+  
+  fields.dato.value = parsed.dato;
+  fields.start.value = parsed.start;
+  fields.slut.value = parsed.slut;
+  fields.dans.value = parsed.dans;
+  fields.sted.value = parsed.sted;
+  fields.adresse.value = parsed.adresse;
+  fields.by.value = parsed.by;
+  fields.pris.value = parsed.pris;
+  
+  const warns = validateFields();
+  if (warns.length > 0) {
+    warnings.innerHTML = warns.join('<br>');
+    warnings.classList.add('show');
+  } else {
+    warnings.classList.remove('show');
+  }
+  
+  updatePreview();
+  
+  step1.style.display = 'none';
+  step2.style.display = 'block';
+};
 
 async function loadTesseract() {
   if (tesseractLoaded) return;
@@ -312,8 +614,8 @@ async function processImage(img) {
     });
     if (result.data.text.trim()) {
       payload.value = result.data.text.trim();
-      ocrStatus.textContent = '✅ Tekst fundet';
-      setTimeout(() => ocrStatus.style.display = 'none', 2000);
+      ocrStatus.textContent = '✅ Tekst fundet – klik "Parse tekst"';
+      setTimeout(() => ocrStatus.style.display = 'none', 3000);
     } else { ocrStatus.textContent = '⚠️ Ingen tekst fundet'; }
   } catch (e) { ocrStatus.textContent = '❌ OCR fejl'; }
 }
@@ -343,17 +645,49 @@ modal.onpaste = e => {
 };
 
 $('adminSubmitBtn').onclick = async () => {
-  const text = payload.value.trim();
-  if (!text) return;
+  // Validér - kun stop ved ❌
+  const warns = validateFields();
+  const criticalErrors = warns.filter(w => w.startsWith('❌'));
+  
+  if (criticalErrors.length > 0) {
+    warnings.innerHTML = warns.join('<br>');
+    warnings.classList.add('show');
+    return;
+  }
+  
+  // Vis advarsler men tillad submit
+  if (warns.length > 0) {
+    warnings.innerHTML = warns.join('<br>');
+    warnings.classList.add('show');
+  }
+  
+  // Byg payload i det format backend forventer
+  const dato = fields.dato.value;
+  const dateParts = dato.split('-');
+  const dateObj = new Date(dato);
+  const dage = ['søndag', 'mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag'];
+  const mdr = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'];
+  const formattedDate = `${dage[dateObj.getDay()]} ${parseInt(dateParts[2])}. ${mdr[parseInt(dateParts[1]) - 1]} ${dateParts[0]}`;
+  
+  let payloadText = formattedDate + '\n';
+  payloadText += fields.start.value;
+  if (fields.slut.value) payloadText += '-' + fields.slut.value;
+  payloadText += '\n' + fields.dans.value;
+  payloadText += '\n' + fields.sted.value;
+  if (fields.adresse.value) payloadText += ', ' + fields.adresse.value;
+  if (fields.by.value) payloadText += ', ' + fields.by.value;
+  if (fields.pris.value) payloadText += '\n' + fields.pris.value;
+  
   const btn = $('adminSubmitBtn');
   btn.disabled = true;
   btn.textContent = 'Sender...';
   status.style.display = 'none';
+  
   try {
     const res = await fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action: 'admin-import', payload: text, recurring: recurring.checked })
+      body: JSON.stringify({ action: 'admin-import', payload: payloadText, recurring: recurring.checked })
     });
     const raw = await res.text();
     if (raw.startsWith('<')) throw new Error('HTML');
@@ -361,7 +695,14 @@ $('adminSubmitBtn').onclick = async () => {
     status.style.display = 'block';
     status.textContent = data.text || (data.success ? '✅ Tilføjet' : '❌ Fejl');
     status.className = 'submit-status ' + (data.success ? 'success' : 'error');
-    if (data.success) { payload.value = ''; preview.style.display = 'none'; recurring.checked = false; }
+    if (data.success) {
+      clearFields();
+      step1.style.display = 'block';
+      step2.style.display = 'none';
+      payload.value = '';
+      preview.style.display = 'none';
+      recurring.checked = false;
+    }
   } catch (e) {
     status.style.display = 'block';
     status.textContent = '❌ Teknisk fejl';
