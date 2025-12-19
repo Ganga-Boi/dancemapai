@@ -39,30 +39,11 @@
       border-bottom: 1px solid #21262d;
     }
     
-    .logo {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      overflow: hidden;
-    }
+    .logo { width: 48px; height: 48px; border-radius: 14px; overflow: hidden; }
+    .logo img { width: 100%; height: 100%; object-fit: cover; }
     
-    .logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    .header-text h1 {
-      font-size: 18px;
-      font-weight: 600;
-      color: #e6edf3;
-      margin-bottom: 2px;
-    }
-    
-    .header-text .sub {
-      font-size: 13px;
-      color: #7d8590;
-    }
+    .header-text h1 { font-size: 18px; font-weight: 600; color: #e6edf3; margin-bottom: 2px; }
+    .header-text .sub { font-size: 13px; color: #7d8590; }
     
     .chat {
       flex: 1;
@@ -75,360 +56,78 @@
       max-height: 60vh;
     }
     
-    .msg {
-      display: flex;
-      flex-direction: column;
-    }
+    .msg { display: flex; flex-direction: column; }
+    .msg.user { align-items: flex-end; }
+    .msg.bot { align-items: flex-start; }
     
-    .msg.user {
-      align-items: flex-end;
-    }
+    .bubble { padding: 12px 16px; border-radius: 16px; font-size: 15px; line-height: 1.5; max-width: 90%; }
+    .msg.user .bubble { background: #2d333b; color: #e6edf3; border-bottom-right-radius: 4px; }
+    .msg.bot .bubble { background: #21262d; color: #c9d1d9; border-bottom-left-radius: 4px; }
     
-    .msg.bot {
-      align-items: flex-start;
-    }
+    .events { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+    .event-card { background: #2d333b; border-radius: 12px; padding: 14px 16px; }
+    .event-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 14px; color: #c9d1d9; }
+    .event-row:last-child { margin-bottom: 0; }
+    .event-row .icon { width: 20px; text-align: center; flex-shrink: 0; }
+    .event-row.title { font-weight: 600; color: #e6edf3; font-size: 15px; }
     
-    .bubble {
-      padding: 12px 16px;
-      border-radius: 16px;
-      font-size: 15px;
-      line-height: 1.5;
-      max-width: 90%;
-    }
+    .more-btn { margin-top: 12px; padding: 10px 16px; border-radius: 10px; border: 1px solid #30363d; background: transparent; color: #7d8590; font-size: 14px; cursor: pointer; }
+    .more-btn:hover { background: #21262d; color: #c9d1d9; }
     
-    .msg.user .bubble {
-      background: #2d333b;
-      color: #e6edf3;
-      border-bottom-right-radius: 4px;
-    }
+    .input-area { padding: 16px 20px; border-top: 1px solid #21262d; display: flex; gap: 12px; }
+    .input-area input { flex: 1; padding: 14px 18px; border-radius: 12px; border: 1px solid #30363d; background: #0d1117; font-size: 15px; font-family: inherit; color: #e6edf3; outline: none; }
+    .input-area input:focus { border-color: #6366f1; }
+    .input-area input::placeholder { color: #7d8590; }
     
-    .msg.bot .bubble {
-      background: #21262d;
-      color: #c9d1d9;
-      border-bottom-left-radius: 4px;
-    }
+    .send-btn { width: 48px; height: 48px; border-radius: 12px; border: none; background: #6366f1; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .send-btn:active { transform: scale(0.95); }
+    .send-btn:disabled { opacity: 0.5; }
+    .send-btn svg { width: 20px; height: 20px; }
     
-    .msg.bot .bubble.loading {
-      color: #7d8590;
-    }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #161b22; border-radius: 20px; width: 100%; max-width: 400px; padding: 24px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-header h2 { font-size: 18px; font-weight: 600; color: #e6edf3; }
+    .modal-close { background: none; border: none; color: #7d8590; font-size: 28px; cursor: pointer; }
     
-    .events {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 12px;
-    }
+    .upload-btn { width: 100%; padding: 16px; border-radius: 12px; border: 2px dashed #30363d; background: transparent; color: #7d8590; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px; }
+    .upload-btn:hover { border-color: #6366f1; color: #c9d1d9; }
     
-    .event-card {
-      background: #2d333b;
-      border-radius: 12px;
-      padding: 14px 16px;
-    }
+    .image-preview { max-width: 100%; max-height: 150px; border-radius: 12px; margin-bottom: 12px; display: none; }
+    .ocr-status { font-size: 14px; color: #7d8590; text-align: center; padding: 12px; }
     
-    .event-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 6px;
-      font-size: 14px;
-      color: #c9d1d9;
-    }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; margin-bottom: 8px; color: #7d8590; }
+    .form-group textarea { width: 100%; min-height: 150px; padding: 14px; border-radius: 12px; border: 1px solid #30363d; background: #0d1117; color: #e6edf3; font-size: 14px; font-family: inherit; outline: none; resize: vertical; }
+    .form-group textarea:focus { border-color: #6366f1; }
     
-    .event-row:last-child {
-      margin-bottom: 0;
-    }
+    .checkbox-group { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding: 14px; background: #0d1117; border-radius: 10px; }
+    .checkbox-group input[type="checkbox"] { width: 20px; height: 20px; accent-color: #6366f1; }
+    .checkbox-group label { font-size: 14px; color: #c9d1d9; cursor: pointer; }
     
-    .event-row .icon {
-      width: 20px;
-      text-align: center;
-      flex-shrink: 0;
-    }
+    .submit-btn { width: 100%; padding: 16px; border-radius: 12px; border: none; background: #6366f1; color: white; font-size: 15px; font-weight: 500; cursor: pointer; }
+    .submit-btn:disabled { opacity: 0.5; }
     
-    .event-row.title {
-      font-weight: 600;
-      color: #e6edf3;
-      font-size: 15px;
-    }
+    .submit-status { text-align: center; padding: 12px; font-size: 14px; margin-top: 12px; border-radius: 10px; }
+    .submit-status.success { color: #3fb950; background: rgba(63,185,80,0.1); }
+    .submit-status.error { color: #f85149; background: rgba(248,81,73,0.1); }
     
-    .more-btn {
-      margin-top: 12px;
-      padding: 10px 16px;
-      border-radius: 10px;
-      border: 1px solid #30363d;
-      background: transparent;
-      color: #7d8590;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    
-    .more-btn:hover {
-      background: #21262d;
-      color: #c9d1d9;
-    }
-    
-    .input-area {
-      padding: 16px 20px;
-      border-top: 1px solid #21262d;
-      display: flex;
-      gap: 12px;
-    }
-    
-    .input-area input {
-      flex: 1;
-      padding: 14px 18px;
-      border-radius: 12px;
-      border: 1px solid #30363d;
-      background: #0d1117;
-      font-size: 15px;
-      font-family: inherit;
-      color: #e6edf3;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    
-    .input-area input:focus {
-      border-color: #6366f1;
-    }
-    
-    .input-area input::placeholder {
-      color: #7d8590;
-    }
-    
-    .send-btn {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      border: none;
-      background: #6366f1;
-      color: white;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.15s, background 0.15s;
-      flex-shrink: 0;
-    }
-    
-    .send-btn:hover {
-      background: #5558e3;
-    }
-    
-    .send-btn:active {
-      transform: scale(0.95);
-    }
-    
-    .send-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    
-    .send-btn svg {
-      width: 20px;
-      height: 20px;
-    }
-    
-    /* Admin modal */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.8);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-    
-    .modal-overlay.open {
-      display: flex;
-    }
-    
-    .modal {
-      background: #161b22;
-      border-radius: 20px;
-      width: 100%;
-      max-width: 400px;
-      padding: 24px;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    
-    .modal-header h2 {
-      font-size: 18px;
-      font-weight: 600;
-      color: #e6edf3;
-    }
-    
-    .modal-close {
-      background: none;
-      border: none;
-      color: #7d8590;
-      font-size: 28px;
-      cursor: pointer;
-      line-height: 1;
-    }
-    
-    .upload-btn {
-      width: 100%;
-      padding: 16px;
-      border-radius: 12px;
-      border: 2px dashed #30363d;
-      background: transparent;
-      color: #7d8590;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 16px;
-      transition: all 0.15s;
-    }
-    
-    .upload-btn:hover {
-      border-color: #6366f1;
-      color: #c9d1d9;
-    }
-    
-    .image-preview {
-      max-width: 100%;
-      max-height: 150px;
-      border-radius: 12px;
-      margin-bottom: 12px;
-      display: none;
-    }
-    
-    .ocr-status {
-      font-size: 14px;
-      color: #7d8590;
-      text-align: center;
-      padding: 12px;
-    }
-    
-    .form-group {
-      margin-bottom: 16px;
-    }
-    
-    .form-group label {
-      display: block;
-      font-size: 13px;
-      margin-bottom: 8px;
-      color: #7d8590;
-    }
-    
-    .form-group textarea {
-      width: 100%;
-      min-height: 150px;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #30363d;
-      background: #0d1117;
-      color: #e6edf3;
-      font-size: 14px;
-      font-family: inherit;
-      outline: none;
-      resize: vertical;
-      line-height: 1.5;
-    }
-    
-    .form-group textarea:focus {
-      border-color: #6366f1;
-    }
-    
-    .checkbox-group {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-      padding: 14px;
-      background: #0d1117;
-      border-radius: 10px;
-    }
-    
-    .checkbox-group input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
-      accent-color: #6366f1;
-    }
-    
-    .checkbox-group label {
-      font-size: 14px;
-      color: #c9d1d9;
-      cursor: pointer;
-    }
-    
-    .submit-btn {
-      width: 100%;
-      padding: 16px;
-      border-radius: 12px;
-      border: none;
-      background: #6366f1;
-      color: white;
-      font-size: 15px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    
-    .submit-btn:hover {
-      background: #5558e3;
-    }
-    
-    .submit-btn:disabled {
-      opacity: 0.5;
-    }
-    
-    .submit-status {
-      text-align: center;
-      padding: 12px;
-      font-size: 14px;
-      margin-top: 12px;
-      border-radius: 10px;
-    }
-    
-    .submit-status.success {
-      color: #3fb950;
-      background: rgba(63,185,80,0.1);
-    }
-    
-    .submit-status.error {
-      color: #f85149;
-      background: rgba(248,81,73,0.1);
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-    
-    .loading-text {
-      animation: pulse 1.5s ease-in-out infinite;
-    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .loading-text { animation: pulse 1.5s ease-in-out infinite; }
   </style>
 </head>
 <body>
 
 <div class="card">
   <div class="header">
-    <div class="logo">
-      <img src="./dancemap-icon.svg" alt="DanceMap" />
-    </div>
+    <div class="logo"><img src="./dancemap-icon.svg" alt="DanceMap" /></div>
     <div class="header-text">
       <h1>DanceMap</h1>
       <div class="sub">Dansevents i København og omegn</div>
     </div>
   </div>
-  
   <div id="chat" class="chat"></div>
-  
   <div class="input-area">
     <input id="q" type="text" placeholder="Søg fx: bachata i dag" autocomplete="off" enterkeyhint="search" />
     <button id="sendBtn" class="send-btn">
@@ -440,20 +139,17 @@
   </div>
 </div>
 
-<!-- Admin Modal -->
 <div class="modal-overlay" id="adminModal">
   <div class="modal">
     <div class="modal-header">
       <h2>Tilføj Event</h2>
       <button class="modal-close" id="closeAdmin">&times;</button>
     </div>
-    <div>
-      <button type="button" class="upload-btn" id="uploadBtn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        Upload billede
-      </button>
-      <input type="file" id="fileInput" accept="image/*" style="display:none" />
-    </div>
+    <button type="button" class="upload-btn" id="uploadBtn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Upload billede
+    </button>
+    <input type="file" id="fileInput" accept="image/*" style="display:none" />
     <img id="imagePreview" class="image-preview" />
     <div id="ocrStatus" class="ocr-status" style="display:none"></div>
     <div class="form-group">
@@ -475,19 +171,14 @@ const $ = id => document.getElementById(id);
 const chat = $('chat'), input = $('q'), sendBtn = $('sendBtn');
 const modal = $('adminModal'), payload = $('adminPayload'), status = $('adminStatus');
 const recurring = $('recurringCheck'), preview = $('imagePreview'), ocrStatus = $('ocrStatus');
-
-let lastQ = '', page = 0, hasMore = false, loading = false, moreBtn = null;
-let tesseractLoaded = false;
+let lastQ = '', page = 0, hasMore = false, loading = false, moreBtn = null, tesseractLoaded = false;
 
 function esc(t) { return t.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 function parseEvents(text) {
-  // Parse event-tekst til struktureret format
-  const events = text.split('\n\n').filter(e => e.trim());
-  return events.map(event => {
-    const lines = event.split('\n');
+  return text.split('\n\n').filter(e => e.trim()).map(event => {
     const parsed = {};
-    lines.forEach(line => {
+    event.split('\n').forEach(line => {
       if (line.startsWith('🗓')) parsed.dato = line.replace('🗓', '').trim();
       else if (line.startsWith('🕗')) parsed.tid = line.replace('🕗', '').trim();
       else if (line.startsWith('💃')) parsed.type = line.replace('💃', '').trim();
@@ -499,48 +190,29 @@ function parseEvents(text) {
 }
 
 function renderEvents(events) {
-  return events.map(e => `
-    <div class="event-card">
-      <div class="event-row title">
-        <span class="icon">📅</span>
-        <span>${esc(e.dato)}${e.type ? '' : ''}</span>
-      </div>
-      ${e.tid ? `<div class="event-row"><span class="icon">🕐</span><span>${esc(e.tid)}</span></div>` : ''}
-      ${e.sted ? `<div class="event-row"><span class="icon">📍</span><span>${esc(e.sted)}</span></div>` : ''}
-      ${e.pris ? `<div class="event-row"><span class="icon">💰</span><span>${esc(e.pris)}</span></div>` : ''}
-    </div>
-  `).join('');
+  return events.map(e => `<div class="event-card">
+    <div class="event-row title"><span class="icon">📅</span><span>${esc(e.dato)}</span></div>
+    ${e.tid ? `<div class="event-row"><span class="icon">🕐</span><span>${esc(e.tid)}</span></div>` : ''}
+    ${e.sted ? `<div class="event-row"><span class="icon">📍</span><span>${esc(e.sted)}</span></div>` : ''}
+    ${e.pris ? `<div class="event-row"><span class="icon">💰</span><span>${esc(e.pris)}</span></div>` : ''}
+  </div>`).join('');
 }
 
 function addMsg(text, isUser, showMoreBtn = false) {
-  // Remove existing more button
   if (moreBtn) { moreBtn.remove(); moreBtn = null; }
-  
-  // Remove loading message
   const loadingMsg = chat.querySelector('.loading-msg');
   if (loadingMsg) loadingMsg.remove();
-  
   const msg = document.createElement('div');
   msg.className = 'msg ' + (isUser ? 'user' : 'bot');
-  
   if (isUser) {
     msg.innerHTML = `<div class="bubble">${esc(text)}</div>`;
   } else {
     const events = parseEvents(text);
-    if (events.length > 0) {
-      msg.innerHTML = `
-        <div class="bubble">
-          Her er events:
-          <div class="events">${renderEvents(events)}</div>
-        </div>
-      `;
-    } else {
-      msg.innerHTML = `<div class="bubble">${esc(text)}</div>`;
-    }
+    msg.innerHTML = events.length > 0 
+      ? `<div class="bubble">Her er events:<div class="events">${renderEvents(events)}</div></div>`
+      : `<div class="bubble">${esc(text)}</div>`;
   }
-  
   chat.appendChild(msg);
-  
   if (showMoreBtn) {
     moreBtn = document.createElement('button');
     moreBtn.className = 'more-btn';
@@ -548,14 +220,13 @@ function addMsg(text, isUser, showMoreBtn = false) {
     moreBtn.onclick = loadMore;
     chat.appendChild(moreBtn);
   }
-  
   chat.scrollTop = chat.scrollHeight;
 }
 
 function showLoading() {
   const msg = document.createElement('div');
   msg.className = 'msg bot loading-msg';
-  msg.innerHTML = `<div class="bubble loading loading-text">Søger events...</div>`;
+  msg.innerHTML = `<div class="bubble loading-text">Søger events...</div>`;
   chat.appendChild(msg);
   chat.scrollTop = chat.scrollHeight;
 }
@@ -572,42 +243,34 @@ async function doSearch() {
   if (!q || loading) return;
   addMsg(q, true);
   input.value = '';
-  lastQ = q; page = 0; hasMore = false;
-  loading = true;
+  lastQ = q; page = 0; hasMore = false; loading = true;
   sendBtn.disabled = true;
   showLoading();
   try {
     const data = await search(q, 0);
     hasMore = !!data.hasMore;
     addMsg(data.text || 'Ingen resultater.', false, hasMore);
-  } catch (e) {
-    addMsg('Fejl. Prøv igen.', false);
-  }
+  } catch (e) { addMsg('Fejl. Prøv igen.', false); }
   loading = false;
   sendBtn.disabled = false;
 }
 
 async function loadMore() {
   if (loading || !hasMore) return;
-  page++;
-  loading = true;
+  page++; loading = true;
   if (moreBtn) moreBtn.disabled = true;
   showLoading();
   try {
     const data = await search(lastQ, page);
     hasMore = !!data.hasMore;
     addMsg(data.text, false, hasMore);
-  } catch (e) {
-    addMsg('Fejl.', false);
-    hasMore = false;
-  }
+  } catch (e) { addMsg('Fejl.', false); hasMore = false; }
   loading = false;
 }
 
 sendBtn.onclick = doSearch;
 input.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } };
 
-// Admin: Triple-click logo
 let clicks = 0, clickTimer;
 document.querySelector('.header').onclick = () => {
   clicks++;
@@ -628,7 +291,6 @@ function openAdmin() {
 $('closeAdmin').onclick = () => modal.classList.remove('open');
 modal.onclick = e => { if (e.target === modal) modal.classList.remove('open'); };
 
-// OCR lazy load
 async function loadTesseract() {
   if (tesseractLoaded) return;
   ocrStatus.style.display = 'block';
@@ -652,12 +314,8 @@ async function processImage(img) {
       payload.value = result.data.text.trim();
       ocrStatus.textContent = '✅ Tekst fundet';
       setTimeout(() => ocrStatus.style.display = 'none', 2000);
-    } else {
-      ocrStatus.textContent = '⚠️ Ingen tekst fundet';
-    }
-  } catch (e) {
-    ocrStatus.textContent = '❌ OCR fejl';
-  }
+    } else { ocrStatus.textContent = '⚠️ Ingen tekst fundet'; }
+  } catch (e) { ocrStatus.textContent = '❌ OCR fejl'; }
 }
 
 $('uploadBtn').onclick = () => $('fileInput').click();
@@ -713,7 +371,6 @@ $('adminSubmitBtn').onclick = async () => {
   btn.textContent = 'Tilføj Event';
 };
 
-// Initial message
 addMsg('Søg fx: "salsa i dag", "bachata weekend" eller "kizomba fredag"', false);
 </script>
 </body>
