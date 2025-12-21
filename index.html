@@ -922,6 +922,8 @@ const installGuide = $('installGuide');
 // Tjek om allerede installeret som PWA
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 const isInstallDismissed = localStorage.getItem('installDismissed');
+const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 // Android: Fang native install prompt
 window.addEventListener('beforeinstallprompt', (e) => {
@@ -932,11 +934,11 @@ window.addEventListener('beforeinstallprompt', (e) => {
   }
 });
 
-// iOS: Vis banner manuelt (Safari har ikke beforeinstallprompt)
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-if (isIOS && isSafari && !isStandalone && !isInstallDismissed) {
-  setTimeout(() => installBanner.classList.add('show'), 2000);
+// Fallback: Vis banner på mobil efter 2 sek (hvis ikke allerede vist)
+if (isMobile && !isStandalone && !isInstallDismissed) {
+  setTimeout(() => {
+    installBanner.classList.add('show');
+  }, 2000);
 }
 
 // Install knap klik
