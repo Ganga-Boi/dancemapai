@@ -932,63 +932,68 @@ let deferredPrompt = null;
 const installBanner = $('installBanner');
 const installGuide = $('installGuide');
 
-// Tjek om allerede installeret som PWA
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-const isInstallDismissed = localStorage.getItem('installDismissed');
-const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+// Tjek om allerede installeret som PWA (kører som app)
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
+  || window.navigator.standalone 
+  || document.referrer.includes('android-app://');
 
-// Android: Fang native install prompt
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  if (!isStandalone && !isInstallDismissed) {
-    installBanner.classList.add('show');
-  }
-});
+// Stop her hvis allerede installeret
+if (isStandalone) {
+  // Kører som app – vis aldrig install banner
+} else {
+  const isInstallDismissed = localStorage.getItem('installDismissed');
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-// Fallback: Vis banner på mobil efter 2 sek (hvis ikke allerede vist)
-if (isMobile && !isStandalone && !isInstallDismissed) {
-  setTimeout(() => {
-    installBanner.classList.add('show');
-  }, 2000);
-}
-
-// Install knap klik
-$('installBtn').onclick = async () => {
-  if (deferredPrompt) {
-    // Android: Brug native prompt
-    deferredPrompt.prompt();
-    const result = await deferredPrompt.userChoice;
-    if (result.outcome === 'accepted') {
-      installBanner.classList.remove('show');
+  // Android: Fang native install prompt
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!isInstallDismissed) {
+      installBanner.classList.add('show');
     }
-    deferredPrompt = null;
-  } else if (isIOS) {
-    // iOS: Vis guide
-    $('guideIOS').style.display = 'block';
-    $('guideAndroid').style.display = 'none';
-    installGuide.classList.add('show');
-  } else {
-    // Android fallback: Vis guide
-    $('guideIOS').style.display = 'none';
-    $('guideAndroid').style.display = 'block';
-    installGuide.classList.add('show');
+  });
+
+  // Fallback: Vis banner på mobil efter 2 sek
+  if (isMobile && !isInstallDismissed) {
+    setTimeout(() => {
+      installBanner.classList.add('show');
+    }, 2000);
   }
-};
 
-// Luk banner
-$('installClose').onclick = () => {
-  installBanner.classList.remove('show');
-  localStorage.setItem('installDismissed', 'true');
-};
+  // Install knap klik
+  $('installBtn').onclick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const result = await deferredPrompt.userChoice;
+      if (result.outcome === 'accepted') {
+        installBanner.classList.remove('show');
+      }
+      deferredPrompt = null;
+    } else if (isIOS) {
+      $('guideIOS').style.display = 'block';
+      $('guideAndroid').style.display = 'none';
+      installGuide.classList.add('show');
+    } else {
+      $('guideIOS').style.display = 'none';
+      $('guideAndroid').style.display = 'block';
+      installGuide.classList.add('show');
+    }
+  };
 
-// Luk guide
-$('guideClose').onclick = () => {
-  installGuide.classList.remove('show');
-  installBanner.classList.remove('show');
-  localStorage.setItem('installDismissed', 'true');
-};
+  // Luk banner
+  $('installClose').onclick = () => {
+    installBanner.classList.remove('show');
+    localStorage.setItem('installDismissed', 'true');
+  };
+
+  // Luk guide
+  $('guideClose').onclick = () => {
+    installGuide.classList.remove('show');
+    installBanner.classList.remove('show');
+    localStorage.setItem('installDismissed', 'true');
+  };
+}
 </script>
 </body>
 </html>
