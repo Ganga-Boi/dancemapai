@@ -8,16 +8,34 @@
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#6366f1" />
 
+  <!-- API config (UÆNDRET) -->
   <script src="/api-config.js"></script>
 
+  <!-- ADMIN UI (NYT – påvirker ikke frontend) -->
+  <link rel="stylesheet" href="/admin.css" />
+
   <!-- resten af <head> er UÆNDRET -->
-  <!-- (din eksisterende head-kode fortsætter her uændret) -->
 </head>
 
 <body>
 
-<!-- ALT HTML ER UÆNDRET -->
-<!-- din eksisterende markup fortsætter -->
+<!-- ============================= -->
+<!-- DIN EKSISTERENDE HTML -->
+<!-- (ALT ER UÆNDRET HER) -->
+<!-- ============================= -->
+
+<!-- fx chat UI, søgefelt, resultater osv. -->
+
+
+<!-- ============================= -->
+<!-- ADMIN UI MODAL (NY) -->
+<!-- ============================= -->
+
+<div id="admin-root" style="display:none"></div>
+
+<!-- ============================= -->
+<!-- EKSISTERENDE SCRIPT -->
+<!-- ============================= -->
 
 <script>
 /* ========= ENESTE ÆNDRING: API ========= */
@@ -47,7 +65,28 @@ async function loadWeekCount() {
 loadWeekCount();
 
 /* resten af din eksisterende JS er UÆNDRET */
+</script>
 
+<!-- ============================= -->
+<!-- ADMIN SCRIPT (NY) -->
+<!-- ============================= -->
+
+<script src="/admin.js"></script>
+
+<!-- ============================= -->
+<!-- ADMIN TOGGLE (VALGFRI, TIL DIG) -->
+<!-- ============================= -->
+
+<script>
+/*
+  Åbn admin manuelt i browser:
+  skriv i console: openAdmin()
+*/
+
+function openAdmin() {
+  document.getElementById('admin-root').style.display = 'block';
+  console.log('Admin UI åbnet');
+}
 </script>
 
 </body>
