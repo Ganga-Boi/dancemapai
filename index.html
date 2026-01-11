@@ -8,18 +8,21 @@
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#6366f1" />
 
-  <!-- API config -->
+  <!-- API CONFIG (Apps Script JSONP) -->
   <script src="/api-config.js"></script>
 </head>
 
 <body>
 
-<div id="app">
-  <input id="q" placeholder="Søg fx salsa eller bachata" />
-  <button onclick="runSearch()">Søg</button>
+<div id="app" style="max-width:420px;margin:40px auto;color:#fff;">
+  <h2>DanceMap</h2>
+  <p>Dansevents i København og omegn</p>
 
-  <div id="weekCount"></div>
-  <pre id="result"></pre>
+  <input id="q" placeholder='Søg fx "salsa" eller "bachata"' style="width:100%;padding:8px;" />
+  <button onclick="runSearch()" style="margin-top:8px;">Søg</button>
+
+  <div id="weekCount" style="margin-top:12px;"></div>
+  <pre id="result" style="white-space:pre-wrap;margin-top:12px;"></pre>
 </div>
 
 <div id="fallback"
@@ -33,8 +36,7 @@
 </div>
 
 <script>
-const API_SEARCH = window.DANCEMAP_API.search;
-const API_WEEK   = window.DANCEMAP_API.weekcount;
+const API = window.DANCEMAP_API.search;
 
 function showFallback() {
   document.getElementById('fallback').style.display = 'flex';
@@ -43,12 +45,14 @@ function showFallback() {
 function jsonp(url) {
   return new Promise((resolve, reject) => {
     const cb = 'cb_' + Date.now();
+    const script = document.createElement('script');
+
     window[cb] = data => {
       delete window[cb];
       script.remove();
       resolve(data);
     };
-    const script = document.createElement('script');
+
     script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
     script.onerror = () => {
       delete window[cb];
@@ -56,6 +60,7 @@ function jsonp(url) {
       showFallback();
       reject();
     };
+
     document.body.appendChild(script);
   });
 }
@@ -63,15 +68,20 @@ function jsonp(url) {
 async function runSearch() {
   const q = document.getElementById('q').value.trim();
   if (!q) return;
+
   try {
-    const data = await jsonp(API_SEARCH + '?query=' + encodeURIComponent(q));
+    const data = await jsonp(
+      API + '?action=search&query=' + encodeURIComponent(q)
+    );
     document.getElementById('result').textContent = data.text || '';
   } catch {}
 }
 
 async function loadWeekCount() {
   try {
-    const data = await jsonp(API_WEEK);
+    const data = await jsonp(
+      API + '?action=weekcount'
+    );
     if (data.success && data.count > 0) {
       document.getElementById('weekCount').textContent =
         data.count + ' events denne uge';
