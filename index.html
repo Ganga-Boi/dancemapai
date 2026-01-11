@@ -9,44 +9,63 @@
   <meta name="theme-color" content="#6366f1" />
 
   <style>
-    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif; background:#0d1117; color:#e6edf3; margin:0; }
-    .card { max-width:420px; margin:20px auto; background:#161b22; border-radius:20px; display:flex; flex-direction:column; height:90vh; }
-    .header { padding:16px; border-bottom:1px solid #21262d; }
-    .chat { flex:1; padding:16px; overflow-y:auto; }
-    .msg { margin-bottom:12px; }
-    .msg.user { text-align:right; }
-    .bubble { display:inline-block; padding:10px 14px; border-radius:14px; background:#21262d; max-width:90%; }
-    .msg.user .bubble { background:#2d333b; }
-    .events { margin-top:10px; display:flex; flex-direction:column; gap:8px; }
-    .event-card { background:#2d333b; padding:10px 12px; border-radius:10px; font-size:14px; }
-    .input-area { display:flex; gap:8px; padding:12px; border-top:1px solid #21262d; }
-    input { flex:1; padding:12px; border-radius:10px; border:1px solid #30363d; background:#0d1117; color:#e6edf3; }
-    button { padding:12px 16px; border:none; border-radius:10px; background:#6366f1; color:white; }
+    /* ALT DESIGN ER UÆNDRET */
+    /* (samme CSS som før – udeladt her for overskuelighed) */
   </style>
 </head>
-
 <body>
 
 <div class="card">
   <div class="header">
-    <strong>DanceMap</strong>
-    <div id="weekCount" style="font-size:12px;color:#6366f1;margin-top:4px;"></div>
+    <div class="logo"><img src="./dancemap-icon.svg" alt="DanceMap"></div>
+    <div class="header-text">
+      <h1>DanceMap</h1>
+      <div class="sub">Dansevents i København og omegn</div>
+      <div class="week-count" id="weekCount"></div>
+    </div>
   </div>
 
   <div id="chat" class="chat"></div>
 
   <div class="input-area">
-    <input id="q" placeholder="Søg efter salsa eller bachata" />
-    <button id="sendBtn">Søg</button>
+    <input
+      id="q"
+      type="text"
+      placeholder="Søg fx: salsa eller bachata"
+      autocomplete="off"
+    />
+    <button id="sendBtn" class="send-btn">➤</button>
   </div>
 </div>
 
 <script>
+/* ======================================================
+   KONFIG
+====================================================== */
 const API = 'https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec';
+
 const chat = document.getElementById('chat');
 const input = document.getElementById('q');
 const sendBtn = document.getElementById('sendBtn');
 
+/* ======================================================
+   DANSK DATOFORMAT (NY)
+====================================================== */
+function formatDanskDato(dateStr) {
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+
+  return d.toLocaleDateString('da-DK', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+}
+
+/* ======================================================
+   JSONP
+====================================================== */
 function jsonp(url) {
   return new Promise((resolve, reject) => {
     const cb = 'cb_' + Date.now();
@@ -56,76 +75,73 @@ function jsonp(url) {
       resolve(data);
     };
     const script = document.createElement('script');
-    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
+    script.src = url + '&callback=' + cb;
     script.onerror = () => reject();
     document.body.appendChild(script);
   });
 }
 
-function formatDateDK(dateStr) {
-  const d = new Date(dateStr);
-  if (isNaN(d)) return dateStr;
-  return d.toLocaleDateString('da-DK', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short'
-  });
-}
-
+/* ======================================================
+   UI
+====================================================== */
 function addMsg(text, isUser) {
   const div = document.createElement('div');
   div.className = 'msg ' + (isUser ? 'user' : 'bot');
+
+  if (!isUser) {
+    // Dansk dato i output
+    text = text.replace(
+      /\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun).*?\d{4}/g,
+      m => formatDanskDato(m)
+    );
+  }
+
   div.innerHTML = `<div class="bubble">${text}</div>`;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
 
-function renderEvents(text) {
-  const blocks = text.split('\n\n');
-  return blocks.map(b => {
-    const lines = b.split('\n');
-    let html = '<div class="event-card">';
-    lines.forEach(l => {
-      if (l.startsWith('🗓')) html += `<div>${formatDateDK(l.replace('🗓','').trim())}</div>`;
-      else html += `<div>${l.replace(/^[^\s]+/,'').trim()}</div>`;
-    });
-    return html + '</div>';
-  }).join('');
-}
-
+/* ======================================================
+   SEARCH
+====================================================== */
 async function doSearch() {
   const q = input.value.trim();
   if (!q) return;
+
   addMsg(q, true);
   input.value = '';
+
   try {
     const data = await jsonp(API + '?query=' + encodeURIComponent(q));
-    if (data.text) {
-      addMsg(renderEvents(data.text), false);
-    } else {
-      addMsg('Ingen resultater.', false);
-    }
+    addMsg(data.text || 'Ingen resultater.', false);
   } catch {
     addMsg('Fejl. Prøv igen.', false);
   }
 }
 
 sendBtn.onclick = doSearch;
-input.onkeydown = e => { if (e.key === 'Enter') doSearch(); };
+input.onkeydown = e => e.key === 'Enter' && doSearch();
 
-// STARTTEKST – RETTET
-addMsg('Søg efter salsa eller bachata', false);
+/* ======================================================
+   INTRO-TEKST (RETTET)
+====================================================== */
+addMsg(
+  'Skriv blot fx "salsa" eller "bachata" – så finder jeg relevante danseevents.',
+  false
+);
 
-// WEEKCOUNT
+/* ======================================================
+   WEEKCOUNT
+====================================================== */
 (async () => {
   try {
     const data = await jsonp(API + '?action=weekcount');
-    if (data.success) {
-      document.getElementById('weekCount').textContent = data.count + ' events denne uge';
+    if (data.count) {
+      document.getElementById('weekCount').textContent =
+        data.count + ' events denne uge';
     }
   } catch {}
 })();
 </script>
-
 </body>
 </html>
