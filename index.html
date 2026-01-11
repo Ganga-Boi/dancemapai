@@ -659,17 +659,31 @@ function parseTextToFields(txt) {
 }
 
 function validateFields() {
-  const warns = [];
-  if (!fields.dato.value) warns.push('❌ Dato mangler');
-  if (!fields.start.value) warns.push('❌ Starttid mangler');
-  if (!fields.sted.value) warns.push('❌ Sted mangler');
-  if (fields.sted.value && fields.sted.value.length < 3) warns.push('⚠️ Sted ser forkert ud');
+  const errors = [];
+  
+  // ALLE felter er påkrævede
+  if (!fields.dato.value) errors.push('❌ Dato mangler');
+  if (!fields.navn.value) errors.push('❌ Event navn mangler');
+  if (!fields.start.value) errors.push('❌ Starttid mangler');
+  if (!fields.slut.value) errors.push('❌ Sluttid mangler');
+  if (!fields.dans.value) errors.push('❌ Dansetype mangler');
+  if (!fields.sted.value) errors.push('❌ Sted mangler');
+  if (!fields.adresse.value) errors.push('❌ Adresse mangler');
+  if (!fields.by.value) errors.push('❌ By mangler');
+  if (!fields.pris.value) errors.push('❌ Pris mangler');
+  
+  // Validering af feltværdier
+  if (fields.sted.value && fields.sted.value.length < 3) errors.push('❌ Sted er for kort');
+  if (fields.by.value && fields.by.value.length < 2) errors.push('❌ By er for kort');
+  
+  // Logisk validering
   if (fields.start.value && fields.slut.value) {
     const s = fields.start.value.replace(':', '');
     const e = fields.slut.value.replace(':', '');
-    if (parseInt(e) < parseInt(s) && parseInt(e) > 600) warns.push('⚠️ Sluttid er før starttid – er det korrekt?');
+    if (parseInt(e) < parseInt(s) && parseInt(e) > 600) errors.push('❌ Sluttid er før starttid');
   }
-  return warns;
+  
+  return { errors, warnings: [] };
 }
 
 function updatePreview() {
@@ -715,8 +729,9 @@ $('parseBtn').onclick = () => {
   fields.adresse.value = parsed.adresse;
   fields.by.value = parsed.by;
   fields.pris.value = parsed.pris;
-  const warns = validateFields();
-  if (warns.length > 0) { warnings.innerHTML = warns.join('<br>'); warnings.classList.add('show'); }
+  const { errors, warnings: warns } = validateFields();
+  const allMessages = [...errors, ...warns];
+  if (allMessages.length > 0) { warnings.innerHTML = allMessages.join('<br>'); warnings.classList.add('show'); }
   else { warnings.classList.remove('show'); }
   updatePreview();
   step1.style.display = 'none';
@@ -776,10 +791,26 @@ modal.onpaste = e => {
 
 /* ADMIN SUBMIT - JSONP VIA GET */
 $('adminSubmitBtn').onclick = async () => {
-  const warns = validateFields();
-  const criticalErrors = warns.filter(w => w.startsWith('❌'));
-  if (criticalErrors.length > 0) { warnings.innerHTML = warns.join('<br>'); warnings.classList.add('show'); return; }
-  if (warns.length > 0) { warnings.innerHTML = warns.join('<br>'); warnings.classList.add('show'); }
+  const { errors, warnings: warns } = validateFields();
+  
+  // Stop hvis der er fejl
+  if (errors.length > 0) {
+    const allMessages = [...errors, ...warns];
+    warnings.innerHTML = allMessages.join('<br>');
+    warnings.classList.add('show');
+    status.style.display = 'block';
+    status.textContent = '❌ Udfyld alle påkrævede felter før du kan tilføje eventet';
+    status.className = 'submit-status error';
+    return;
+  }
+  
+  // Vis advarsler men fortsæt
+  if (warns.length > 0) {
+    warnings.innerHTML = warns.join('<br>');
+    warnings.classList.add('show');
+  } else {
+    warnings.classList.remove('show');
+  }
   
   const dato = fields.dato.value;
   const dateParts = dato.split('-');
@@ -806,20 +837,23 @@ $('adminSubmitBtn').onclick = async () => {
   try {
     const data = await jsonp(API + '?action=admin-import&payload=' + encodeURIComponent(payloadText) + '&recurring=' + recurring.checked + '&_=' + Date.now());
     status.style.display = 'block';
-    status.textContent = data.text || (data.success ? '✅ Tilføjet' : '❌ Fejl');
-    status.className = 'submit-status ' + (data.success ? 'success' : 'error');
-    if (typeof gtag !== 'undefined' && data.success) gtag('event', 'admin_import', { event_venue: fields.sted.value });
     if (data.success) {
+      status.textContent = '✅ Event tilføjet! Eventet afventer godkendelse.';
+      status.className = 'submit-status success';
+      if (typeof gtag !== 'undefined') gtag('event', 'admin_import', { event_venue: fields.sted.value });
       clearFields();
       step1.style.display = 'block';
       step2.style.display = 'none';
       payload.value = '';
       preview.style.display = 'none';
       recurring.checked = false;
+    } else {
+      status.textContent = data.text || '❌ Der opstod en fejl. Prøv igen.';
+      status.className = 'submit-status error';
     }
   } catch (e) {
     status.style.display = 'block';
-    status.textContent = '❌ Teknisk fejl';
+    status.textContent = '❌ Teknisk fejl. Tjek din forbindelse og prøv igen.';
     status.className = 'submit-status error';
   }
   btn.disabled = false;
