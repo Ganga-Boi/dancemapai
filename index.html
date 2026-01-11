@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>DanceMap</title>
-  
+
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#6366f1" />
@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="DanceMap" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
-  
+
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-WYGJJJV2E6"></script>
   <script>
@@ -21,12 +21,14 @@
     gtag('js', new Date());
     gtag('config', 'G-WYGJJJV2E6');
   </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     html, body { height: 100%; }
-    
+
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: #0d1117;
@@ -36,7 +38,7 @@
       justify-content: center;
       padding: 16px;
     }
-    
+
     .card {
       background: #161b22;
       border-radius: 20px;
@@ -47,22 +49,23 @@
       flex-direction: column;
       max-height: 90vh;
     }
-    
+
     .header {
       padding: 20px;
       display: flex;
       align-items: center;
       gap: 14px;
       border-bottom: 1px solid #21262d;
+      cursor: pointer;
     }
-    
+
     .logo { width: 48px; height: 48px; border-radius: 14px; overflow: hidden; }
     .logo img { width: 100%; height: 100%; object-fit: cover; }
-    
+
     .header-text h1 { font-size: 18px; font-weight: 600; color: #e6edf3; margin-bottom: 2px; }
     .header-text .sub { font-size: 13px; color: #7d8590; }
     .header-text .week-count { font-size: 12px; color: #6366f1; margin-top: 4px; }
-    
+
     .chat {
       flex: 1;
       overflow-y: auto;
@@ -73,90 +76,90 @@
       min-height: 200px;
       max-height: 60vh;
     }
-    
+
     .msg { display: flex; flex-direction: column; }
     .msg.user { align-items: flex-end; }
     .msg.bot { align-items: flex-start; }
-    
+
     .bubble { padding: 12px 16px; border-radius: 16px; font-size: 15px; line-height: 1.5; max-width: 90%; }
     .msg.user .bubble { background: #2d333b; color: #e6edf3; border-bottom-right-radius: 4px; }
     .msg.bot .bubble { background: #21262d; color: #c9d1d9; border-bottom-left-radius: 4px; }
-    
+
     .events { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
     .event-card { background: #2d333b; border-radius: 12px; padding: 14px 16px; }
     .event-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 14px; color: #c9d1d9; }
     .event-row:last-child { margin-bottom: 0; }
     .event-row .icon { width: 20px; text-align: center; flex-shrink: 0; }
     .event-row.title { font-weight: 600; color: #e6edf3; font-size: 15px; }
-    
+
     .more-btn { margin-top: 12px; padding: 10px 16px; border-radius: 10px; border: 1px solid #30363d; background: transparent; color: #7d8590; font-size: 14px; cursor: pointer; }
     .more-btn:hover { background: #21262d; color: #c9d1d9; }
-    
+
     .input-area { padding: 16px 20px; border-top: 1px solid #21262d; display: flex; gap: 12px; }
     .input-area input { flex: 1; padding: 14px 18px; border-radius: 12px; border: 1px solid #30363d; background: #0d1117; font-size: 15px; font-family: inherit; color: #e6edf3; outline: none; }
     .input-area input:focus { border-color: #6366f1; }
     .input-area input::placeholder { color: #7d8590; }
-    
+
     .send-btn { width: 48px; height: 48px; border-radius: 12px; border: none; background: #6366f1; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .send-btn:active { transform: scale(0.95); }
     .send-btn:disabled { opacity: 0.5; }
     .send-btn svg { width: 20px; height: 20px; }
-    
+
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
     .modal-overlay.open { display: flex; }
     .modal { background: #161b22; border-radius: 20px; width: 100%; max-width: 400px; padding: 24px; max-height: 90vh; overflow-y: auto; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .modal-header h2 { font-size: 18px; font-weight: 600; color: #e6edf3; }
     .modal-close { background: none; border: none; color: #7d8590; font-size: 28px; cursor: pointer; }
-    
+
     .upload-btn { width: 100%; padding: 16px; border-radius: 12px; border: 2px dashed #30363d; background: transparent; color: #7d8590; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px; }
     .upload-btn:hover { border-color: #6366f1; color: #c9d1d9; }
-    
+
     .image-preview { max-width: 100%; max-height: 150px; border-radius: 12px; margin-bottom: 12px; display: none; }
     .ocr-status { font-size: 14px; color: #7d8590; text-align: center; padding: 12px; }
-    
+
     .form-group { margin-bottom: 16px; }
     .form-group label { display: block; font-size: 13px; margin-bottom: 8px; color: #7d8590; }
     .form-group textarea { width: 100%; min-height: 150px; padding: 14px; border-radius: 12px; border: 1px solid #30363d; background: #0d1117; color: #e6edf3; font-size: 14px; font-family: inherit; outline: none; resize: vertical; }
     .form-group textarea:focus { border-color: #6366f1; }
-    
+
     .checkbox-group { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding: 14px; background: #0d1117; border-radius: 10px; }
     .checkbox-group input[type="checkbox"] { width: 20px; height: 20px; accent-color: #6366f1; }
     .checkbox-group label { font-size: 14px; color: #c9d1d9; cursor: pointer; }
-    
+
     .submit-btn { width: 100%; padding: 16px; border-radius: 12px; border: none; background: #6366f1; color: white; font-size: 15px; font-weight: 500; cursor: pointer; }
     .submit-btn:disabled { opacity: 0.5; }
-    
+
     .submit-status { text-align: center; padding: 12px; font-size: 14px; margin-top: 12px; border-radius: 10px; }
     .submit-status.success { color: #3fb950; background: rgba(63,185,80,0.1); }
     .submit-status.error { color: #f85149; background: rgba(248,81,73,0.1); }
-    
+
     .back-btn { background: none; border: none; color: #7d8590; font-size: 14px; cursor: pointer; margin-bottom: 16px; padding: 0; }
     .back-btn:hover { color: #c9d1d9; }
-    
+
     .field-row { margin-bottom: 14px; }
     .field-row label { display: block; font-size: 12px; margin-bottom: 6px; color: #7d8590; }
     .field-row input, .field-row select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #30363d; background: #0d1117; color: #e6edf3; font-size: 14px; font-family: inherit; outline: none; }
     .field-row input:focus, .field-row select:focus { border-color: #6366f1; }
     .field-row.two-col { display: flex; gap: 12px; }
     .field-row.two-col > div { flex: 1; }
-    
+
     .field-warnings { margin-bottom: 14px; padding: 12px; background: rgba(248,81,73,0.1); border-radius: 10px; font-size: 13px; color: #f85149; display: none; }
     .field-warnings.show { display: block; }
-    
+
     .admin-intro { font-size: 13px; color: #7d8590; margin-bottom: 16px; line-height: 1.5; }
     .admin-confirm { font-size: 12px; color: #7d8590; margin-bottom: 14px; line-height: 1.4; text-align: center; }
-    
+
     .preview-card { background: #21262d; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; }
     .preview-label { font-size: 11px; color: #7d8590; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
     .preview-content { font-size: 14px; color: #c9d1d9; line-height: 1.6; }
     .preview-content .line { display: flex; gap: 8px; margin-bottom: 4px; }
     .preview-content .line:last-child { margin-bottom: 0; }
     .preview-content .icon { width: 20px; text-align: center; }
-    
+
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     .loading-text { animation: pulse 1.5s ease-in-out infinite; }
-    
+
     .install-banner {
       display: none;
       position: fixed;
@@ -180,7 +183,7 @@
     #installBtn { background: #6366f1; color: white; }
     #installBtn:active { background: #5558e3; }
     .install-close { background: transparent; color: #7d8590; font-size: 18px; padding: 8px; }
-    
+
     .install-guide {
       display: none;
       position: fixed;
@@ -203,7 +206,6 @@
     }
     .install-guide h3 { color: #e6edf3; margin-bottom: 24px; font-size: 18px; font-weight: 600; }
     .install-guide p { color: #c9d1d9; margin-bottom: 16px; font-size: 15px; text-align: left; line-height: 1.5; }
-    .install-guide .share-icon { font-size: 16px; vertical-align: middle; }
     .install-guide-close {
       margin-top: 20px;
       padding: 14px 24px;
@@ -217,25 +219,50 @@
       width: 100%;
     }
     .install-guide-close:active { background: #5558e3; }
-    
+
     /* Admin Tabs */
     .admin-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
     .admin-tab { flex: 1; padding: 10px; border: 1px solid #30363d; background: transparent; color: #7d8590; border-radius: 8px; cursor: pointer; font-size: 14px; }
     .admin-tab.active { background: #6366f1; color: white; border-color: #6366f1; }
     .admin-tab:hover:not(.active) { background: #21262d; color: #c9d1d9; }
-    
+
     /* Pending List */
-    .pending-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
+    .pending-list { display: flex; flex-direction: column; gap: 12px; max-height: 420px; overflow-y: auto; }
     .pending-item { background: #21262d; border-radius: 10px; padding: 14px; }
-    .pending-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .pending-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 10px; }
     .pending-item-title { font-weight: 600; color: #e6edf3; }
     .pending-item-date { font-size: 12px; color: #7d8590; }
+
     .pending-item-details { font-size: 13px; color: #c9d1d9; line-height: 1.5; }
     .pending-item-row { display: flex; gap: 8px; margin-bottom: 4px; }
     .pending-item-row span:first-child { width: 20px; }
-    .pending-approve-btn { margin-top: 10px; padding: 8px 16px; background: #238636; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; }
+
+    .pending-actions { display: flex; gap: 10px; margin-top: 10px; align-items: center; }
+    .pending-status-select {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #30363d;
+      background: #0d1117;
+      color: #e6edf3;
+      font-size: 13px;
+      outline: none;
+    }
+    .pending-status-select:focus { border-color: #6366f1; }
+
+    .pending-approve-btn {
+      padding: 10px 12px;
+      background: #238636;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      white-space: nowrap;
+    }
     .pending-approve-btn:hover { background: #2ea043; }
     .pending-approve-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
     .pending-empty { text-align: center; color: #7d8590; padding: 40px 20px; }
   </style>
 </head>
@@ -256,7 +283,7 @@
     <img src="/icon-192.png" alt="DanceMap" style="width:64px;height:64px;border-radius:14px;margin-bottom:16px;">
     <h3>Installer DanceMap</h3>
     <div id="guideIOS">
-      <p>1. Tryk på <strong>Del-ikonet</strong> <span style="opacity:0.7">⎙</span> nederst i Safari</p>
+      <p>1. Tryk på <strong>Del-ikonet</strong> nederst i Safari</p>
       <p>2. Scroll ned og vælg <strong>"Føj til hjemmeskærm"</strong></p>
       <p>3. Tryk <strong>"Tilføj"</strong> øverst til højre</p>
     </div>
@@ -295,117 +322,121 @@
       <h2>Admin</h2>
       <button class="modal-close" id="closeAdmin">&times;</button>
     </div>
-    
+
     <div class="admin-tabs">
       <button class="admin-tab active" id="tabAdd">Tilføj Event</button>
       <button class="admin-tab" id="tabPending">Godkend Events</button>
     </div>
-    
+
     <div id="adminAddView">
-    <div id="adminStep1">
-      <p class="admin-intro">DanceMap forsøger at udtrække dato, tid, dansetype og sted. Du godkender og retter altid selv før eventet gemmes.</p>
-      <button type="button" class="upload-btn" id="uploadBtn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        Upload billede
-      </button>
-      <input type="file" id="fileInput" accept="image/*" style="display:none" />
-      <img id="imagePreview" class="image-preview" />
-      <div id="ocrStatus" class="ocr-status" style="display:none"></div>
-      <div class="form-group">
-        <label>Paste tekst eller billede (Ctrl+V)</label>
-        <textarea id="adminPayload" placeholder="Paste event-tekst her..."></textarea>
-      </div>
-      <button type="button" class="submit-btn" id="parseBtn">Parse tekst →</button>
-    </div>
-    
-    <div id="adminStep2" style="display:none">
-      <button type="button" class="back-btn" id="backBtn">← Tilbage</button>
-      
-      <div class="field-row">
-        <label>Dato *</label>
-        <input type="date" id="fieldDato" required />
-      </div>
-      <div class="field-row">
-        <label>Event navn</label>
-        <input type="text" id="fieldNavn" placeholder="Fx Julefiesta, Salsa Fridays" />
-      </div>
-      <div class="field-row two-col">
-        <div>
-          <label>Start *</label>
-          <input type="time" id="fieldStart" required />
+      <div id="adminStep1">
+        <p class="admin-intro">DanceMap forsøger at udtrække dato, tid, dansetype og sted. Du godkender og retter altid selv før eventet gemmes.</p>
+        <button type="button" class="upload-btn" id="uploadBtn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          Upload billede
+        </button>
+        <input type="file" id="fileInput" accept="image/*" style="display:none" />
+        <img id="imagePreview" class="image-preview" />
+        <div id="ocrStatus" class="ocr-status" style="display:none"></div>
+        <div class="form-group">
+          <label>Paste tekst eller billede (Ctrl+V)</label>
+          <textarea id="adminPayload" placeholder="Paste event-tekst her..."></textarea>
         </div>
-        <div>
-          <label>Slut</label>
-          <input type="time" id="fieldSlut" />
+        <button type="button" class="submit-btn" id="parseBtn">Parse tekst →</button>
+      </div>
+
+      <div id="adminStep2" style="display:none">
+        <button type="button" class="back-btn" id="backBtn">← Tilbage</button>
+
+        <div class="field-row">
+          <label>Dato *</label>
+          <input type="date" id="fieldDato" required />
         </div>
-      </div>
-      <div class="field-row">
-        <label>Dansetype</label>
-        <select id="fieldDans">
-          <option value="Salsa">Salsa</option>
-          <option value="Bachata">Bachata</option>
-          <option value="Kizomba">Kizomba</option>
-          <option value="Zouk">Zouk</option>
-          <option value="Tango">Tango</option>
-          <option value="Swing">Swing</option>
-          <option value="Latin">Latin</option>
-        </select>
-      </div>
-      <div class="field-row">
-        <label>Sted *</label>
-        <input type="text" id="fieldSted" placeholder="Fx Kedelhallen" required />
-      </div>
-      <div class="field-row">
-        <label>Adresse</label>
-        <input type="text" id="fieldAdresse" placeholder="Fx Nyelandsvej 75A" />
-      </div>
-      <div class="field-row">
-        <label>By</label>
-        <input type="text" id="fieldBy" value="København" />
-      </div>
-      
-      <div class="field-row">
-        <label>Pristype</label>
-        <select id="fieldPrisType">
-          <option value="angiv">Angiv priser</option>
-          <option value="gratis">Gratis</option>
-          <option value="kontakt">Kontakt arrangør</option>
-        </select>
-      </div>
-      <div id="prisFields">
+        <div class="field-row">
+          <label>Event navn *</label>
+          <input type="text" id="fieldNavn" placeholder="Fx Julefiesta, Salsa Fridays" />
+        </div>
         <div class="field-row two-col">
           <div>
-            <label>Online/forsalg (kr)</label>
-            <input type="text" id="fieldPrisOnline" placeholder="Fx 50" />
+            <label>Start *</label>
+            <input type="time" id="fieldStart" required />
           </div>
           <div>
-            <label>Drop-in/dør (kr)</label>
-            <input type="text" id="fieldPrisDropin" placeholder="Fx 70" />
+            <label>Slut *</label>
+            <input type="time" id="fieldSlut" />
           </div>
         </div>
+        <div class="field-row">
+          <label>Dansetype *</label>
+          <select id="fieldDans">
+            <option value="Salsa">Salsa</option>
+            <option value="Bachata">Bachata</option>
+            <option value="Kizomba">Kizomba</option>
+            <option value="Zouk">Zouk</option>
+            <option value="Tango">Tango</option>
+            <option value="Swing">Swing</option>
+            <option value="Latin">Latin</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <label>Sted *</label>
+          <input type="text" id="fieldSted" placeholder="Fx Kedelhallen" required />
+        </div>
+        <div class="field-row">
+          <label>Adresse *</label>
+          <input type="text" id="fieldAdresse" placeholder="Fx Nyelandsvej 75A" />
+        </div>
+        <div class="field-row">
+          <label>By *</label>
+          <input type="text" id="fieldBy" value="København" />
+        </div>
+
+        <div class="field-row">
+          <label>Pristype</label>
+          <select id="fieldPrisType">
+            <option value="angiv">Angiv priser</option>
+            <option value="gratis">Gratis</option>
+            <option value="kontakt">Kontakt arrangør</option>
+          </select>
+        </div>
+        <div id="prisFields">
+          <div class="field-row two-col">
+            <div>
+              <label>Online/forsalg (kr)</label>
+              <input type="text" id="fieldPrisOnline" placeholder="Fx 50" />
+            </div>
+            <div>
+              <label>Drop-in/dør (kr)</label>
+              <input type="text" id="fieldPrisDropin" placeholder="Fx 70" />
+            </div>
+          </div>
+        </div>
+        <input type="hidden" id="fieldPris" />
+
+        <div id="fieldWarnings" class="field-warnings"></div>
+
+        <div id="previewCard" class="preview-card">
+          <div class="preview-label">Forhåndsvisning</div>
+          <div id="previewContent" class="preview-content"></div>
+        </div>
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="recurringCheck" />
+          <label for="recurringCheck">Gentager ugentligt</label>
+        </div>
+
+        <p class="admin-confirm">Ved at tilføje eventet bekræfter du, at oplysningerne er gennemgået og korrekte.</p>
+
+        <button type="button" class="submit-btn" id="adminSubmitBtn">Tilføj Event (pending)</button>
       </div>
-      <input type="hidden" id="fieldPris" />
-      
-      <div id="fieldWarnings" class="field-warnings"></div>
-      
-      <div id="previewCard" class="preview-card">
-        <div class="preview-label">Forhåndsvisning</div>
-        <div id="previewContent"></div>
-      </div>
-      
-      <div class="checkbox-group">
-        <input type="checkbox" id="recurringCheck" />
-        <label for="recurringCheck">Gentager ugentligt</label>
-      </div>
-      
-      <p class="admin-confirm">Ved at tilføje eventet bekræfter du, at oplysningerne er gennemgået og korrekte.</p>
-      
-      <button type="button" class="submit-btn" id="adminSubmitBtn">Tilføj Event</button>
-    </div>
-    
-    <div id="adminStatus" class="submit-status" style="display:none"></div>
+
+      <div id="adminStatus" class="submit-status" style="display:none"></div>
     </div><!-- /adminAddView -->
-    
+
     <div id="adminPendingView" style="display:none">
       <div id="pendingList" class="pending-list"></div>
       <div id="pendingEmpty" class="pending-empty">Ingen events afventer godkendelse</div>
@@ -465,7 +496,7 @@ function updatePrisField() {
   }
 }
 
-function esc(t) { return t.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function esc(t) { return String(t || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ═══════════════════════════════════════════════════════════
    JSONP HELPER - ERSTATTER FETCH
@@ -490,7 +521,7 @@ function jsonp(url) {
 }
 
 function parseEvents(text) {
-  return text.split('\n\n').filter(e => e.trim()).map(event => {
+  return String(text || '').split('\n\n').filter(e => e.trim()).map(event => {
     const parsed = {};
     event.split('\n').forEach(line => {
       if (line.startsWith('🗓')) parsed.dato = line.replace('🗓', '').trim();
@@ -518,17 +549,21 @@ function addMsg(text, isUser, showMoreBtn = false) {
   if (moreBtn) { moreBtn.remove(); moreBtn = null; }
   const loadingMsg = chat.querySelector('.loading-msg');
   if (loadingMsg) loadingMsg.remove();
+
   const msg = document.createElement('div');
   msg.className = 'msg ' + (isUser ? 'user' : 'bot');
+
   if (isUser) {
     msg.innerHTML = `<div class="bubble">${esc(text)}</div>`;
   } else {
     const events = parseEvents(text);
-    msg.innerHTML = events.length > 0 
+    msg.innerHTML = events.length > 0
       ? `<div class="bubble">Her er events:<div class="events">${renderEvents(events)}</div></div>`
       : `<div class="bubble">${esc(text)}</div>`;
   }
+
   chat.appendChild(msg);
+
   if (showMoreBtn) {
     moreBtn = document.createElement('button');
     moreBtn.className = 'more-btn';
@@ -536,6 +571,7 @@ function addMsg(text, isUser, showMoreBtn = false) {
     moreBtn.onclick = loadMore;
     chat.appendChild(moreBtn);
   }
+
   chat.scrollTop = chat.scrollHeight;
 }
 
@@ -560,16 +596,19 @@ async function doSearch() {
   lastQ = q; page = 0; hasMore = false; loading = true;
   sendBtn.disabled = true;
   showLoading();
-  
+
   if (typeof gtag !== 'undefined') {
     gtag('event', 'search', { search_term: q });
   }
-  
+
   try {
     const data = await search(q, 0);
     hasMore = !!data.hasMore;
     addMsg(data.text || 'Ingen resultater.', false, hasMore);
-  } catch (e) { addMsg('Fejl. Prøv igen.', false); }
+  } catch (e) {
+    addMsg('Fejl. Prøv igen.', false);
+  }
+
   loading = false;
   sendBtn.disabled = false;
 }
@@ -583,7 +622,10 @@ async function loadMore() {
     const data = await search(lastQ, page);
     hasMore = !!data.hasMore;
     addMsg(data.text, false, hasMore);
-  } catch (e) { addMsg('Fejl.', false); hasMore = false; }
+  } catch (e) {
+    addMsg('Fejl.', false);
+    hasMore = false;
+  }
   loading = false;
 }
 
@@ -603,15 +645,10 @@ function openAdmin() {
   preview.style.display = 'none';
   ocrStatus.style.display = 'none';
   warnings.classList.remove('show');
-  
-  // Gendan tidligere state ELLER start forfra
   restoreFormState();
 }
 
-// ═══════════════════════════════════════════════════════════
-// FORM STATE PERSISTENCE - INGEN DATATAB
-// ═══════════════════════════════════════════════════════════
-
+/* FORM STATE PERSISTENCE */
 function saveFormState() {
   const state = {
     payload: payload.value,
@@ -636,7 +673,6 @@ function restoreFormState() {
   try {
     const saved = localStorage.getItem('dancemap_admin_form');
     if (!saved) {
-      // Ingen gemt state - start forfra
       step1.style.display = 'block';
       step2.style.display = 'none';
       payload.value = '';
@@ -644,10 +680,8 @@ function restoreFormState() {
       payload.focus();
       return;
     }
-    
+
     const state = JSON.parse(saved);
-    
-    // Gendan alle felter
     payload.value = state.payload || '';
     fields.dato.value = state.dato || '';
     fields.navn.value = state.navn || '';
@@ -661,12 +695,10 @@ function restoreFormState() {
     fields.prisOnline.value = state.prisOnline || '';
     fields.prisDropin.value = state.prisDropin || '';
     recurring.checked = state.recurring || false;
-    
-    // Vis/skjul pris felter
+
     const prisFieldsEl = $('prisFields');
     prisFieldsEl.style.display = state.prisType === 'angiv' ? 'block' : 'none';
-    
-    // Gendan korrekt step
+
     if (state.step === 2) {
       step1.style.display = 'none';
       step2.style.display = 'block';
@@ -678,7 +710,6 @@ function restoreFormState() {
       payload.focus();
     }
   } catch (e) {
-    // Fejl ved restore - start forfra
     step1.style.display = 'block';
     step2.style.display = 'none';
     payload.value = '';
@@ -706,7 +737,6 @@ function clearFields() {
   $('prisFields').style.display = 'block';
   warnings.classList.remove('show');
   $('previewContent').innerHTML = '';
-  // Reset preview card styling
   const previewCard = $('previewCard');
   const previewLabel = previewCard.querySelector('.preview-label');
   previewLabel.textContent = 'Forhåndsvisning';
@@ -717,7 +747,6 @@ $('closeAdmin').onclick = () => { saveFormState(); modal.classList.remove('open'
 modal.onclick = e => { if (e.target === modal) { saveFormState(); modal.classList.remove('open'); } };
 $('backBtn').onclick = () => { step1.style.display = 'block'; step2.style.display = 'none'; status.style.display = 'none'; saveFormState(); };
 
-// ESC lukker modal men gemmer state
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && modal.classList.contains('open')) {
     saveFormState();
@@ -725,7 +754,6 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// Auto-save ved alle ændringer
 payload.addEventListener('input', saveFormState);
 
 const MONTHS = {
@@ -749,9 +777,9 @@ const DANCE_ALIASES = {
   'zouk': 'Zouk', 'brazilian zouk': 'Zouk', 'latin': 'Latin'
 };
 
-const VENUES = ['kaffesalonen', 'kedelhallen', 'kube', 'bachata house', 'copenhagen salsa academy', 'csa', 
-  'cubansk danseskole', 'dgi-byen', 'dansehallerne', 'salsa libre', 'elstudio', 'the old irish pub', 
-  'rosie mcgees', 'club mambo', 'lunatica', 'cafe globen', 'kulturhuset islands brygge', 'kulturhuset', 
+const VENUES = ['kaffesalonen', 'kedelhallen', 'kube', 'bachata house', 'copenhagen salsa academy', 'csa',
+  'cubansk danseskole', 'dgi-byen', 'dansehallerne', 'salsa libre', 'elstudio', 'the old irish pub',
+  'rosie mcgees', 'club mambo', 'lunatica', 'cafe globen', 'kulturhuset islands brygge', 'kulturhuset',
   'islands brygge kulturhus', 'huset-kbh', 'huset kbh', 'pumpehuset', 'vega', 'rust', 'loppen'];
 
 const VENUE_ADDRESSES = {
@@ -770,7 +798,7 @@ const VENUE_ADDRESSES = {
 function parseTextToFields(txt) {
   const t = txt.toLowerCase();
   const result = { dato: '', navn: '', start: '', slut: '', dans: 'Salsa', sted: '', adresse: '', by: 'København', pris: '', prisType: 'angiv', prisOnline: '', prisDropin: '' };
-  
+
   const isoMatch = txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);
   if (isoMatch) {
     result.dato = isoMatch[0];
@@ -783,27 +811,16 @@ function parseTextToFields(txt) {
       result.dato = `${year}-${month}-${day}`;
     }
   }
-  
-  const navnPatterns = [
-    /salsa\s*jam(?:\s+feat\.?\s+[\w\s']+)?/i, /julefiesta|julefest/i, /nytårsfest|new\s*year/i,
-    /salsason/i, /havana\s*nights?/i, /latin\s*nights?/i, /salsa\s*(?:fridays?|sundays?|matinee)/i,
-    /bachata\s*(?:nights?|social|dropin)/i, /festival|fiesta/i, /dance\s*night/i,
-    /crash\s*course|bootcamp/i, /lazos\s*d['']?\s*cuba/i
-  ];
-  for (const pattern of navnPatterns) {
-    const match = txt.match(pattern);
-    if (match) { result.navn = match[0].charAt(0).toUpperCase() + match[0].slice(1); break; }
-  }
-  
+
   const times = txt.match(/\b([01]?\d|2[0-3])[\.:,]([0-5]\d)\b/g);
   if (times && times.length > 0) {
     result.start = times[0].replace(/[\.,]/g, ':').replace(/^(\d):/, '0$1:');
     if (times.length > 1) result.slut = times[times.length - 1].replace(/[\.,]/g, ':').replace(/^(\d):/, '0$1:');
   }
-  
+
   const aliasKeys = Object.keys(DANCE_ALIASES).sort((a, b) => b.length - a.length);
   for (const alias of aliasKeys) { if (t.includes(alias)) { result.dans = DANCE_ALIASES[alias]; break; } }
-  
+
   for (const venue of VENUES) {
     if (t.includes(venue)) {
       result.sted = venue.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -814,35 +831,21 @@ function parseTextToFields(txt) {
       break;
     }
   }
-  
+
   const addrMatch = txt.match(/([A-ZÆØÅa-zæøå][a-zæøå]*(?:vej|gade|allé|alle|plads)\s+\d+[A-Za-z]?)/i);
   if (addrMatch) result.adresse = addrMatch[1];
-  
-  if (result.by === 'København') {
-    if (t.includes('frederiksberg')) result.by = 'Frederiksberg';
-    else if (t.includes('vanløse')) result.by = 'Vanløse';
-    else if (t.includes('nørrebro')) result.by = 'Nørrebro';
-    else if (t.includes('østerbro')) result.by = 'Østerbro';
-    else if (t.includes('vesterbro')) result.by = 'Vesterbro';
-    else if (t.includes('amager')) result.by = 'Amager';
-    else if (t.includes('islands brygge')) result.by = 'Islands Brygge';
-  }
-  
+
   const cleanTxt = txt.replace(/gratis\s+(parkering|garderobe)/gi, '___');
-  
-  // Parse online/forsalg pris
-  const onlineMatch = cleanTxt.match(/(\d+)[,.-]*\s*kr\.?\s*(?:per\s*person\s*)?(?:online|registration|forhåndssalg|forsalg|billet)/i) ||
+
+  const onlineMatch = cleanTxt.match(/(\d+)[,.-]*\s*kr\.?\s*(?:online|registration|forhåndssalg|forsalg|billet)/i) ||
                       cleanTxt.match(/(?:online|registration|forhåndssalg|forsalg|billet)[:\s]*(\d+)[,.-]*\s*(?:kr|dkk)?/i);
-  
-  // Parse drop-in/dør pris
-  const dropinMatch = cleanTxt.match(/(\d+)[,.-]*\s*kr\.?\s*(?:per\s*person\s*)?(?:drop\s*in|i\s*døren|døren)/i) ||
+
+  const dropinMatch = cleanTxt.match(/(\d+)[,.-]*\s*kr\.?\s*(?:drop\s*in|i\s*døren|døren)/i) ||
                       cleanTxt.match(/(?:drop\s*in|i\s*døren|døren)[:\s]*(\d+)[,.-]*\s*(?:kr|dkk)?/i);
-  
-  // Sæt separate pris felter
+
   result.prisOnline = onlineMatch ? onlineMatch[1] : '';
   result.prisDropin = dropinMatch ? dropinMatch[1] : '';
-  
-  // Bestem pristype
+
   if (/\bgratis\b/i.test(cleanTxt) && !onlineMatch && !dropinMatch) {
     result.prisType = 'gratis';
     result.pris = 'Gratis';
@@ -856,7 +859,6 @@ function parseTextToFields(txt) {
       result.pris = dropinMatch[1] + ' kr (drop-in)';
     }
   } else {
-    // Prøv simpel pris match
     const simplePris = cleanTxt.match(/\b(\d{2,3})[,.-]*\s*(?:kr|dkk)/i);
     if (simplePris) {
       result.prisType = 'angiv';
@@ -867,14 +869,16 @@ function parseTextToFields(txt) {
       result.pris = '';
     }
   }
-  
+
+  // Navn (simpelt: første linje efter dato hvis muligt)
+  const lines = txt.split('\n').map(s => s.trim()).filter(Boolean);
+  if (lines[1]) result.navn = lines[1];
+
   return result;
 }
 
 function validateFields() {
   const errors = [];
-  
-  // ALLE felter er påkrævede
   if (!fields.dato.value) errors.push('❌ Dato mangler');
   if (!fields.navn.value) errors.push('❌ Event navn mangler');
   if (!fields.start.value) errors.push('❌ Starttid mangler');
@@ -883,34 +887,29 @@ function validateFields() {
   if (!fields.sted.value) errors.push('❌ Sted mangler');
   if (!fields.adresse.value) errors.push('❌ Adresse mangler');
   if (!fields.by.value) errors.push('❌ By mangler');
-  
-  // Pris validering
+
   const prisType = fields.prisType.value;
   if (prisType === 'angiv') {
     if (!fields.prisOnline.value && !fields.prisDropin.value) {
       errors.push('❌ Angiv mindst én pris (online eller drop-in)');
     }
   }
-  
-  // Validering af feltværdier
-  if (fields.sted.value && fields.sted.value.length < 3) errors.push('❌ Sted er for kort');
-  if (fields.by.value && fields.by.value.length < 2) errors.push('❌ By er for kort');
-  
-  // Logisk validering
+
   if (fields.start.value && fields.slut.value) {
     const s = fields.start.value.replace(':', '');
     const e = fields.slut.value.replace(':', '');
     if (parseInt(e) < parseInt(s) && parseInt(e) > 600) errors.push('❌ Sluttid er før starttid');
   }
-  
+
   return { errors, warnings: [] };
 }
 
 function updatePreview() {
   updatePrisField();
-  
+
   const dage = ['Søn', 'Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør'];
   const mdr = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+
   let datoStr = '—';
   if (fields.dato.value) {
     const d = new Date(fields.dato.value);
@@ -919,30 +918,30 @@ function updatePreview() {
       if (recurring.checked) datoStr += ' 🔁';
     }
   }
+
   let tidStr = fields.start.value || '—';
   if (fields.slut.value) tidStr += '–' + fields.slut.value;
+
   let stedStr = fields.sted.value || '—';
   if (fields.adresse.value) stedStr += ', ' + fields.adresse.value;
-  if (fields.by.value && fields.by.value !== 'København') stedStr += ', ' + fields.by.value;
-  
-  // Pris tekst
+  if (fields.by.value) stedStr += ', ' + fields.by.value;
+
   let prisStr = fields.pris.value || '—';
-  
+
   const previewEl = $('previewContent');
   let html = `<div class="line"><span class="icon">🗓</span><span>${esc(datoStr)}</span></div>`;
   html += `<div class="line"><span class="icon">📌</span><span>${esc(fields.navn.value || '—')}</span></div>`;
   html += `<div class="line"><span class="icon">🕗</span><span>${esc(tidStr)}</span></div>`;
-  html += `<div class="line"><span class="icon">💃</span><span>${esc(fields.dans.value || 'Salsa')}</span></div>`;
+  html += `<div class="line"><span class="icon">💃</span><span>${esc(fields.dans.value || '—')}</span></div>`;
   html += `<div class="line"><span class="icon">📍</span><span>${esc(stedStr)}</span></div>`;
   html += `<div class="line"><span class="icon">💰</span><span>${esc(prisStr)}</span></div>`;
   previewEl.innerHTML = html;
-  
-  // Tjek om alle felter er udfyldt - vis kvittering status
+
   const { errors } = validateFields();
   const previewCard = $('previewCard');
   const previewLabel = previewCard.querySelector('.preview-label');
   if (errors.length === 0) {
-    previewLabel.textContent = '✅ KVITTERING - Klar til at tilføje';
+    previewLabel.textContent = '✅ Klar til at tilføje (pending)';
     previewCard.style.borderColor = '#3fb950';
   } else {
     previewLabel.textContent = 'Forhåndsvisning';
@@ -950,10 +949,10 @@ function updatePreview() {
   }
 }
 
-Object.values(fields).forEach(field => { 
+Object.values(fields).forEach(field => {
   if (field && field.addEventListener) {
-    field.addEventListener('input', () => { updatePrisField(); updatePreview(); saveFormState(); }); 
-    field.addEventListener('change', () => { updatePrisField(); updatePreview(); saveFormState(); }); 
+    field.addEventListener('input', () => { updatePrisField(); updatePreview(); saveFormState(); });
+    field.addEventListener('change', () => { updatePrisField(); updatePreview(); saveFormState(); });
   }
 });
 recurring.addEventListener('change', () => { updatePreview(); saveFormState(); });
@@ -961,6 +960,7 @@ recurring.addEventListener('change', () => { updatePreview(); saveFormState(); }
 $('parseBtn').onclick = () => {
   const txt = payload.value.trim();
   if (!txt) return;
+
   const parsed = parseTextToFields(txt);
   fields.dato.value = parsed.dato;
   fields.navn.value = parsed.navn;
@@ -970,25 +970,20 @@ $('parseBtn').onclick = () => {
   fields.sted.value = parsed.sted;
   fields.adresse.value = parsed.adresse;
   fields.by.value = parsed.by;
-  
-  // Sæt pris felter
+
   fields.prisType.value = parsed.prisType || 'angiv';
   fields.prisOnline.value = parsed.prisOnline || '';
   fields.prisDropin.value = parsed.prisDropin || '';
-  
-  // Vis/skjul pris felter baseret på type
+
   const prisFields = $('prisFields');
-  if (fields.prisType.value === 'angiv') {
-    prisFields.style.display = 'block';
-  } else {
-    prisFields.style.display = 'none';
-  }
-  
+  prisFields.style.display = fields.prisType.value === 'angiv' ? 'block' : 'none';
+
   updatePrisField();
-  
+
   const { errors } = validateFields();
   if (errors.length > 0) { warnings.innerHTML = errors.join('<br>'); warnings.classList.add('show'); }
   else { warnings.classList.remove('show'); }
+
   updatePreview();
   step1.style.display = 'none';
   step2.style.display = 'block';
@@ -1018,8 +1013,12 @@ async function processImage(img) {
       payload.value = result.data.text.trim();
       ocrStatus.textContent = '✅ Tekst fundet – klik "Parse tekst"';
       setTimeout(() => ocrStatus.style.display = 'none', 3000);
-    } else { ocrStatus.textContent = '⚠️ Ingen tekst fundet'; }
-  } catch (e) { ocrStatus.textContent = '❌ OCR fejl'; }
+    } else {
+      ocrStatus.textContent = '⚠️ Ingen tekst fundet';
+    }
+  } catch (e) {
+    ocrStatus.textContent = '❌ OCR fejl';
+  }
 }
 
 $('uploadBtn').onclick = () => $('fileInput').click();
@@ -1049,12 +1048,9 @@ modal.onpaste = e => {
 /* ADMIN SUBMIT - JSONP VIA GET */
 let isSubmitting = false;
 $('adminSubmitBtn').onclick = async () => {
-  // Forhindre dobbelt-submit
   if (isSubmitting) return;
-  
+
   const { errors } = validateFields();
-  
-  // Stop hvis der er fejl
   if (errors.length > 0) {
     warnings.innerHTML = errors.join('<br>');
     warnings.classList.add('show');
@@ -1063,66 +1059,68 @@ $('adminSubmitBtn').onclick = async () => {
     status.className = 'submit-status error';
     return;
   }
-  
-  // Alle felter OK - fortsæt
+
   warnings.classList.remove('show');
-  
+
   const dato = fields.dato.value;
   const dateParts = dato.split('-');
   const dateObj = new Date(dato);
   const dage = ['søndag', 'mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag'];
   const mdr = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'];
   const formattedDate = `${dage[dateObj.getDay()]} ${parseInt(dateParts[2])}. ${mdr[parseInt(dateParts[1]) - 1]} ${dateParts[0]}`;
-  
-  // Alle felter er påkrævede og valideret
+
   let payloadText = formattedDate + '\n';
   payloadText += fields.navn.value + '\n';
   payloadText += fields.start.value + '-' + fields.slut.value + '\n';
   payloadText += fields.dans.value + '\n';
   payloadText += fields.sted.value + ', ' + fields.adresse.value + ', ' + fields.by.value + '\n';
   payloadText += fields.pris.value;
-  
+
   const btn = $('adminSubmitBtn');
   btn.disabled = true;
   btn.textContent = 'Sender...';
   isSubmitting = true;
   status.style.display = 'none';
-  
+
   try {
     const data = await jsonp(API + '?action=admin-import&payload=' + encodeURIComponent(payloadText) + '&recurring=' + recurring.checked + '&_=' + Date.now());
     status.style.display = 'block';
     const previewCard = $('previewCard');
-    
+
     if (data.success) {
-      status.textContent = 'Tak - eventet er blevet tilføjet';
+      status.textContent = 'Tak - eventet er blevet tilføjet (pending)';
       status.className = 'submit-status success';
       previewCard.style.borderColor = '#3fb950';
       if (typeof gtag !== 'undefined') gtag('event', 'admin_import', { event_venue: fields.sted.value });
+
       clearFields();
-      clearFormState(); // Ryd gemt state KUN ved succes
+      clearFormState();
       step1.style.display = 'block';
       step2.style.display = 'none';
       payload.value = '';
       preview.style.display = 'none';
       recurring.checked = false;
+
     } else if (data.error === 'DUPLICATE') {
-      // Tydelig DUPLICATE feedback
       status.textContent = '⚠️ Dette event findes allerede (samme dato, tid og sted)';
       status.className = 'submit-status error';
       previewCard.style.borderColor = '#f85149';
       previewCard.querySelector('.preview-label').textContent = '⚠️ DUBLET FUNDET';
+
     } else {
       status.textContent = data.text || '❌ Der opstod en fejl. Prøv igen.';
       status.className = 'submit-status error';
       previewCard.style.borderColor = '';
     }
+
   } catch (e) {
     status.style.display = 'block';
     status.textContent = '❌ Teknisk fejl. Tjek din forbindelse og prøv igen.';
     status.className = 'submit-status error';
   }
+
   btn.disabled = false;
-  btn.textContent = 'Tilføj Event';
+  btn.textContent = 'Tilføj Event (pending)';
   isSubmitting = false;
 };
 
@@ -1133,6 +1131,7 @@ async function loadWeekCount() {
   try {
     const data = await jsonp(API + '?action=weekcount&_=' + Date.now());
     if (data.success && data.count > 0) $('weekCount').textContent = data.count + ' events denne uge';
+    else $('weekCount').textContent = '';
   } catch (e) {}
 }
 loadWeekCount();
@@ -1158,74 +1157,84 @@ tabPending.onclick = () => {
   loadPendingList();
 };
 
-/* PENDING LIST */
+/* PENDING LIST (fra Events: status=pending) */
 async function loadPendingList() {
   const list = $('pendingList');
   const empty = $('pendingEmpty');
-  
+
   list.innerHTML = '<div style="color:#7d8590;text-align:center;padding:20px;">Henter...</div>';
   empty.style.display = 'none';
-  
+
   try {
     const data = await jsonp(API + '?action=list-pending&_=' + Date.now());
-    
+
     if (!data.success || !data.events || data.events.length === 0) {
       list.innerHTML = '';
       empty.style.display = 'block';
       return;
     }
-    
+
     list.innerHTML = data.events.map(e => `
       <div class="pending-item" data-row="${e.row}">
         <div class="pending-item-header">
           <span class="pending-item-title">${esc(e.eventNavn)}</span>
           <span class="pending-item-date">${esc(e.insertedAt)}</span>
         </div>
+
         <div class="pending-item-details">
           <div class="pending-item-row"><span>🗓</span><span>${esc(e.dag)} ${esc(e.dato)}</span></div>
           <div class="pending-item-row"><span>🕗</span><span>${esc(e.starttid)}–${esc(e.sluttid)}</span></div>
           <div class="pending-item-row"><span>💃</span><span>${esc(e.dansetype)}</span></div>
-          <div class="pending-item-row"><span>📍</span><span>${esc(e.sted)}, ${esc(e.by)}</span></div>
+          <div class="pending-item-row"><span>📍</span><span>${esc(e.sted)}, ${esc(e.adresse)}, ${esc(e.by)}</span></div>
           <div class="pending-item-row"><span>💰</span><span>${esc(e.pris)}</span></div>
         </div>
-        <button class="pending-approve-btn" onclick="approveEvent(${e.row})">✓ Godkend</button>
+
+        <div class="pending-actions">
+          <select class="pending-status-select" onchange="changeStatus(${e.row}, this.value)">
+            <option value="pending" selected>pending</option>
+            <option value="active">active</option>
+          </select>
+          <button class="pending-approve-btn" onclick="changeStatus(${e.row}, 'active')">Sæt til Active</button>
+        </div>
       </div>
     `).join('');
+
     empty.style.display = 'none';
   } catch (e) {
     list.innerHTML = '<div style="color:#f85149;text-align:center;padding:20px;">Fejl ved hentning</div>';
   }
 }
 
-async function approveEvent(row) {
-  const btn = document.querySelector(`.pending-item[data-row="${row}"] .pending-approve-btn`);
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = 'Godkender...';
-  }
-  
+async function changeStatus(row, nextStatus) {
+  const item = document.querySelector(`.pending-item[data-row="${row}"]`);
+  const btn = item ? item.querySelector('.pending-approve-btn') : null;
+  const sel = item ? item.querySelector('.pending-status-select') : null;
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Opdaterer...'; }
+  if (sel) sel.disabled = true;
+
   try {
-    const data = await jsonp(API + '?action=approve&row=' + row + '&_=' + Date.now());
-    
-    if (data.success) {
-      const item = document.querySelector(`.pending-item[data-row="${row}"]`);
-      if (item) {
-        item.style.background = '#238636';
-        item.querySelector('.pending-approve-btn').textContent = '✓ Godkendt';
-        setTimeout(() => item.remove(), 1000);
+    const data = await jsonp(API + '?action=update-status&row=' + row + '&status=' + encodeURIComponent(nextStatus) + '&_=' + Date.now());
+
+    if (data && data.success) {
+      if (nextStatus === 'active') {
+        if (item) {
+          item.style.background = '#238636';
+          if (btn) btn.textContent = '✓ Active';
+          setTimeout(() => item.remove(), 600);
+        }
+        loadWeekCount();
+      } else {
+        if (btn) btn.textContent = 'Sæt til Active';
+        if (sel) { sel.value = 'pending'; sel.disabled = false; }
       }
-      loadWeekCount();
     } else {
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = 'Fejl - prøv igen';
-      }
+      if (btn) { btn.disabled = false; btn.textContent = 'Fejl - prøv igen'; }
+      if (sel) sel.disabled = false;
     }
   } catch (e) {
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = 'Fejl - prøv igen';
-    }
+    if (btn) { btn.disabled = false; btn.textContent = 'Fejl - prøv igen'; }
+    if (sel) sel.disabled = false;
   }
 }
 
