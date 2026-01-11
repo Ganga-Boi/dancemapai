@@ -8,16 +8,112 @@
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#6366f1" />
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
   <style>
-    /* ALT DESIGN ER UÆNDRET */
-    /* (samme CSS som før – udeladt her for overskuelighed) */
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      font-family:'Inter',sans-serif;
+      background:#0d1117;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+    }
+    .card {
+      background:#161b22;
+      border-radius:20px;
+      width:100%;
+      max-width:400px;
+      display:flex;
+      flex-direction:column;
+      max-height:90vh;
+      box-shadow:0 8px 32px rgba(0,0,0,.4);
+    }
+    .header {
+      padding:20px;
+      display:flex;
+      gap:14px;
+      align-items:center;
+      border-bottom:1px solid #21262d;
+    }
+    .logo img { width:48px; height:48px; border-radius:14px; }
+    .header-text h1 { font-size:18px; color:#e6edf3; }
+    .sub { font-size:13px; color:#7d8590; }
+    .week-count { font-size:12px; color:#6366f1; margin-top:4px; }
+
+    .chat {
+      flex:1;
+      overflow-y:auto;
+      padding:20px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+    .msg { display:flex; }
+    .msg.user { justify-content:flex-end; }
+    .bubble {
+      padding:12px 16px;
+      border-radius:16px;
+      font-size:15px;
+      max-width:90%;
+      line-height:1.5;
+    }
+    .msg.user .bubble {
+      background:#2d333b;
+      color:#e6edf3;
+      border-bottom-right-radius:4px;
+    }
+    .msg.bot .bubble {
+      background:#21262d;
+      color:#c9d1d9;
+      border-bottom-left-radius:4px;
+    }
+
+    .events { margin-top:12px; display:flex; flex-direction:column; gap:10px; }
+    .event-card {
+      background:#2d333b;
+      border-radius:12px;
+      padding:14px 16px;
+      font-size:14px;
+      color:#c9d1d9;
+    }
+
+    .input-area {
+      display:flex;
+      gap:12px;
+      padding:16px;
+      border-top:1px solid #21262d;
+    }
+    input {
+      flex:1;
+      padding:14px 16px;
+      border-radius:12px;
+      border:1px solid #30363d;
+      background:#0d1117;
+      color:#e6edf3;
+      font-size:15px;
+      outline:none;
+    }
+    button {
+      width:48px;
+      height:48px;
+      border-radius:12px;
+      border:none;
+      background:#6366f1;
+      color:#fff;
+      cursor:pointer;
+    }
   </style>
 </head>
+
 <body>
 
 <div class="card">
   <div class="header">
-    <div class="logo"><img src="./dancemap-icon.svg" alt="DanceMap"></div>
+    <div class="logo"><img src="./dancemap-icon.svg" alt=""></div>
     <div class="header-text">
       <h1>DanceMap</h1>
       <div class="sub">Dansevents i København og omegn</div>
@@ -28,120 +124,66 @@
   <div id="chat" class="chat"></div>
 
   <div class="input-area">
-    <input
-      id="q"
-      type="text"
-      placeholder="Søg fx: salsa eller bachata"
-      autocomplete="off"
-    />
-    <button id="sendBtn" class="send-btn">➤</button>
+    <input id="q" placeholder="Skriv fx: salsa eller bachata" />
+    <button id="sendBtn">➤</button>
   </div>
 </div>
 
 <script>
-/* ======================================================
-   KONFIG
-====================================================== */
 const API = 'https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec';
-
 const chat = document.getElementById('chat');
 const input = document.getElementById('q');
 const sendBtn = document.getElementById('sendBtn');
 
-/* ======================================================
-   DANSK DATOFORMAT (NY)
-====================================================== */
-function formatDanskDato(dateStr) {
-  const d = new Date(dateStr);
-  if (isNaN(d)) return dateStr;
+function esc(t){return t.replace(/[&<>"']/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
-  return d.toLocaleDateString('da-DK', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
+function addMsg(text,isUser){
+  const d=document.createElement('div');
+  d.className='msg '+(isUser?'user':'bot');
+  d.innerHTML=`<div class="bubble">${esc(text)}</div>`;
+  chat.appendChild(d);
+  chat.scrollTop=chat.scrollHeight;
+}
+
+function jsonp(url){
+  return new Promise((res,rej)=>{
+    const cb='cb_'+Date.now();
+    window[cb]=data=>{ delete window[cb]; s.remove(); res(data); };
+    const s=document.createElement('script');
+    s.src=url+(url.includes('?')?'&':'?')+'callback='+cb;
+    s.onerror=()=>rej();
+    document.body.appendChild(s);
   });
 }
 
-/* ======================================================
-   JSONP
-====================================================== */
-function jsonp(url) {
-  return new Promise((resolve, reject) => {
-    const cb = 'cb_' + Date.now();
-    window[cb] = data => {
-      delete window[cb];
-      script.remove();
-      resolve(data);
-    };
-    const script = document.createElement('script');
-    script.src = url + '&callback=' + cb;
-    script.onerror = () => reject();
-    document.body.appendChild(script);
-  });
-}
-
-/* ======================================================
-   UI
-====================================================== */
-function addMsg(text, isUser) {
-  const div = document.createElement('div');
-  div.className = 'msg ' + (isUser ? 'user' : 'bot');
-
-  if (!isUser) {
-    // Dansk dato i output
-    text = text.replace(
-      /\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun).*?\d{4}/g,
-      m => formatDanskDato(m)
-    );
+async function doSearch(){
+  const q=input.value.trim();
+  if(!q){
+    addMsg('Skriv fx: salsa eller bachata',false);
+    return;
   }
-
-  div.innerHTML = `<div class="bubble">${text}</div>`;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-/* ======================================================
-   SEARCH
-====================================================== */
-async function doSearch() {
-  const q = input.value.trim();
-  if (!q) return;
-
-  addMsg(q, true);
-  input.value = '';
-
-  try {
-    const data = await jsonp(API + '?query=' + encodeURIComponent(q));
-    addMsg(data.text || 'Ingen resultater.', false);
-  } catch {
-    addMsg('Fejl. Prøv igen.', false);
+  addMsg(q,true);
+  input.value='';
+  try{
+    const data=await jsonp(API+'?query='+encodeURIComponent(q));
+    addMsg(data.text||'Ingen resultater.',false);
+  }catch{
+    addMsg('Fejl – prøv igen.',false);
   }
 }
 
-sendBtn.onclick = doSearch;
-input.onkeydown = e => e.key === 'Enter' && doSearch();
+sendBtn.onclick=doSearch;
+input.onkeydown=e=>{ if(e.key==='Enter') doSearch(); };
 
-/* ======================================================
-   INTRO-TEKST (RETTET)
-====================================================== */
-addMsg(
-  'Skriv blot fx "salsa" eller "bachata" – så finder jeg relevante danseevents.',
-  false
-);
+addMsg('Skriv fx: salsa eller bachata', false);
 
-/* ======================================================
-   WEEKCOUNT
-====================================================== */
-(async () => {
-  try {
-    const data = await jsonp(API + '?action=weekcount');
-    if (data.count) {
-      document.getElementById('weekCount').textContent =
-        data.count + ' events denne uge';
-    }
-  } catch {}
-})();
+// weekcount
+jsonp(API+'?action=weekcount').then(d=>{
+  if(d.success && d.count){
+    document.getElementById('weekCount').textContent=d.count+' events denne uge';
+  }
+});
 </script>
+
 </body>
 </html>
