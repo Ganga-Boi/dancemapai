@@ -337,10 +337,28 @@
         <label>By</label>
         <input type="text" id="fieldBy" value="København" />
       </div>
+      
       <div class="field-row">
-        <label>Pris</label>
-        <input type="text" id="fieldPris" placeholder="Fx 80 kr" />
+        <label>Pristype</label>
+        <select id="fieldPrisType">
+          <option value="angiv">Angiv priser</option>
+          <option value="gratis">Gratis</option>
+          <option value="kontakt">Kontakt arrangør</option>
+        </select>
       </div>
+      <div id="prisFields">
+        <div class="field-row two-col">
+          <div>
+            <label>Online/forsalg (kr)</label>
+            <input type="text" id="fieldPrisOnline" placeholder="Fx 50" />
+          </div>
+          <div>
+            <label>Drop-in/dør (kr)</label>
+            <input type="text" id="fieldPrisDropin" placeholder="Fx 70" />
+          </div>
+        </div>
+      </div>
+      <input type="hidden" id="fieldPris" />
       
       <div id="fieldWarnings" class="field-warnings"></div>
       
@@ -375,8 +393,44 @@ let lastQ = '', page = 0, hasMore = false, loading = false, moreBtn = null, tess
 const fields = {
   dato: $('fieldDato'), navn: $('fieldNavn'), start: $('fieldStart'), slut: $('fieldSlut'),
   dans: $('fieldDans'), sted: $('fieldSted'), adresse: $('fieldAdresse'),
-  by: $('fieldBy'), pris: $('fieldPris')
+  by: $('fieldBy'), pris: $('fieldPris'), prisType: $('fieldPrisType'),
+  prisOnline: $('fieldPrisOnline'), prisDropin: $('fieldPrisDropin')
 };
+
+// Vis/skjul pris felter baseret på pristype
+$('fieldPrisType').onchange = function() {
+  const prisFields = $('prisFields');
+  if (this.value === 'angiv') {
+    prisFields.style.display = 'block';
+  } else {
+    prisFields.style.display = 'none';
+    fields.prisOnline.value = '';
+    fields.prisDropin.value = '';
+  }
+  updatePrisField();
+  updatePreview();
+};
+
+function updatePrisField() {
+  const prisType = fields.prisType.value;
+  if (prisType === 'gratis') {
+    fields.pris.value = 'Gratis';
+  } else if (prisType === 'kontakt') {
+    fields.pris.value = 'Kontakt arrangør';
+  } else {
+    const online = fields.prisOnline.value.trim();
+    const dropin = fields.prisDropin.value.trim();
+    if (online && dropin) {
+      fields.pris.value = online + ' kr (online) / ' + dropin + ' kr (drop-in)';
+    } else if (online) {
+      fields.pris.value = online + ' kr (online)';
+    } else if (dropin) {
+      fields.pris.value = dropin + ' kr (drop-in)';
+    } else {
+      fields.pris.value = '';
+    }
+  }
+}
 
 function esc(t) { return t.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
@@ -534,8 +588,17 @@ function clearFields() {
   fields.adresse.value = '';
   fields.by.value = 'København';
   fields.pris.value = '';
+  fields.prisType.value = 'angiv';
+  fields.prisOnline.value = '';
+  fields.prisDropin.value = '';
+  $('prisFields').style.display = 'block';
   warnings.classList.remove('show');
   $('previewContent').innerHTML = '';
+  // Reset preview card styling
+  const previewCard = $('previewCard');
+  const previewLabel = previewCard.querySelector('.preview-label');
+  previewLabel.textContent = 'Forhåndsvisning';
+  previewCard.style.borderColor = '';
 }
 
 $('closeAdmin').onclick = () => modal.classList.remove('open');
@@ -583,7 +646,7 @@ const VENUE_ADDRESSES = {
 
 function parseTextToFields(txt) {
   const t = txt.toLowerCase();
-  const result = { dato: '', navn: '', start: '', slut: '', dans: 'Salsa', sted: '', adresse: '', by: 'København', pris: '' };
+  const result = { dato: '', navn: '', start: '', slut: '', dans: 'Salsa', sted: '', adresse: '', by: 'København', pris: '', prisType: 'angiv', prisOnline: '', prisDropin: '' };
   
   const isoMatch = txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);
   if (isoMatch) {
@@ -643,17 +706,44 @@ function parseTextToFields(txt) {
   }
   
   const cleanTxt = txt.replace(/gratis\s+(parkering|garderobe)/gi, '___');
-  const forsalgMatch = cleanTxt.match(/(?:billet|forsalg)[:\s]*(\d+)\s*(?:kr|dkk)/i);
-  const doorMatch = cleanTxt.match(/(?:i\s*døren|døren|køb\s*i\s*døren)[:\s]*(\d+)\s*(?:kr|dkk)?/i);
-  const onlinePrice = cleanTxt.match(/online[:\s]*(\d+)\s*(?:kr|dkk)/i);
   
-  if (forsalgMatch && doorMatch) result.pris = forsalgMatch[1] + ' kr (forsalg) / ' + doorMatch[1] + ' kr (dør)';
-  else if (onlinePrice && doorMatch) result.pris = onlinePrice[1] + ' kr (online) / ' + doorMatch[1] + ' kr (dør)';
-  else if (doorMatch) result.pris = doorMatch[1] + ' kr';
-  else if (forsalgMatch) result.pris = forsalgMatch[1] + ' kr';
-  else if (onlinePrice) result.pris = onlinePrice[1] + ' kr';
-  else if (/\bgratis\b/i.test(cleanTxt)) result.pris = 'Gratis';
-  else { const prisMatch = cleanTxt.match(/\b(\d{2,3})\s*(?:kr|dkk)/i); if (prisMatch) result.pris = prisMatch[1] + ' kr'; }
+  // Parse online/forsalg pris
+  const onlineMatch = cleanTxt.match(/(\d+)[,.-]*\s*kr\.?\s*(?:per\s*person\s*)?(?:online|registration|forhåndssalg|forsalg|billet)/i) ||
+                      cleanTxt.match(/(?:online|registration|forhåndssalg|forsalg|billet)[:\s]*(\d+)[,.-]*\s*(?:kr|dkk)?/i);
+  
+  // Parse drop-in/dør pris
+  const dropinMatch = cleanTxt.match(/(\d+)[,.-]*\s*kr\.?\s*(?:per\s*person\s*)?(?:drop\s*in|i\s*døren|døren)/i) ||
+                      cleanTxt.match(/(?:drop\s*in|i\s*døren|døren)[:\s]*(\d+)[,.-]*\s*(?:kr|dkk)?/i);
+  
+  // Sæt separate pris felter
+  result.prisOnline = onlineMatch ? onlineMatch[1] : '';
+  result.prisDropin = dropinMatch ? dropinMatch[1] : '';
+  
+  // Bestem pristype
+  if (/\bgratis\b/i.test(cleanTxt) && !onlineMatch && !dropinMatch) {
+    result.prisType = 'gratis';
+    result.pris = 'Gratis';
+  } else if (onlineMatch || dropinMatch) {
+    result.prisType = 'angiv';
+    if (onlineMatch && dropinMatch) {
+      result.pris = onlineMatch[1] + ' kr (online) / ' + dropinMatch[1] + ' kr (drop-in)';
+    } else if (onlineMatch) {
+      result.pris = onlineMatch[1] + ' kr (online)';
+    } else {
+      result.pris = dropinMatch[1] + ' kr (drop-in)';
+    }
+  } else {
+    // Prøv simpel pris match
+    const simplePris = cleanTxt.match(/\b(\d{2,3})[,.-]*\s*(?:kr|dkk)/i);
+    if (simplePris) {
+      result.prisType = 'angiv';
+      result.prisDropin = simplePris[1];
+      result.pris = simplePris[1] + ' kr';
+    } else {
+      result.prisType = 'angiv';
+      result.pris = '';
+    }
+  }
   
   return result;
 }
@@ -670,7 +760,14 @@ function validateFields() {
   if (!fields.sted.value) errors.push('❌ Sted mangler');
   if (!fields.adresse.value) errors.push('❌ Adresse mangler');
   if (!fields.by.value) errors.push('❌ By mangler');
-  if (!fields.pris.value) errors.push('❌ Pris mangler');
+  
+  // Pris validering
+  const prisType = fields.prisType.value;
+  if (prisType === 'angiv') {
+    if (!fields.prisOnline.value && !fields.prisDropin.value) {
+      errors.push('❌ Angiv mindst én pris (online eller drop-in)');
+    }
+  }
   
   // Validering af feltværdier
   if (fields.sted.value && fields.sted.value.length < 3) errors.push('❌ Sted er for kort');
@@ -687,6 +784,8 @@ function validateFields() {
 }
 
 function updatePreview() {
+  updatePrisField();
+  
   const dage = ['Søn', 'Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør'];
   const mdr = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
   let datoStr = '—';
@@ -703,17 +802,37 @@ function updatePreview() {
   if (fields.adresse.value) stedStr += ', ' + fields.adresse.value;
   if (fields.by.value && fields.by.value !== 'København') stedStr += ', ' + fields.by.value;
   
+  // Pris tekst
+  let prisStr = fields.pris.value || '—';
+  
   const previewEl = $('previewContent');
   let html = `<div class="line"><span class="icon">🗓</span><span>${esc(datoStr)}</span></div>`;
-  if (fields.navn.value) html += `<div class="line"><span class="icon">📌</span><span>${esc(fields.navn.value)}</span></div>`;
-  html += `<div class="line"><span class="icon">🕗</span><span>${esc(tidStr)}</span></div>
-    <div class="line"><span class="icon">💃</span><span>${esc(fields.dans.value || 'Salsa')}</span></div>
-    <div class="line"><span class="icon">📍</span><span>${esc(stedStr)}</span></div>
-    ${fields.pris.value ? `<div class="line"><span class="icon">💰</span><span>${esc(fields.pris.value)}</span></div>` : ''}`;
+  html += `<div class="line"><span class="icon">📌</span><span>${esc(fields.navn.value || '—')}</span></div>`;
+  html += `<div class="line"><span class="icon">🕗</span><span>${esc(tidStr)}</span></div>`;
+  html += `<div class="line"><span class="icon">💃</span><span>${esc(fields.dans.value || 'Salsa')}</span></div>`;
+  html += `<div class="line"><span class="icon">📍</span><span>${esc(stedStr)}</span></div>`;
+  html += `<div class="line"><span class="icon">💰</span><span>${esc(prisStr)}</span></div>`;
   previewEl.innerHTML = html;
+  
+  // Tjek om alle felter er udfyldt - vis kvittering status
+  const { errors } = validateFields();
+  const previewCard = $('previewCard');
+  const previewLabel = previewCard.querySelector('.preview-label');
+  if (errors.length === 0) {
+    previewLabel.textContent = '✅ KVITTERING - Klar til at tilføje';
+    previewCard.style.borderColor = '#3fb950';
+  } else {
+    previewLabel.textContent = 'Forhåndsvisning';
+    previewCard.style.borderColor = '';
+  }
 }
 
-Object.values(fields).forEach(field => { field.addEventListener('input', updatePreview); field.addEventListener('change', updatePreview); });
+Object.values(fields).forEach(field => { 
+  if (field && field.addEventListener) {
+    field.addEventListener('input', () => { updatePrisField(); updatePreview(); }); 
+    field.addEventListener('change', () => { updatePrisField(); updatePreview(); }); 
+  }
+});
 recurring.addEventListener('change', updatePreview);
 
 $('parseBtn').onclick = () => {
@@ -728,10 +847,24 @@ $('parseBtn').onclick = () => {
   fields.sted.value = parsed.sted;
   fields.adresse.value = parsed.adresse;
   fields.by.value = parsed.by;
-  fields.pris.value = parsed.pris;
-  const { errors, warnings: warns } = validateFields();
-  const allMessages = [...errors, ...warns];
-  if (allMessages.length > 0) { warnings.innerHTML = allMessages.join('<br>'); warnings.classList.add('show'); }
+  
+  // Sæt pris felter
+  fields.prisType.value = parsed.prisType || 'angiv';
+  fields.prisOnline.value = parsed.prisOnline || '';
+  fields.prisDropin.value = parsed.prisDropin || '';
+  
+  // Vis/skjul pris felter baseret på type
+  const prisFields = $('prisFields');
+  if (fields.prisType.value === 'angiv') {
+    prisFields.style.display = 'block';
+  } else {
+    prisFields.style.display = 'none';
+  }
+  
+  updatePrisField();
+  
+  const { errors } = validateFields();
+  if (errors.length > 0) { warnings.innerHTML = errors.join('<br>'); warnings.classList.add('show'); }
   else { warnings.classList.remove('show'); }
   updatePreview();
   step1.style.display = 'none';
