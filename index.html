@@ -18,28 +18,20 @@
 <body>
 
 <!-- ============================= -->
-<!-- DIN EKSISTERENDE UI -->
+<!-- APP -->
 <!-- ============================= -->
-
 <div id="app">
-  <!-- her ligger dit søgefelt, chat UI, resultater osv. -->
+  <!-- dit eksisterende UI ligger her -->
+  <div id="weekCount"></div>
 </div>
 
 <!-- ============================= -->
-<!-- FALLBACK / FEJLSIDE -->
+<!-- FALLBACK -->
 <!-- ============================= -->
 <div id="fallback"
-     style="display:none;
-            position:fixed;
-            inset:0;
-            background:#0f0f23;
-            color:#fff;
-            z-index:9999;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            text-align:center;
-            padding:20px;">
+     style="display:none;position:fixed;inset:0;background:#0f0f23;color:#fff;
+            z-index:9999;display:flex;align-items:center;justify-content:center;
+            text-align:center;padding:20px;">
   <div>
     <img src="/fallback.png" alt="DanceMap nede" style="width:120px;margin-bottom:20px;">
     <div>DanceMap er midlertidigt nede.<br>Prøv igen senere.</div>
@@ -56,39 +48,60 @@
 <!-- ============================= -->
 <script>
 /* ========= API ========= */
-const API = window.DANCEMAP_API.search;
-
-/* ========= SEARCH ========= */
-async function search(q) {
-  try {
-    const res = await fetch(API + '?query=' + encodeURIComponent(q), { cache: 'no-store' });
-    if (!res.ok) throw new Error('API error');
-    return await res.json();
-  } catch {
-    showFallback();
-    return null;
-  }
-}
-
-/* ========= WEEK COUNT ========= */
-async function loadWeekCount() {
-  try {
-    const res = await fetch(window.DANCEMAP_API.weekcount, { cache: 'no-store' });
-    const data = await res.json();
-    if (data.success && data.count > 0) {
-      document.getElementById('weekCount').textContent =
-        data.count + ' events denne uge';
-    }
-  } catch {
-    /* ignorer */
-  }
-}
-loadWeekCount();
+const API_SEARCH = window.DANCEMAP_API.search;
+const API_WEEKCOUNT = window.DANCEMAP_API.weekcount;
 
 /* ========= FALLBACK ========= */
 function showFallback() {
   document.getElementById('fallback').style.display = 'flex';
 }
+
+/* ========= JSONP SEARCH ========= */
+function search(query) {
+  return new Promise((resolve, reject) => {
+    const cb = 'cb_' + Date.now();
+    window[cb] = (data) => {
+      delete window[cb];
+      script.remove();
+      resolve(data);
+    };
+
+    const script = document.createElement('script');
+    script.src =
+      API_SEARCH +
+      '?query=' + encodeURIComponent(query) +
+      '&callback=' + cb;
+
+    script.onerror = () => {
+      delete window[cb];
+      script.remove();
+      showFallback();
+      reject();
+    };
+
+    document.body.appendChild(script);
+  });
+}
+
+/* ========= JSONP WEEKCOUNT ========= */
+function loadWeekCount() {
+  const cb = 'wc_' + Date.now();
+  window[cb] = (data) => {
+    delete window[cb];
+    script.remove();
+    if (data.success && data.count > 0) {
+      document.getElementById('weekCount').textContent =
+        data.count + ' events denne uge';
+    }
+  };
+
+  const script = document.createElement('script');
+  script.src = API_WEEKCOUNT + '?callback=' + cb;
+  script.onerror = showFallback;
+
+  document.body.appendChild(script);
+}
+loadWeekCount();
 
 /* ========= ADMIN TOGGLE ========= */
 function openAdmin() {
