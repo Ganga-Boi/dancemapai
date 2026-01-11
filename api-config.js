@@ -1,7 +1,7 @@
 // DanceMap API configuration
-// Denne fil bruges af frontend til at vælge backend
+// JSONP via Google Apps Script (CORS-safe)
 
 window.DANCEMAP_API = {
-  search: '/api/search',
-  weekcount: '/api/weekcount'
+  search: 'https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec',
+  weekcount: 'https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec'
 };
