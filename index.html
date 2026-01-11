@@ -217,6 +217,26 @@
       width: 100%;
     }
     .install-guide-close:active { background: #5558e3; }
+    
+    /* Admin Tabs */
+    .admin-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .admin-tab { flex: 1; padding: 10px; border: 1px solid #30363d; background: transparent; color: #7d8590; border-radius: 8px; cursor: pointer; font-size: 14px; }
+    .admin-tab.active { background: #6366f1; color: white; border-color: #6366f1; }
+    .admin-tab:hover:not(.active) { background: #21262d; color: #c9d1d9; }
+    
+    /* Pending List */
+    .pending-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
+    .pending-item { background: #21262d; border-radius: 10px; padding: 14px; }
+    .pending-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .pending-item-title { font-weight: 600; color: #e6edf3; }
+    .pending-item-date { font-size: 12px; color: #7d8590; }
+    .pending-item-details { font-size: 13px; color: #c9d1d9; line-height: 1.5; }
+    .pending-item-row { display: flex; gap: 8px; margin-bottom: 4px; }
+    .pending-item-row span:first-child { width: 20px; }
+    .pending-approve-btn { margin-top: 10px; padding: 8px 16px; background: #238636; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .pending-approve-btn:hover { background: #2ea043; }
+    .pending-approve-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .pending-empty { text-align: center; color: #7d8590; padding: 40px 20px; }
   </style>
 </head>
 <body>
@@ -272,10 +292,16 @@
 <div class="modal-overlay" id="adminModal">
   <div class="modal">
     <div class="modal-header">
-      <h2>Tilføj Event</h2>
+      <h2>Admin</h2>
       <button class="modal-close" id="closeAdmin">&times;</button>
     </div>
     
+    <div class="admin-tabs">
+      <button class="admin-tab active" id="tabAdd">Tilføj Event</button>
+      <button class="admin-tab" id="tabPending">Godkend Events</button>
+    </div>
+    
+    <div id="adminAddView">
     <div id="adminStep1">
       <p class="admin-intro">DanceMap forsøger at udtrække dato, tid, dansetype og sted. Du godkender og retter altid selv før eventet gemmes.</p>
       <button type="button" class="upload-btn" id="uploadBtn">
@@ -378,6 +404,13 @@
     </div>
     
     <div id="adminStatus" class="submit-status" style="display:none"></div>
+    </div><!-- /adminAddView -->
+    
+    <div id="adminPendingView" style="display:none">
+      <div id="pendingList" class="pending-list"></div>
+      <div id="pendingEmpty" class="pending-empty">Ingen events afventer godkendelse</div>
+      <button type="button" class="submit-btn" id="refreshPending">Opdater liste</button>
+    </div>
   </div>
 </div>
 
@@ -1103,6 +1136,100 @@ async function loadWeekCount() {
   } catch (e) {}
 }
 loadWeekCount();
+
+/* ADMIN TABS */
+const tabAdd = $('tabAdd');
+const tabPending = $('tabPending');
+const adminAddView = $('adminAddView');
+const adminPendingView = $('adminPendingView');
+
+tabAdd.onclick = () => {
+  tabAdd.classList.add('active');
+  tabPending.classList.remove('active');
+  adminAddView.style.display = 'block';
+  adminPendingView.style.display = 'none';
+};
+
+tabPending.onclick = () => {
+  tabPending.classList.add('active');
+  tabAdd.classList.remove('active');
+  adminAddView.style.display = 'none';
+  adminPendingView.style.display = 'block';
+  loadPendingList();
+};
+
+/* PENDING LIST */
+async function loadPendingList() {
+  const list = $('pendingList');
+  const empty = $('pendingEmpty');
+  
+  list.innerHTML = '<div style="color:#7d8590;text-align:center;padding:20px;">Henter...</div>';
+  empty.style.display = 'none';
+  
+  try {
+    const data = await jsonp(API + '?action=list-pending&_=' + Date.now());
+    
+    if (!data.success || !data.events || data.events.length === 0) {
+      list.innerHTML = '';
+      empty.style.display = 'block';
+      return;
+    }
+    
+    list.innerHTML = data.events.map(e => `
+      <div class="pending-item" data-row="${e.row}">
+        <div class="pending-item-header">
+          <span class="pending-item-title">${esc(e.eventNavn)}</span>
+          <span class="pending-item-date">${esc(e.insertedAt)}</span>
+        </div>
+        <div class="pending-item-details">
+          <div class="pending-item-row"><span>🗓</span><span>${esc(e.dag)} ${esc(e.dato)}</span></div>
+          <div class="pending-item-row"><span>🕗</span><span>${esc(e.starttid)}–${esc(e.sluttid)}</span></div>
+          <div class="pending-item-row"><span>💃</span><span>${esc(e.dansetype)}</span></div>
+          <div class="pending-item-row"><span>📍</span><span>${esc(e.sted)}, ${esc(e.by)}</span></div>
+          <div class="pending-item-row"><span>💰</span><span>${esc(e.pris)}</span></div>
+        </div>
+        <button class="pending-approve-btn" onclick="approveEvent(${e.row})">✓ Godkend</button>
+      </div>
+    `).join('');
+    empty.style.display = 'none';
+  } catch (e) {
+    list.innerHTML = '<div style="color:#f85149;text-align:center;padding:20px;">Fejl ved hentning</div>';
+  }
+}
+
+async function approveEvent(row) {
+  const btn = document.querySelector(`.pending-item[data-row="${row}"] .pending-approve-btn`);
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Godkender...';
+  }
+  
+  try {
+    const data = await jsonp(API + '?action=approve&row=' + row + '&_=' + Date.now());
+    
+    if (data.success) {
+      const item = document.querySelector(`.pending-item[data-row="${row}"]`);
+      if (item) {
+        item.style.background = '#238636';
+        item.querySelector('.pending-approve-btn').textContent = '✓ Godkendt';
+        setTimeout(() => item.remove(), 1000);
+      }
+      loadWeekCount();
+    } else {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Fejl - prøv igen';
+      }
+    }
+  } catch (e) {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Fejl - prøv igen';
+    }
+  }
+}
+
+$('refreshPending').onclick = loadPendingList;
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 
