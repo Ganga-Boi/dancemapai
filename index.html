@@ -10,110 +10,79 @@
 
   <!-- API config -->
   <script src="/api-config.js"></script>
-
-  <!-- Admin styles (påvirker ikke frontend) -->
-  <link rel="stylesheet" href="/admin.css" />
 </head>
 
 <body>
 
-<!-- ============================= -->
-<!-- APP -->
-<!-- ============================= -->
 <div id="app">
-  <!-- dit eksisterende UI ligger her -->
+  <input id="q" placeholder="Søg fx salsa eller bachata" />
+  <button onclick="runSearch()">Søg</button>
+
   <div id="weekCount"></div>
+  <pre id="result"></pre>
 </div>
 
-<!-- ============================= -->
 <!-- FALLBACK -->
-<!-- ============================= -->
 <div id="fallback"
      style="display:none;position:fixed;inset:0;background:#0f0f23;color:#fff;
             z-index:9999;display:flex;align-items:center;justify-content:center;
             text-align:center;padding:20px;">
   <div>
-    <img src="/fallback.png" alt="DanceMap nede" style="width:120px;margin-bottom:20px;">
+    <img src="/fallback.png" style="width:120px;margin-bottom:20px;">
     <div>DanceMap er midlertidigt nede.<br>Prøv igen senere.</div>
   </div>
 </div>
 
-<!-- ============================= -->
-<!-- ADMIN ROOT -->
-<!-- ============================= -->
-<div id="admin-root" style="display:none"></div>
-
-<!-- ============================= -->
-<!-- SCRIPT -->
-<!-- ============================= -->
 <script>
-/* ========= API ========= */
-const API_SEARCH = window.DANCEMAP_API.search;
-const API_WEEKCOUNT = window.DANCEMAP_API.weekcount;
+const API = window.DANCEMAP_API.search;
+const API_WEEK = window.DANCEMAP_API.weekcount;
 
-/* ========= FALLBACK ========= */
 function showFallback() {
   document.getElementById('fallback').style.display = 'flex';
 }
 
-/* ========= JSONP SEARCH ========= */
-function search(query) {
+/* JSONP */
+function jsonp(url) {
   return new Promise((resolve, reject) => {
     const cb = 'cb_' + Date.now();
-    window[cb] = (data) => {
+    window[cb] = data => {
       delete window[cb];
       script.remove();
       resolve(data);
     };
-
     const script = document.createElement('script');
-    script.src =
-      API_SEARCH +
-      '?query=' + encodeURIComponent(query) +
-      '&callback=' + cb;
-
+    script.src = url + '&callback=' + cb;
     script.onerror = () => {
       delete window[cb];
       script.remove();
       showFallback();
       reject();
     };
-
     document.body.appendChild(script);
   });
 }
 
-/* ========= JSONP WEEKCOUNT ========= */
-function loadWeekCount() {
-  const cb = 'wc_' + Date.now();
-  window[cb] = (data) => {
-    delete window[cb];
-    script.remove();
+async function runSearch() {
+  const q = document.getElementById('q').value.trim();
+  if (!q) return;
+  try {
+    const data = await jsonp(API + '?query=' + encodeURIComponent(q));
+    document.getElementById('result').textContent = data.text || '';
+  } catch {}
+}
+
+async function loadWeekCount() {
+  try {
+    const data = await jsonp(API_WEEK + '?x=1');
     if (data.success && data.count > 0) {
       document.getElementById('weekCount').textContent =
         data.count + ' events denne uge';
     }
-  };
-
-  const script = document.createElement('script');
-  script.src = API_WEEKCOUNT + '?callback=' + cb;
-  script.onerror = showFallback;
-
-  document.body.appendChild(script);
+  } catch {}
 }
+
 loadWeekCount();
-
-/* ========= ADMIN TOGGLE ========= */
-function openAdmin() {
-  document.getElementById('admin-root').style.display = 'block';
-  console.log('Admin UI åbnet');
-}
 </script>
-
-<!-- ============================= -->
-<!-- ADMIN SCRIPT -->
-<!-- ============================= -->
-<script src="/admin.js"></script>
 
 </body>
 </html>
