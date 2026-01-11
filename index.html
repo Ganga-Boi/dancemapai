@@ -791,26 +791,20 @@ modal.onpaste = e => {
 
 /* ADMIN SUBMIT - JSONP VIA GET */
 $('adminSubmitBtn').onclick = async () => {
-  const { errors, warnings: warns } = validateFields();
+  const { errors } = validateFields();
   
   // Stop hvis der er fejl
   if (errors.length > 0) {
-    const allMessages = [...errors, ...warns];
-    warnings.innerHTML = allMessages.join('<br>');
+    warnings.innerHTML = errors.join('<br>');
     warnings.classList.add('show');
     status.style.display = 'block';
-    status.textContent = '❌ Udfyld alle påkrævede felter før du kan tilføje eventet';
+    status.textContent = 'Udfyld venligst alle felter';
     status.className = 'submit-status error';
     return;
   }
   
-  // Vis advarsler men fortsæt
-  if (warns.length > 0) {
-    warnings.innerHTML = warns.join('<br>');
-    warnings.classList.add('show');
-  } else {
-    warnings.classList.remove('show');
-  }
+  // Alle felter OK - fortsæt
+  warnings.classList.remove('show');
   
   const dato = fields.dato.value;
   const dateParts = dato.split('-');
@@ -819,15 +813,13 @@ $('adminSubmitBtn').onclick = async () => {
   const mdr = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'];
   const formattedDate = `${dage[dateObj.getDay()]} ${parseInt(dateParts[2])}. ${mdr[parseInt(dateParts[1]) - 1]} ${dateParts[0]}`;
   
+  // Alle felter er påkrævede og valideret
   let payloadText = formattedDate + '\n';
-  if (fields.navn.value) payloadText += fields.navn.value + '\n';
-  payloadText += fields.start.value;
-  if (fields.slut.value) payloadText += '-' + fields.slut.value;
-  payloadText += '\n' + fields.dans.value;
-  payloadText += '\n' + fields.sted.value;
-  if (fields.adresse.value) payloadText += ', ' + fields.adresse.value;
-  if (fields.by.value) payloadText += ', ' + fields.by.value;
-  if (fields.pris.value) payloadText += '\n' + fields.pris.value;
+  payloadText += fields.navn.value + '\n';
+  payloadText += fields.start.value + '-' + fields.slut.value + '\n';
+  payloadText += fields.dans.value + '\n';
+  payloadText += fields.sted.value + ', ' + fields.adresse.value + ', ' + fields.by.value + '\n';
+  payloadText += fields.pris.value;
   
   const btn = $('adminSubmitBtn');
   btn.disabled = true;
@@ -838,7 +830,7 @@ $('adminSubmitBtn').onclick = async () => {
     const data = await jsonp(API + '?action=admin-import&payload=' + encodeURIComponent(payloadText) + '&recurring=' + recurring.checked + '&_=' + Date.now());
     status.style.display = 'block';
     if (data.success) {
-      status.textContent = '✅ Event tilføjet! Eventet afventer godkendelse.';
+      status.textContent = 'Tak - eventet er blevet tilføjet';
       status.className = 'submit-status success';
       if (typeof gtag !== 'undefined') gtag('event', 'admin_import', { event_venue: fields.sted.value });
       clearFields();
