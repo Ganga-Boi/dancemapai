@@ -2,95 +2,882 @@
 <html lang="da">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>DanceMap</title>
-
+  
+  <!-- PWA -->
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#6366f1" />
-
-  <!-- API CONFIG (Apps Script JSONP) -->
-  <script src="/api-config.js"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="DanceMap" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WYGJJJV2E6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-WYGJJJV2E6');
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0d1117;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    
+    .card {
+      background: #161b22;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+    }
+    
+    .header {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 1px solid #21262d;
+    }
+    
+    .logo { width: 48px; height: 48px; border-radius: 14px; overflow: hidden; }
+    .logo img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .header-text h1 { font-size: 18px; font-weight: 600; color: #e6edf3; margin-bottom: 2px; }
+    .header-text .sub { font-size: 13px; color: #7d8590; }
+    .header-text .week-count { font-size: 12px; color: #6366f1; margin-top: 4px; }
+    
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 200px;
+      max-height: 60vh;
+    }
+    
+    .msg { display: flex; flex-direction: column; }
+    .msg.user { align-items: flex-end; }
+    .msg.bot { align-items: flex-start; }
+    
+    .bubble { padding: 12px 16px; border-radius: 16px; font-size: 15px; line-height: 1.5; max-width: 90%; }
+    .msg.user .bubble { background: #2d333b; color: #e6edf3; border-bottom-right-radius: 4px; }
+    .msg.bot .bubble { background: #21262d; color: #c9d1d9; border-bottom-left-radius: 4px; }
+    
+    .events { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+    .event-card { background: #2d333b; border-radius: 12px; padding: 14px 16px; }
+    .event-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 14px; color: #c9d1d9; }
+    .event-row:last-child { margin-bottom: 0; }
+    .event-row .icon { width: 20px; text-align: center; flex-shrink: 0; }
+    .event-row.title { font-weight: 600; color: #e6edf3; font-size: 15px; }
+    
+    .more-btn { margin-top: 12px; padding: 10px 16px; border-radius: 10px; border: 1px solid #30363d; background: transparent; color: #7d8590; font-size: 14px; cursor: pointer; }
+    .more-btn:hover { background: #21262d; color: #c9d1d9; }
+    
+    .input-area { padding: 16px 20px; border-top: 1px solid #21262d; display: flex; gap: 12px; }
+    .input-area input { flex: 1; padding: 14px 18px; border-radius: 12px; border: 1px solid #30363d; background: #0d1117; font-size: 15px; font-family: inherit; color: #e6edf3; outline: none; }
+    .input-area input:focus { border-color: #6366f1; }
+    .input-area input::placeholder { color: #7d8590; }
+    
+    .send-btn { width: 48px; height: 48px; border-radius: 12px; border: none; background: #6366f1; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .send-btn:active { transform: scale(0.95); }
+    .send-btn:disabled { opacity: 0.5; }
+    .send-btn svg { width: 20px; height: 20px; }
+    
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #161b22; border-radius: 20px; width: 100%; max-width: 400px; padding: 24px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-header h2 { font-size: 18px; font-weight: 600; color: #e6edf3; }
+    .modal-close { background: none; border: none; color: #7d8590; font-size: 28px; cursor: pointer; }
+    
+    .upload-btn { width: 100%; padding: 16px; border-radius: 12px; border: 2px dashed #30363d; background: transparent; color: #7d8590; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px; }
+    .upload-btn:hover { border-color: #6366f1; color: #c9d1d9; }
+    
+    .image-preview { max-width: 100%; max-height: 150px; border-radius: 12px; margin-bottom: 12px; display: none; }
+    .ocr-status { font-size: 14px; color: #7d8590; text-align: center; padding: 12px; }
+    
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; margin-bottom: 8px; color: #7d8590; }
+    .form-group textarea { width: 100%; min-height: 150px; padding: 14px; border-radius: 12px; border: 1px solid #30363d; background: #0d1117; color: #e6edf3; font-size: 14px; font-family: inherit; outline: none; resize: vertical; }
+    .form-group textarea:focus { border-color: #6366f1; }
+    
+    .checkbox-group { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding: 14px; background: #0d1117; border-radius: 10px; }
+    .checkbox-group input[type="checkbox"] { width: 20px; height: 20px; accent-color: #6366f1; }
+    .checkbox-group label { font-size: 14px; color: #c9d1d9; cursor: pointer; }
+    
+    .submit-btn { width: 100%; padding: 16px; border-radius: 12px; border: none; background: #6366f1; color: white; font-size: 15px; font-weight: 500; cursor: pointer; }
+    .submit-btn:disabled { opacity: 0.5; }
+    
+    .submit-status { text-align: center; padding: 12px; font-size: 14px; margin-top: 12px; border-radius: 10px; }
+    .submit-status.success { color: #3fb950; background: rgba(63,185,80,0.1); }
+    .submit-status.error { color: #f85149; background: rgba(248,81,73,0.1); }
+    
+    .back-btn { background: none; border: none; color: #7d8590; font-size: 14px; cursor: pointer; margin-bottom: 16px; padding: 0; }
+    .back-btn:hover { color: #c9d1d9; }
+    
+    .field-row { margin-bottom: 14px; }
+    .field-row label { display: block; font-size: 12px; margin-bottom: 6px; color: #7d8590; }
+    .field-row input, .field-row select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #30363d; background: #0d1117; color: #e6edf3; font-size: 14px; font-family: inherit; outline: none; }
+    .field-row input:focus, .field-row select:focus { border-color: #6366f1; }
+    .field-row.two-col { display: flex; gap: 12px; }
+    .field-row.two-col > div { flex: 1; }
+    
+    .field-warnings { margin-bottom: 14px; padding: 12px; background: rgba(248,81,73,0.1); border-radius: 10px; font-size: 13px; color: #f85149; display: none; }
+    .field-warnings.show { display: block; }
+    
+    .admin-intro { font-size: 13px; color: #7d8590; margin-bottom: 16px; line-height: 1.5; }
+    .admin-confirm { font-size: 12px; color: #7d8590; margin-bottom: 14px; line-height: 1.4; text-align: center; }
+    
+    .preview-card { background: #21262d; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; }
+    .preview-label { font-size: 11px; color: #7d8590; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .preview-content { font-size: 14px; color: #c9d1d9; line-height: 1.6; }
+    .preview-content .line { display: flex; gap: 8px; margin-bottom: 4px; }
+    .preview-content .line:last-child { margin-bottom: 0; }
+    .preview-content .icon { width: 20px; text-align: center; }
+    
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .loading-text { animation: pulse 1.5s ease-in-out infinite; }
+    
+    .install-banner {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #1c2128 0%, #161b22 100%);
+      padding: 16px 20px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 50;
+      border-top: 1px solid #30363d;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+    }
+    .install-banner.show { display: flex; }
+    .install-banner-text { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+    .install-banner-text strong { color: #e6edf3; font-size: 15px; }
+    .install-banner-text span { color: #7d8590; font-size: 13px; }
+    .install-banner button { padding: 10px 20px; border-radius: 10px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; }
+    #installBtn { background: #6366f1; color: white; }
+    #installBtn:active { background: #5558e3; }
+    .install-close { background: transparent; color: #7d8590; font-size: 18px; padding: 8px; }
+    
+    .install-guide {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .install-guide.show { display: flex; }
+    .install-guide-content {
+      background: linear-gradient(135deg, #1c2128 0%, #161b22 100%);
+      border: 1px solid #30363d;
+      border-radius: 20px;
+      padding: 28px 24px;
+      max-width: 320px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .install-guide h3 { color: #e6edf3; margin-bottom: 24px; font-size: 18px; font-weight: 600; }
+    .install-guide p { color: #c9d1d9; margin-bottom: 16px; font-size: 15px; text-align: left; line-height: 1.5; }
+    .install-guide .share-icon { font-size: 16px; vertical-align: middle; }
+    .install-guide-close {
+      margin-top: 20px;
+      padding: 14px 24px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+    }
+    .install-guide-close:active { background: #5558e3; }
+  </style>
 </head>
-
 <body>
 
-<div id="app" style="max-width:420px;margin:40px auto;color:#fff;">
-  <h2>DanceMap</h2>
-  <p>Dansevents i København og omegn</p>
-
-  <input id="q" placeholder='Søg fx "salsa" eller "bachata"' style="width:100%;padding:8px;" />
-  <button onclick="runSearch()" style="margin-top:8px;">Søg</button>
-
-  <div id="weekCount" style="margin-top:12px;"></div>
-  <pre id="result" style="white-space:pre-wrap;margin-top:12px;"></pre>
+<div class="install-banner" id="installBanner">
+  <img src="/icon-192.png" alt="" style="width:40px;height:40px;border-radius:10px;">
+  <div class="install-banner-text">
+    <strong>DanceMap</strong>
+    <span>Installer som app på din telefon</span>
+  </div>
+  <button id="installBtn">Installer</button>
+  <button class="install-close" id="installClose">✕</button>
 </div>
 
-<div id="fallback"
-     style="display:none;position:fixed;inset:0;background:#0f0f23;color:#fff;
-            z-index:9999;display:flex;align-items:center;justify-content:center;
-            text-align:center;">
-  <div>
-    <img src="/dancemap-icon.svg" style="width:96px;margin-bottom:16px;">
-    <div>DanceMap er midlertidigt nede.</div>
+<div class="install-guide" id="installGuide">
+  <div class="install-guide-content">
+    <img src="/icon-192.png" alt="DanceMap" style="width:64px;height:64px;border-radius:14px;margin-bottom:16px;">
+    <h3>Installer DanceMap</h3>
+    <div id="guideIOS">
+      <p>1. Tryk på <strong>Del-ikonet</strong> <span style="opacity:0.7">⎙</span> nederst i Safari</p>
+      <p>2. Scroll ned og vælg <strong>"Føj til hjemmeskærm"</strong></p>
+      <p>3. Tryk <strong>"Tilføj"</strong> øverst til højre</p>
+    </div>
+    <div id="guideAndroid" style="display:none">
+      <p>1. Tryk på <strong>⋮</strong> menuen øverst til højre</p>
+      <p>2. Vælg <strong>"Installer app"</strong> eller <strong>"Føj til startskærm"</strong></p>
+    </div>
+    <button class="install-guide-close" id="guideClose">Forstået</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="header">
+    <div class="logo"><img src="./dancemap-icon.svg" alt="DanceMap" /></div>
+    <div class="header-text">
+      <h1>DanceMap</h1>
+      <div class="sub">Dansevents i København og omegn</div>
+      <div class="week-count" id="weekCount"></div>
+    </div>
+  </div>
+  <div id="chat" class="chat"></div>
+  <div class="input-area">
+    <input id="q" type="text" placeholder="Søg fx: bachata i dag" autocomplete="off" enterkeyhint="search" />
+    <button id="sendBtn" class="send-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="adminModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Tilføj Event</h2>
+      <button class="modal-close" id="closeAdmin">&times;</button>
+    </div>
+    
+    <div id="adminStep1">
+      <p class="admin-intro">DanceMap forsøger at udtrække dato, tid, dansetype og sted. Du godkender og retter altid selv før eventet gemmes.</p>
+      <button type="button" class="upload-btn" id="uploadBtn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Upload billede
+      </button>
+      <input type="file" id="fileInput" accept="image/*" style="display:none" />
+      <img id="imagePreview" class="image-preview" />
+      <div id="ocrStatus" class="ocr-status" style="display:none"></div>
+      <div class="form-group">
+        <label>Paste tekst eller billede (Ctrl+V)</label>
+        <textarea id="adminPayload" placeholder="Paste event-tekst her..."></textarea>
+      </div>
+      <button type="button" class="submit-btn" id="parseBtn">Parse tekst →</button>
+    </div>
+    
+    <div id="adminStep2" style="display:none">
+      <button type="button" class="back-btn" id="backBtn">← Tilbage</button>
+      
+      <div class="field-row">
+        <label>Dato *</label>
+        <input type="date" id="fieldDato" required />
+      </div>
+      <div class="field-row">
+        <label>Event navn</label>
+        <input type="text" id="fieldNavn" placeholder="Fx Julefiesta, Salsa Fridays" />
+      </div>
+      <div class="field-row two-col">
+        <div>
+          <label>Start *</label>
+          <input type="time" id="fieldStart" required />
+        </div>
+        <div>
+          <label>Slut</label>
+          <input type="time" id="fieldSlut" />
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Dansetype</label>
+        <select id="fieldDans">
+          <option value="Salsa">Salsa</option>
+          <option value="Bachata">Bachata</option>
+          <option value="Kizomba">Kizomba</option>
+          <option value="Zouk">Zouk</option>
+          <option value="Tango">Tango</option>
+          <option value="Swing">Swing</option>
+          <option value="Latin">Latin</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label>Sted *</label>
+        <input type="text" id="fieldSted" placeholder="Fx Kedelhallen" required />
+      </div>
+      <div class="field-row">
+        <label>Adresse</label>
+        <input type="text" id="fieldAdresse" placeholder="Fx Nyelandsvej 75A" />
+      </div>
+      <div class="field-row">
+        <label>By</label>
+        <input type="text" id="fieldBy" value="København" />
+      </div>
+      <div class="field-row">
+        <label>Pris</label>
+        <input type="text" id="fieldPris" placeholder="Fx 80 kr" />
+      </div>
+      
+      <div id="fieldWarnings" class="field-warnings"></div>
+      
+      <div id="previewCard" class="preview-card">
+        <div class="preview-label">Forhåndsvisning</div>
+        <div id="previewContent"></div>
+      </div>
+      
+      <div class="checkbox-group">
+        <input type="checkbox" id="recurringCheck" />
+        <label for="recurringCheck">Gentager ugentligt</label>
+      </div>
+      
+      <p class="admin-confirm">Ved at tilføje eventet bekræfter du, at oplysningerne er gennemgået og korrekte.</p>
+      
+      <button type="button" class="submit-btn" id="adminSubmitBtn">Tilføj Event</button>
+    </div>
+    
+    <div id="adminStatus" class="submit-status" style="display:none"></div>
   </div>
 </div>
 
 <script>
-const API = window.DANCEMAP_API.search;
+const API = 'https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec';
+const $ = id => document.getElementById(id);
+const chat = $('chat'), input = $('q'), sendBtn = $('sendBtn');
+const modal = $('adminModal'), payload = $('adminPayload'), status = $('adminStatus');
+const recurring = $('recurringCheck'), preview = $('imagePreview'), ocrStatus = $('ocrStatus');
+const step1 = $('adminStep1'), step2 = $('adminStep2'), warnings = $('fieldWarnings');
+let lastQ = '', page = 0, hasMore = false, loading = false, moreBtn = null, tesseractLoaded = false;
 
-function showFallback() {
-  document.getElementById('fallback').style.display = 'flex';
-}
+const fields = {
+  dato: $('fieldDato'), navn: $('fieldNavn'), start: $('fieldStart'), slut: $('fieldSlut'),
+  dans: $('fieldDans'), sted: $('fieldSted'), adresse: $('fieldAdresse'),
+  by: $('fieldBy'), pris: $('fieldPris')
+};
 
+function esc(t) { return t.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ═══════════════════════════════════════════════════════════
+   JSONP HELPER - ERSTATTER FETCH
+═══════════════════════════════════════════════════════════ */
 function jsonp(url) {
   return new Promise((resolve, reject) => {
-    const cb = 'cb_' + Date.now();
-    const script = document.createElement('script');
-
+    const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
     window[cb] = data => {
       delete window[cb];
       script.remove();
       resolve(data);
     };
-
+    const script = document.createElement('script');
     script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
     script.onerror = () => {
       delete window[cb];
       script.remove();
-      showFallback();
-      reject();
+      reject(new Error('JSONP failed'));
     };
-
     document.body.appendChild(script);
   });
 }
 
-async function runSearch() {
-  const q = document.getElementById('q').value.trim();
-  if (!q) return;
-
-  try {
-    const data = await jsonp(
-      API + '?action=search&query=' + encodeURIComponent(q)
-    );
-    document.getElementById('result').textContent = data.text || '';
-  } catch {}
+function parseEvents(text) {
+  return text.split('\n\n').filter(e => e.trim()).map(event => {
+    const parsed = {};
+    event.split('\n').forEach(line => {
+      if (line.startsWith('🗓')) parsed.dato = line.replace('🗓', '').trim();
+      else if (line.startsWith('📌')) parsed.navn = line.replace('📌', '').trim();
+      else if (line.startsWith('🕗')) parsed.tid = line.replace('🕗', '').trim();
+      else if (line.startsWith('💃')) parsed.type = line.replace('💃', '').trim();
+      else if (line.startsWith('📍')) parsed.sted = line.replace('📍', '').trim();
+      else if (line.startsWith('💰')) parsed.pris = line.replace('💰', '').trim();
+    });
+    return parsed;
+  }).filter(e => e.dato);
 }
 
+function renderEvents(events) {
+  return events.map(e => `<div class="event-card">
+    <div class="event-row title"><span class="icon">📅</span><span>${esc(e.dato)}</span></div>
+    ${e.navn ? `<div class="event-row title"><span class="icon">📌</span><span>${esc(e.navn)}</span></div>` : ''}
+    ${e.tid ? `<div class="event-row"><span class="icon">🕐</span><span>${esc(e.tid)}</span></div>` : ''}
+    ${e.sted ? `<div class="event-row"><span class="icon">📍</span><span>${esc(e.sted)}</span></div>` : ''}
+    ${e.pris ? `<div class="event-row"><span class="icon">💰</span><span>${esc(e.pris)}</span></div>` : ''}
+  </div>`).join('');
+}
+
+function addMsg(text, isUser, showMoreBtn = false) {
+  if (moreBtn) { moreBtn.remove(); moreBtn = null; }
+  const loadingMsg = chat.querySelector('.loading-msg');
+  if (loadingMsg) loadingMsg.remove();
+  const msg = document.createElement('div');
+  msg.className = 'msg ' + (isUser ? 'user' : 'bot');
+  if (isUser) {
+    msg.innerHTML = `<div class="bubble">${esc(text)}</div>`;
+  } else {
+    const events = parseEvents(text);
+    msg.innerHTML = events.length > 0 
+      ? `<div class="bubble">Her er events:<div class="events">${renderEvents(events)}</div></div>`
+      : `<div class="bubble">${esc(text)}</div>`;
+  }
+  chat.appendChild(msg);
+  if (showMoreBtn) {
+    moreBtn = document.createElement('button');
+    moreBtn.className = 'more-btn';
+    moreBtn.textContent = 'Vis flere';
+    moreBtn.onclick = loadMore;
+    chat.appendChild(moreBtn);
+  }
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function showLoading() {
+  const msg = document.createElement('div');
+  msg.className = 'msg bot loading-msg';
+  msg.innerHTML = `<div class="bubble loading-text">Søger events...</div>`;
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+/* SEARCH - JSONP */
+async function search(q, p) {
+  return await jsonp(API + '?query=' + encodeURIComponent(q) + '&page=' + p + '&_=' + Date.now());
+}
+
+async function doSearch() {
+  const q = input.value.trim();
+  if (!q || loading) return;
+  addMsg(q, true);
+  input.value = '';
+  lastQ = q; page = 0; hasMore = false; loading = true;
+  sendBtn.disabled = true;
+  showLoading();
+  
+  if (typeof gtag !== 'undefined') {
+    gtag('event', 'search', { search_term: q });
+  }
+  
+  try {
+    const data = await search(q, 0);
+    hasMore = !!data.hasMore;
+    addMsg(data.text || 'Ingen resultater.', false, hasMore);
+  } catch (e) { addMsg('Fejl. Prøv igen.', false); }
+  loading = false;
+  sendBtn.disabled = false;
+}
+
+async function loadMore() {
+  if (loading || !hasMore) return;
+  page++; loading = true;
+  if (moreBtn) moreBtn.disabled = true;
+  showLoading();
+  try {
+    const data = await search(lastQ, page);
+    hasMore = !!data.hasMore;
+    addMsg(data.text, false, hasMore);
+  } catch (e) { addMsg('Fejl.', false); hasMore = false; }
+  loading = false;
+}
+
+sendBtn.onclick = doSearch;
+input.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } };
+
+let clicks = 0, clickTimer;
+document.querySelector('.header').onclick = () => {
+  clicks++;
+  if (clicks === 3) { clicks = 0; clearTimeout(clickTimer); openAdmin(); }
+  else { clearTimeout(clickTimer); clickTimer = setTimeout(() => clicks = 0, 500); }
+};
+
+function openAdmin() {
+  modal.classList.add('open');
+  step1.style.display = 'block';
+  step2.style.display = 'none';
+  status.style.display = 'none';
+  preview.style.display = 'none';
+  ocrStatus.style.display = 'none';
+  warnings.classList.remove('show');
+  recurring.checked = false;
+  payload.value = '';
+  clearFields();
+  payload.focus();
+}
+
+function clearFields() {
+  fields.dato.value = '';
+  fields.navn.value = '';
+  fields.start.value = '';
+  fields.slut.value = '';
+  fields.dans.value = 'Salsa';
+  fields.sted.value = '';
+  fields.adresse.value = '';
+  fields.by.value = 'København';
+  fields.pris.value = '';
+  warnings.classList.remove('show');
+  $('previewContent').innerHTML = '';
+}
+
+$('closeAdmin').onclick = () => modal.classList.remove('open');
+modal.onclick = e => { if (e.target === modal) modal.classList.remove('open'); };
+$('backBtn').onclick = () => { step1.style.display = 'block'; step2.style.display = 'none'; status.style.display = 'none'; };
+
+const MONTHS = {
+  'januar': '01', 'februar': '02', 'marts': '03', 'april': '04', 'maj': '05', 'juni': '06',
+  'juli': '07', 'august': '08', 'september': '09', 'oktober': '10', 'november': '11', 'december': '12',
+  'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'jun': '06', 'jul': '07',
+  'aug': '08', 'sep': '09', 'okt': '10', 'nov': '11', 'dec': '12',
+  'january': '01', 'february': '02', 'march': '03', 'may': '05', 'june': '06',
+  'july': '07', 'october': '10'
+};
+
+const DANCE_ALIASES = {
+  'rueda de casino': 'Salsa', 'rueda': 'Salsa', 'cuban': 'Salsa', 'cubansk': 'Salsa',
+  'son cubano': 'Salsa', 'son': 'Salsa', 'timba': 'Salsa', 'casino': 'Salsa',
+  'cha cha cha': 'Cha cha chá', 'chachacha': 'Cha cha chá', 'merengue': 'Merengue',
+  'bachata dominicana': 'Bachata', 'dominican bachata': 'Bachata',
+  'sensual bachata': 'Bachata', 'bachata sensual': 'Bachata', 'bachata': 'Bachata',
+  'salsa': 'Salsa', 'kizomba': 'Kizomba', 'urban kiz': 'Kizomba', 'urbankiz': 'Kizomba',
+  'tango': 'Tango', 'argentinsk tango': 'Tango',
+  'lindy hop': 'Swing', 'west coast swing': 'Swing', 'wcs': 'Swing', 'swing': 'Swing',
+  'zouk': 'Zouk', 'brazilian zouk': 'Zouk', 'latin': 'Latin'
+};
+
+const VENUES = ['kaffesalonen', 'kedelhallen', 'kube', 'bachata house', 'copenhagen salsa academy', 'csa', 
+  'cubansk danseskole', 'dgi-byen', 'dansehallerne', 'salsa libre', 'elstudio', 'the old irish pub', 
+  'rosie mcgees', 'club mambo', 'lunatica', 'cafe globen', 'kulturhuset islands brygge', 'kulturhuset', 
+  'islands brygge kulturhus', 'huset-kbh', 'huset kbh', 'pumpehuset', 'vega', 'rust', 'loppen'];
+
+const VENUE_ADDRESSES = {
+  'kaffesalonen': { adresse: 'Peblinge Dossering 7', by: 'København' },
+  'kedelhallen': { adresse: 'Nyelandsvej 75A', by: 'Frederiksberg' },
+  'copenhagen salsa academy': { adresse: 'Kastanie Allé 20', by: 'Vanløse' },
+  'csa': { adresse: 'Kastanie Allé 20', by: 'Vanløse' },
+  'cubansk danseskole': { adresse: 'Blegdamsvej 1B', by: 'Nørrebro' },
+  'kulturhuset islands brygge': { adresse: 'Islands Brygge 18', by: 'København' },
+  'kulturhuset': { adresse: 'Islands Brygge 18', by: 'København' },
+  'dgi-byen': { adresse: 'Tietgensgade 65', by: 'København' },
+  'the old irish pub': { adresse: 'Vesterbrogade 2D', by: 'København' },
+  'rosie mcgees': { adresse: 'Vesterbrogade 2A', by: 'København' }
+};
+
+function parseTextToFields(txt) {
+  const t = txt.toLowerCase();
+  const result = { dato: '', navn: '', start: '', slut: '', dans: 'Salsa', sted: '', adresse: '', by: 'København', pris: '' };
+  
+  const isoMatch = txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);
+  if (isoMatch) {
+    result.dato = isoMatch[0];
+  } else {
+    const danskMatch = txt.match(/\b(\d{1,2})\.?\s*(januar|februar|marts|april|maj|juni|juli|august|september|oktober|november|december|jan|feb|mar|apr|jun|jul|aug|sep|okt|nov|dec)\.?\s*(20\d{2})?\b/i);
+    if (danskMatch) {
+      const day = danskMatch[1].padStart(2, '0');
+      const month = MONTHS[danskMatch[2].toLowerCase()];
+      const year = danskMatch[3] || new Date().getFullYear();
+      result.dato = `${year}-${month}-${day}`;
+    }
+  }
+  
+  const navnPatterns = [
+    /salsa\s*jam(?:\s+feat\.?\s+[\w\s']+)?/i, /julefiesta|julefest/i, /nytårsfest|new\s*year/i,
+    /salsason/i, /havana\s*nights?/i, /latin\s*nights?/i, /salsa\s*(?:fridays?|sundays?|matinee)/i,
+    /bachata\s*(?:nights?|social|dropin)/i, /festival|fiesta/i, /dance\s*night/i,
+    /crash\s*course|bootcamp/i, /lazos\s*d['']?\s*cuba/i
+  ];
+  for (const pattern of navnPatterns) {
+    const match = txt.match(pattern);
+    if (match) { result.navn = match[0].charAt(0).toUpperCase() + match[0].slice(1); break; }
+  }
+  
+  const times = txt.match(/\b([01]?\d|2[0-3])[\.:,]([0-5]\d)\b/g);
+  if (times && times.length > 0) {
+    result.start = times[0].replace(/[\.,]/g, ':').replace(/^(\d):/, '0$1:');
+    if (times.length > 1) result.slut = times[times.length - 1].replace(/[\.,]/g, ':').replace(/^(\d):/, '0$1:');
+  }
+  
+  const aliasKeys = Object.keys(DANCE_ALIASES).sort((a, b) => b.length - a.length);
+  for (const alias of aliasKeys) { if (t.includes(alias)) { result.dans = DANCE_ALIASES[alias]; break; } }
+  
+  for (const venue of VENUES) {
+    if (t.includes(venue)) {
+      result.sted = venue.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      if (VENUE_ADDRESSES[venue]) {
+        if (!result.adresse) result.adresse = VENUE_ADDRESSES[venue].adresse;
+        result.by = VENUE_ADDRESSES[venue].by;
+      }
+      break;
+    }
+  }
+  
+  const addrMatch = txt.match(/([A-ZÆØÅa-zæøå][a-zæøå]*(?:vej|gade|allé|alle|plads)\s+\d+[A-Za-z]?)/i);
+  if (addrMatch) result.adresse = addrMatch[1];
+  
+  if (result.by === 'København') {
+    if (t.includes('frederiksberg')) result.by = 'Frederiksberg';
+    else if (t.includes('vanløse')) result.by = 'Vanløse';
+    else if (t.includes('nørrebro')) result.by = 'Nørrebro';
+    else if (t.includes('østerbro')) result.by = 'Østerbro';
+    else if (t.includes('vesterbro')) result.by = 'Vesterbro';
+    else if (t.includes('amager')) result.by = 'Amager';
+    else if (t.includes('islands brygge')) result.by = 'Islands Brygge';
+  }
+  
+  const cleanTxt = txt.replace(/gratis\s+(parkering|garderobe)/gi, '___');
+  const forsalgMatch = cleanTxt.match(/(?:billet|forsalg)[:\s]*(\d+)\s*(?:kr|dkk)/i);
+  const doorMatch = cleanTxt.match(/(?:i\s*døren|døren|køb\s*i\s*døren)[:\s]*(\d+)\s*(?:kr|dkk)?/i);
+  const onlinePrice = cleanTxt.match(/online[:\s]*(\d+)\s*(?:kr|dkk)/i);
+  
+  if (forsalgMatch && doorMatch) result.pris = forsalgMatch[1] + ' kr (forsalg) / ' + doorMatch[1] + ' kr (dør)';
+  else if (onlinePrice && doorMatch) result.pris = onlinePrice[1] + ' kr (online) / ' + doorMatch[1] + ' kr (dør)';
+  else if (doorMatch) result.pris = doorMatch[1] + ' kr';
+  else if (forsalgMatch) result.pris = forsalgMatch[1] + ' kr';
+  else if (onlinePrice) result.pris = onlinePrice[1] + ' kr';
+  else if (/\bgratis\b/i.test(cleanTxt)) result.pris = 'Gratis';
+  else { const prisMatch = cleanTxt.match(/\b(\d{2,3})\s*(?:kr|dkk)/i); if (prisMatch) result.pris = prisMatch[1] + ' kr'; }
+  
+  return result;
+}
+
+function validateFields() {
+  const warns = [];
+  if (!fields.dato.value) warns.push('❌ Dato mangler');
+  if (!fields.start.value) warns.push('❌ Starttid mangler');
+  if (!fields.sted.value) warns.push('❌ Sted mangler');
+  if (fields.sted.value && fields.sted.value.length < 3) warns.push('⚠️ Sted ser forkert ud');
+  if (fields.start.value && fields.slut.value) {
+    const s = fields.start.value.replace(':', '');
+    const e = fields.slut.value.replace(':', '');
+    if (parseInt(e) < parseInt(s) && parseInt(e) > 600) warns.push('⚠️ Sluttid er før starttid – er det korrekt?');
+  }
+  return warns;
+}
+
+function updatePreview() {
+  const dage = ['Søn', 'Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør'];
+  const mdr = ['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'];
+  let datoStr = '—';
+  if (fields.dato.value) {
+    const d = new Date(fields.dato.value);
+    if (!isNaN(d.getTime())) {
+      datoStr = dage[d.getDay()] + ' ' + d.getDate() + '. ' + mdr[d.getMonth()];
+      if (recurring.checked) datoStr += ' 🔁';
+    }
+  }
+  let tidStr = fields.start.value || '—';
+  if (fields.slut.value) tidStr += '–' + fields.slut.value;
+  let stedStr = fields.sted.value || '—';
+  if (fields.adresse.value) stedStr += ', ' + fields.adresse.value;
+  if (fields.by.value && fields.by.value !== 'København') stedStr += ', ' + fields.by.value;
+  
+  const previewEl = $('previewContent');
+  let html = `<div class="line"><span class="icon">🗓</span><span>${esc(datoStr)}</span></div>`;
+  if (fields.navn.value) html += `<div class="line"><span class="icon">📌</span><span>${esc(fields.navn.value)}</span></div>`;
+  html += `<div class="line"><span class="icon">🕗</span><span>${esc(tidStr)}</span></div>
+    <div class="line"><span class="icon">💃</span><span>${esc(fields.dans.value || 'Salsa')}</span></div>
+    <div class="line"><span class="icon">📍</span><span>${esc(stedStr)}</span></div>
+    ${fields.pris.value ? `<div class="line"><span class="icon">💰</span><span>${esc(fields.pris.value)}</span></div>` : ''}`;
+  previewEl.innerHTML = html;
+}
+
+Object.values(fields).forEach(field => { field.addEventListener('input', updatePreview); field.addEventListener('change', updatePreview); });
+recurring.addEventListener('change', updatePreview);
+
+$('parseBtn').onclick = () => {
+  const txt = payload.value.trim();
+  if (!txt) return;
+  const parsed = parseTextToFields(txt);
+  fields.dato.value = parsed.dato;
+  fields.navn.value = parsed.navn;
+  fields.start.value = parsed.start;
+  fields.slut.value = parsed.slut;
+  fields.dans.value = parsed.dans;
+  fields.sted.value = parsed.sted;
+  fields.adresse.value = parsed.adresse;
+  fields.by.value = parsed.by;
+  fields.pris.value = parsed.pris;
+  const warns = validateFields();
+  if (warns.length > 0) { warnings.innerHTML = warns.join('<br>'); warnings.classList.add('show'); }
+  else { warnings.classList.remove('show'); }
+  updatePreview();
+  step1.style.display = 'none';
+  step2.style.display = 'block';
+};
+
+async function loadTesseract() {
+  if (tesseractLoaded) return;
+  ocrStatus.style.display = 'block';
+  ocrStatus.textContent = 'Indlæser OCR...';
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+  document.head.appendChild(s);
+  await new Promise(r => s.onload = r);
+  tesseractLoaded = true;
+}
+
+async function processImage(img) {
+  try {
+    await loadTesseract();
+    ocrStatus.style.display = 'block';
+    ocrStatus.textContent = 'Læser billede...';
+    const result = await Tesseract.recognize(img, 'dan+eng', {
+      logger: m => { if (m.status === 'recognizing text') ocrStatus.textContent = 'Læser... ' + Math.round(m.progress * 100) + '%'; }
+    });
+    if (result.data.text.trim()) {
+      payload.value = result.data.text.trim();
+      ocrStatus.textContent = '✅ Tekst fundet – klik "Parse tekst"';
+      setTimeout(() => ocrStatus.style.display = 'none', 3000);
+    } else { ocrStatus.textContent = '⚠️ Ingen tekst fundet'; }
+  } catch (e) { ocrStatus.textContent = '❌ OCR fejl'; }
+}
+
+$('uploadBtn').onclick = () => $('fileInput').click();
+$('fileInput').onchange = e => {
+  const file = e.target.files[0];
+  if (file?.type.startsWith('image/')) {
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+    processImage(file);
+  }
+  e.target.value = '';
+};
+
+modal.onpaste = e => {
+  for (const item of (e.clipboardData?.items || [])) {
+    if (item.type.startsWith('image/')) {
+      e.preventDefault();
+      const file = item.getAsFile();
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+      processImage(file);
+      return;
+    }
+  }
+};
+
+/* ADMIN SUBMIT - JSONP VIA GET */
+$('adminSubmitBtn').onclick = async () => {
+  const warns = validateFields();
+  const criticalErrors = warns.filter(w => w.startsWith('❌'));
+  if (criticalErrors.length > 0) { warnings.innerHTML = warns.join('<br>'); warnings.classList.add('show'); return; }
+  if (warns.length > 0) { warnings.innerHTML = warns.join('<br>'); warnings.classList.add('show'); }
+  
+  const dato = fields.dato.value;
+  const dateParts = dato.split('-');
+  const dateObj = new Date(dato);
+  const dage = ['søndag', 'mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag'];
+  const mdr = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'];
+  const formattedDate = `${dage[dateObj.getDay()]} ${parseInt(dateParts[2])}. ${mdr[parseInt(dateParts[1]) - 1]} ${dateParts[0]}`;
+  
+  let payloadText = formattedDate + '\n';
+  if (fields.navn.value) payloadText += fields.navn.value + '\n';
+  payloadText += fields.start.value;
+  if (fields.slut.value) payloadText += '-' + fields.slut.value;
+  payloadText += '\n' + fields.dans.value;
+  payloadText += '\n' + fields.sted.value;
+  if (fields.adresse.value) payloadText += ', ' + fields.adresse.value;
+  if (fields.by.value) payloadText += ', ' + fields.by.value;
+  if (fields.pris.value) payloadText += '\n' + fields.pris.value;
+  
+  const btn = $('adminSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sender...';
+  status.style.display = 'none';
+  
+  try {
+    const data = await jsonp(API + '?action=admin-import&payload=' + encodeURIComponent(payloadText) + '&recurring=' + recurring.checked + '&_=' + Date.now());
+    status.style.display = 'block';
+    status.textContent = data.text || (data.success ? '✅ Tilføjet' : '❌ Fejl');
+    status.className = 'submit-status ' + (data.success ? 'success' : 'error');
+    if (typeof gtag !== 'undefined' && data.success) gtag('event', 'admin_import', { event_venue: fields.sted.value });
+    if (data.success) {
+      clearFields();
+      step1.style.display = 'block';
+      step2.style.display = 'none';
+      payload.value = '';
+      preview.style.display = 'none';
+      recurring.checked = false;
+    }
+  } catch (e) {
+    status.style.display = 'block';
+    status.textContent = '❌ Teknisk fejl';
+    status.className = 'submit-status error';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Tilføj Event';
+};
+
+addMsg('Søg fx: "salsa i dag", "bachata weekend" eller "kizomba fredag"', false);
+
+/* WEEKCOUNT - JSONP */
 async function loadWeekCount() {
   try {
-    const data = await jsonp(
-      API + '?action=weekcount'
-    );
-    if (data.success && data.count > 0) {
-      document.getElementById('weekCount').textContent =
-        data.count + ' events denne uge';
-    }
-  } catch {}
+    const data = await jsonp(API + '?action=weekcount&_=' + Date.now());
+    if (data.success && data.count > 0) $('weekCount').textContent = data.count + ' events denne uge';
+  } catch (e) {}
 }
-
 loadWeekCount();
-</script>
 
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+
+let deferredPrompt = null;
+const installBanner = $('installBanner');
+const installGuide = $('installGuide');
+
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
+
+if (!isStandalone) {
+  const isInstallDismissed = localStorage.getItem('installDismissed');
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!isInstallDismissed) installBanner.classList.add('show');
+  });
+
+  if (isMobile && !isInstallDismissed) setTimeout(() => installBanner.classList.add('show'), 2000);
+
+  $('installBtn').onclick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const result = await deferredPrompt.userChoice;
+      if (result.outcome === 'accepted') installBanner.classList.remove('show');
+      deferredPrompt = null;
+    } else if (isIOS) {
+      $('guideIOS').style.display = 'block';
+      $('guideAndroid').style.display = 'none';
+      installGuide.classList.add('show');
+    } else {
+      $('guideIOS').style.display = 'none';
+      $('guideAndroid').style.display = 'block';
+      installGuide.classList.add('show');
+    }
+  };
+
+  $('installClose').onclick = () => { installBanner.classList.remove('show'); localStorage.setItem('installDismissed', 'true'); };
+  $('guideClose').onclick = () => { installGuide.classList.remove('show'); installBanner.classList.remove('show'); localStorage.setItem('installDismissed', 'true'); };
+}
+</script>
 </body>
 </html>
