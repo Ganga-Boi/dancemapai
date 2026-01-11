@@ -8,49 +8,69 @@
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#6366f1" />
 
-  <!-- API config (UÆNDRET) -->
+  <!-- API config -->
   <script src="/api-config.js"></script>
 
-  <!-- ADMIN UI (NYT – påvirker ikke frontend) -->
+  <!-- Admin styles (påvirker ikke frontend) -->
   <link rel="stylesheet" href="/admin.css" />
-
-  <!-- resten af <head> er UÆNDRET -->
 </head>
 
 <body>
 
 <!-- ============================= -->
-<!-- DIN EKSISTERENDE HTML -->
-<!-- (ALT ER UÆNDRET HER) -->
+<!-- DIN EKSISTERENDE UI -->
 <!-- ============================= -->
 
-<!-- fx chat UI, søgefelt, resultater osv. -->
-
+<div id="app">
+  <!-- her ligger dit søgefelt, chat UI, resultater osv. -->
+</div>
 
 <!-- ============================= -->
-<!-- ADMIN UI MODAL (NY) -->
+<!-- FALLBACK / FEJLSIDE -->
 <!-- ============================= -->
+<div id="fallback"
+     style="display:none;
+            position:fixed;
+            inset:0;
+            background:#0f0f23;
+            color:#fff;
+            z-index:9999;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+            padding:20px;">
+  <div>
+    <img src="/fallback.png" alt="DanceMap nede" style="width:120px;margin-bottom:20px;">
+    <div>DanceMap er midlertidigt nede.<br>Prøv igen senere.</div>
+  </div>
+</div>
 
+<!-- ============================= -->
+<!-- ADMIN ROOT -->
+<!-- ============================= -->
 <div id="admin-root" style="display:none"></div>
 
 <!-- ============================= -->
-<!-- EKSISTERENDE SCRIPT -->
+<!-- SCRIPT -->
 <!-- ============================= -->
-
 <script>
-/* ========= ENESTE ÆNDRING: API ========= */
-
+/* ========= API ========= */
 const API = window.DANCEMAP_API.search;
 
-/* ========= RESTEN AF SCRIPTET ER IDENTISK ========= */
-
+/* ========= SEARCH ========= */
 async function search(q) {
-  const res = await fetch(API + '?query=' + encodeURIComponent(q), { cache: 'no-store' });
-  const data = await res.json();
-  return data;
+  try {
+    const res = await fetch(API + '?query=' + encodeURIComponent(q), { cache: 'no-store' });
+    if (!res.ok) throw new Error('API error');
+    return await res.json();
+  } catch {
+    showFallback();
+    return null;
+  }
 }
 
-/* week count */
+/* ========= WEEK COUNT ========= */
 async function loadWeekCount() {
   try {
     const res = await fetch(window.DANCEMAP_API.weekcount, { cache: 'no-store' });
@@ -59,35 +79,28 @@ async function loadWeekCount() {
       document.getElementById('weekCount').textContent =
         data.count + ' events denne uge';
     }
-  } catch {}
+  } catch {
+    /* ignorer */
+  }
 }
-
 loadWeekCount();
 
-/* resten af din eksisterende JS er UÆNDRET */
-</script>
+/* ========= FALLBACK ========= */
+function showFallback() {
+  document.getElementById('fallback').style.display = 'flex';
+}
 
-<!-- ============================= -->
-<!-- ADMIN SCRIPT (NY) -->
-<!-- ============================= -->
-
-<script src="/admin.js"></script>
-
-<!-- ============================= -->
-<!-- ADMIN TOGGLE (VALGFRI, TIL DIG) -->
-<!-- ============================= -->
-
-<script>
-/*
-  Åbn admin manuelt i browser:
-  skriv i console: openAdmin()
-*/
-
+/* ========= ADMIN TOGGLE ========= */
 function openAdmin() {
   document.getElementById('admin-root').style.display = 'block';
   console.log('Admin UI åbnet');
 }
 </script>
+
+<!-- ============================= -->
+<!-- ADMIN SCRIPT -->
+<!-- ============================= -->
+<script src="/admin.js"></script>
 
 </body>
 </html>
