@@ -1,188 +1,78 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DanceMap Admin v1.4.8</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --primary: #667eea; --primary-dark: #5a67d8; --secondary: #ed64a6;
-            --bg-dark: #0f0f23; --bg-card: #1a1a2e; --bg-input: #16213e;
-            --text-primary: #ffffff; --text-secondary: #a0aec0;
-            --border: #2d3748; --success: #48bb78; --error: #fc8181;
-            --radius: 16px; --radius-sm: 12px;
-        }
-        body { font-family: 'Inter', -apple-system, sans-serif; background: linear-gradient(135deg, var(--bg-dark), #1a1a2e); color: var(--text-primary); min-height: 100vh; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { font-size: 2rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { padding: 12px 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-secondary); cursor: pointer; font-weight: 500; }
-        .tab-btn.active { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-color: transparent; color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .card { background: var(--bg-card); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; border: 1px solid var(--border); }
-        .quick-paste { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px; }
-        .quick-paste-title { font-weight: 600; color: var(--primary); margin-bottom: 8px; }
-        .quick-paste textarea { width: 100%; min-height: 120px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text-primary); font-family: inherit; resize: vertical; margin-top: 8px; }
-        .quick-paste textarea:focus { outline: none; border-color: var(--primary); }
-        .divider { display: flex; align-items: center; margin: 24px 0; color: #718096; font-size: 0.85rem; }
-        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-        .divider span { padding: 0 16px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
-        .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-group.full-width { grid-column: 1 / -1; }
-        .form-group label { font-size: 0.9rem; color: var(--text-secondary); }
-        .form-group input, .form-group select { padding: 12px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: 0.95rem; }
-        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
-        .required { color: var(--error); }
-        .btn { padding: 14px 28px; border-radius: var(--radius-sm); font-size: 1rem; font-weight: 600; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
-        .btn-secondary { background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border); }
-        .btn-small { padding: 8px 16px; font-size: 0.85rem; }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .btn-group { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
-        .alert { padding: 14px 18px; border-radius: var(--radius-sm); margin-bottom: 16px; }
-        .alert-success { background: rgba(72, 187, 120, 0.15); border: 1px solid var(--success); color: var(--success); }
-        .alert-error { background: rgba(252, 129, 129, 0.15); border: 1px solid var(--error); color: var(--error); }
-        .alert-info { background: rgba(102, 126, 234, 0.15); border: 1px solid var(--primary); color: var(--primary); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DanceMap Admin</title>
+<style>
+body { font-family: Arial, sans-serif; background:#0f0f23; color:#fff; padding:20px }
+.container { max-width:800px; margin:auto }
+textarea,input,select,button { width:100%; padding:10px; margin:6px 0 }
+button { background:#667eea; color:#fff; border:0; cursor:pointer }
+.alert { margin:10px 0; padding:10px }
+.success { color:#48bb78 }
+.error { color:#fc8181 }
+</style>
 </head>
 <body>
+
 <div class="container">
-    <div class="header">
-        <h1>🎭 DanceMap Admin v1.4.8</h1>
-        <p style="color: var(--text-secondary);">Events går direkte til chatbot</p>
-    </div>
+<h2>DanceMap – Admin Import</h2>
 
-    <div id="alertContainer"></div>
+<p><b>Indsæt tekst fra Facebook / opslag</b></p>
+<textarea id="raw" rows="8"
+placeholder="Fx:
+Onsdag 16. januar
+Salsa Jam
+20:30–02:00
+Kulturhuset Islands Brygge
+50 kr"></textarea>
 
-    <div class="card">
-        <form id="eventForm" onsubmit="submitEvent(event)">
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Dato *</label>
-                    <input type="date" id="dato" required>
-                </div>
-                <div class="form-group">
-                    <label>Starttid *</label>
-                    <input type="time" id="starttid" required>
-                </div>
-                <div class="form-group">
-                    <label>Sluttid</label>
-                    <input type="time" id="sluttid">
-                </div>
-                <div class="form-group">
-                    <label>Dansetype *</label>
-                    <select id="dansetype" required>
-                        <option value="">Vælg…</option>
-                        <option>Salsa</option>
-                        <option>Bachata</option>
-                        <option>Salsa & Bachata</option>
-                        <option>Kizomba</option>
-                        <option>Latin Mix</option>
-                        <option>Zouk</option>
-                        <option>Tango</option>
-                        <option>Workshop</option>
-                        <option>Social</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Sted *</label>
-                    <input type="text" id="sted" required>
-                </div>
-                <div class="form-group">
-                    <label>Adresse</label>
-                    <input type="text" id="adresse">
-                </div>
-                <div class="form-group">
-                    <label>By</label>
-                    <input type="text" id="by">
-                </div>
-                <div class="form-group">
-                    <label>Pris</label>
-                    <input type="text" id="pris">
-                </div>
-                <div class="form-group">
-                    <label>Arrangør</label>
-                    <input type="text" id="arrangoer">
-                </div>
-                <div class="form-group full-width">
-                    <label>Link</label>
-                    <input type="url" id="link">
-                </div>
-            </div>
+<button onclick="send()">Indsend event</button>
 
-            <div class="btn-group">
-                <button type="submit" class="btn btn-primary" id="submitBtn">📤 Indsend Event</button>
-            </div>
-        </form>
-    </div>
+<div id="msg"></div>
 </div>
 
 <script>
-/* ============================================================
-   BACKEND URL – OPDATERET
-============================================================ */
 const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec";
+"https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec";
 
-function showAlert(msg, type = 'info') {
-    const alert = document.createElement('div');
-    alert.className = `alert alert-${type}`;
-    alert.textContent = msg;
-    document.getElementById('alertContainer').appendChild(alert);
-    setTimeout(() => alert.remove(), 5000);
+function send() {
+  const text = document.getElementById('raw').value.trim();
+  if (!text) {
+    show("Indsæt tekst først", "error");
+    return;
+  }
+
+  const cb = "cb_" + Date.now();
+  window[cb] = r => {
+    delete window[cb];
+    if (r.success) {
+      show("✅ Event indsendt (pending)", "success");
+      document.getElementById('raw').value = "";
+    } else {
+      show("❌ " + (r.text || "Fejl"), "error");
+    }
+  };
+
+  const params = new URLSearchParams({
+    action: "admin-import",
+    payload: text,
+    recurring: "false",
+    callback: cb
+  });
+
+  const s = document.createElement("script");
+  s.src = SCRIPT_URL + "?" + params.toString();
+  document.body.appendChild(s);
 }
 
-async function submitEvent(e) {
-    e.preventDefault();
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-
-    const data = {
-        action: 'submitEvent',
-        dato: dato.value,
-        starttid: starttid.value,
-        sluttid: sluttid.value,
-        dansetype: dansetype.value,
-        sted: sted.value,
-        adresse: adresse.value,
-        by: by.value,
-        pris: pris.value,
-        arrangoer: arrangoer.value,
-        link: link.value
-    };
-
-    try {
-        const cb = 'cb_' + Date.now();
-        const promise = new Promise(resolve => {
-            window[cb] = d => { delete window[cb]; resolve(d); };
-        });
-
-        const params = new URLSearchParams(data);
-        params.append('callback', cb);
-
-        const script = document.createElement('script');
-        script.src = `${SCRIPT_URL}?${params}`;
-        document.body.appendChild(script);
-
-        const result = await promise;
-        script.remove();
-
-        if (result.success) {
-            showAlert('✅ Event gemt', 'success');
-            eventForm.reset();
-        } else {
-            showAlert(result.text || '❌ Fejl', 'error');
-        }
-    } catch {
-        showAlert('❌ Netværksfejl', 'error');
-    } finally {
-        btn.disabled = false;
-    }
+function show(t, c) {
+  const el = document.getElementById("msg");
+  el.className = "alert " + c;
+  el.textContent = t;
 }
 </script>
+
 </body>
 </html>
