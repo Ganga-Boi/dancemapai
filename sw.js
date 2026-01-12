@@ -1,12 +1,9 @@
-// DANCEMAP SERVICE WORKER – SAFE MODE
-// Ingen fetch-intercept. Ingen cache af HTML eller API.
-
-self.addEventListener('install', event => {
+self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
-self.addEventListener('activate', event => {
-  event.waitUntil(
+self.addEventListener('activate', e => {
+  e.waitUntil(
     caches.keys().then(keys =>
       Promise.all(keys.map(k => caches.delete(k)))
     )
@@ -14,4 +11,4 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// VIGTIGT: ingen fetch handler
+// INGEN fetch handler
