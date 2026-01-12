@@ -1,137 +1,145 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="da">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DanceMap</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DanceMap</title>
 
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #0d1117;
-      color: #e6edf3;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    .card {
-      width: 100%;
-      max-width: 420px;
-      background: #161b22;
-      border-radius: 16px;
-      box-shadow: 0 10px 40px rgba(0,0,0,.5);
-      display: flex;
-      flex-direction: column;
-    }
-    .header {
-      padding: 16px;
-      border-bottom: 1px solid #21262d;
-      font-weight: 600;
-    }
-    .chat {
-      padding: 16px;
-      flex: 1;
-      overflow-y: auto;
-      font-size: 14px;
-    }
-    .msg {
-      margin-bottom: 12px;
-      padding: 10px 12px;
-      background: #21262d;
-      border-radius: 10px;
-    }
-    .input {
-      display: flex;
-      border-top: 1px solid #21262d;
-      padding: 12px;
-      gap: 8px;
-    }
-    input {
-      flex: 1;
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1px solid #30363d;
-      background: #0d1117;
-      color: #e6edf3;
-      font-size: 14px;
-    }
-    button {
-      padding: 10px 14px;
-      border-radius: 10px;
-      border: none;
-      background: #6366f1;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    button:disabled {
-      opacity: .6;
-    }
-  </style>
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  height:100%;
+  background:#0b0f1a;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+  color:#fff;
+}
+
+.app{
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.card{
+  background:linear-gradient(180deg,#141a2b,#0f1422);
+  border-radius:16px;
+  padding:22px;
+  width:360px;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);
+}
+
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:14px;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  cursor:pointer;
+}
+
+.logo img{
+  width:28px;
+  height:28px;
+}
+
+.logo span{
+  font-weight:600;
+  font-size:18px;
+}
+
+.hint{
+  font-size:13px;
+  opacity:.6;
+  margin-bottom:10px;
+}
+
+.search{
+  display:flex;
+  gap:10px;
+}
+
+.search input{
+  flex:1;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #2a2f55;
+  background:#0b0f1a;
+  color:#fff;
+  font-size:15px;
+}
+
+.search button{
+  width:48px;
+  border-radius:12px;
+  border:none;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.search button svg{
+  width:20px;
+  height:20px;
+  stroke:#fff;
+  stroke-width:2;
+  fill:none;
+}
+</style>
 </head>
 
 <body>
+<div class="app">
   <div class="card">
-    <div class="header">DanceMap</div>
-    <div id="chat" class="chat">
-      <div class="msg">Skriv fx: salsa eller bachata</div>
+
+    <!-- HEADER / ICON -->
+    <div class="header">
+      <div class="logo" id="adminIcon" title="Admin">
+        <img src="dancemap-icon.svg" alt="DanceMap">
+        <span>DanceMap</span>
+      </div>
     </div>
-    <div class="input">
-      <input id="q" placeholder="Søg events…" autocomplete="off">
-      <button id="send">Søg</button>
+
+    <!-- HINT -->
+    <div class="hint">Skriv fx: salsa eller bachata</div>
+
+    <!-- SEARCH -->
+    <div class="search">
+      <input id="query" placeholder="Søg events…" />
+      <button id="sendBtn" title="Søg">
+        <!-- PIL -->
+        <svg viewBox="0 0 24 24">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="13,6 19,12 13,18"/>
+        </svg>
+      </button>
     </div>
+
   </div>
+</div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec';
+/* ADMIN ICON */
+document.getElementById('adminIcon').addEventListener('click', () => {
+  // midlertidig – næste trin åbner modal
+  alert('Admin åbnes i næste trin');
+});
 
-const chat = document.getElementById('chat');
-const input = document.getElementById('q');
-const btn = document.getElementById('send');
-
-function add(text) {
-  const d = document.createElement('div');
-  d.className = 'msg';
-  d.textContent = text;
-  chat.appendChild(d);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function jsonp(url) {
-  return new Promise((resolve, reject) => {
-    const cb = 'cb_' + Date.now();
-    window[cb] = data => {
-      delete window[cb];
-      script.remove();
-      resolve(data);
-    };
-    const script = document.createElement('script');
-    script.src = url + '&callback=' + cb;
-    script.onerror = reject;
-    document.body.appendChild(script);
-  });
-}
-
-async function search() {
-  const q = input.value.trim();
-  if (!q) return;
-  add('🔍 ' + q);
-  input.value = '';
-  btn.disabled = true;
-  try {
-    const data = await jsonp(API + '?query=' + encodeURIComponent(q));
-    add(data.text || 'Ingen resultater');
-  } catch {
-    add('Fejl – prøv igen');
-  }
-  btn.disabled = false;
-}
-
-btn.onclick = search;
-input.onkeydown = e => { if (e.key === 'Enter') search(); };
+/* SEARCH */
+document.getElementById('sendBtn').addEventListener('click', () => {
+  const q = document.getElementById('query').value.trim();
+  if(!q) return;
+  console.log('SEARCH:', q);
+});
 </script>
+
 </body>
 </html>
