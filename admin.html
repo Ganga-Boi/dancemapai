@@ -4,75 +4,152 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DanceMap Admin</title>
+
 <style>
-body { font-family: Arial, sans-serif; background:#0f0f23; color:#fff; padding:20px }
-.container { max-width:800px; margin:auto }
-textarea,input,select,button { width:100%; padding:10px; margin:6px 0 }
-button { background:#667eea; color:#fff; border:0; cursor:pointer }
-.alert { margin:10px 0; padding:10px }
-.success { color:#48bb78 }
-.error { color:#fc8181 }
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0f1220;
+  color: #fff;
+  padding: 20px;
+}
+.container {
+  max-width: 720px;
+  margin: auto;
+}
+.card {
+  background: #151a2e;
+  border-radius: 12px;
+  padding: 20px;
+}
+label {
+  display: block;
+  margin-top: 12px;
+  font-size: 14px;
+  opacity: .85;
+}
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  border-radius: 8px;
+  border: 1px solid #2a2f55;
+  background: #0f1220;
+  color: #fff;
+}
+button {
+  margin-top: 20px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg,#667eea,#764ba2);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.alert {
+  margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 8px;
+}
+.alert.success { background:#1f6f3b; }
+.alert.error { background:#7a2e2e; }
 </style>
 </head>
+
 <body>
-
 <div class="container">
-<h2>DanceMap – Admin Import</h2>
+  <div id="alerts"></div>
 
-<p><b>Indsæt tekst fra Facebook / opslag</b></p>
-<textarea id="raw" rows="8"
-placeholder="Fx:
-Onsdag 16. januar
-Salsa Jam
-20:30–02:00
-Kulturhuset Islands Brygge
-50 kr"></textarea>
+  <div class="card">
+    <h2>Tilføj event</h2>
 
-<button onclick="send()">Indsend event</button>
+    <form id="eventForm">
+      <label>Dato *</label>
+      <input type="date" id="dato" required>
 
-<div id="msg"></div>
+      <label>Eventnavn *</label>
+      <input type="text" id="eventnavn" required>
+
+      <label>Starttid *</label>
+      <input type="time" id="starttid" required>
+
+      <label>Sluttid *</label>
+      <input type="time" id="sluttid" required>
+
+      <label>Dansetype *</label>
+      <select id="dansetype" required>
+        <option value="">Vælg…</option>
+        <option>Salsa</option>
+        <option>Bachata</option>
+        <option>Kizomba</option>
+        <option>Workshop</option>
+        <option>Social</option>
+      </select>
+
+      <label>Sted *</label>
+      <input type="text" id="sted" required>
+
+      <label>Adresse *</label>
+      <input type="text" id="adresse" required>
+
+      <label>By *</label>
+      <input type="text" id="by" required>
+
+      <label>Pris</label>
+      <input type="text" id="pris">
+
+      <button type="submit">Indsend event</button>
+    </form>
+  </div>
 </div>
 
 <script>
 const SCRIPT_URL =
-"https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec";
+  "https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec";
 
-function send() {
-  const text = document.getElementById('raw').value.trim();
-  if (!text) {
-    show("Indsæt tekst først", "error");
-    return;
-  }
+function alertBox(msg,type){
+  const d=document.createElement('div');
+  d.className='alert '+type;
+  d.textContent=msg;
+  document.getElementById('alerts').appendChild(d);
+  setTimeout(()=>d.remove(),5000);
+}
 
-  const cb = "cb_" + Date.now();
-  window[cb] = r => {
+document.getElementById('eventForm').addEventListener('submit',e=>{
+  e.preventDefault();
+
+  const payload = [
+    dato.value,
+    eventnavn.value,
+    starttid.value + '-' + sluttid.value,
+    dansetype.value,
+    sted.value + ', ' + adresse.value + ', ' + by.value,
+    pris.value || ''
+  ].join('\n');
+
+  const cb = 'cb_' + Date.now();
+  window[cb] = res => {
     delete window[cb];
-    if (r.success) {
-      show("✅ Event indsendt (pending)", "success");
-      document.getElementById('raw').value = "";
+    if(res.success){
+      alertBox(res.text,'success');
+      e.target.reset();
     } else {
-      show("❌ " + (r.text || "Fejl"), "error");
+      alertBox(res.text || 'Fejl','error');
     }
   };
 
   const params = new URLSearchParams({
-    action: "admin-import",
-    payload: text,
-    recurring: "false",
-    callback: cb
+    action:'admin-import',
+    payload: payload,
+    recurring:'false',
+    callback:cb
   });
 
-  const s = document.createElement("script");
-  s.src = SCRIPT_URL + "?" + params.toString();
+  const s=document.createElement('script');
+  s.src = SCRIPT_URL + '?' + params.toString();
   document.body.appendChild(s);
-}
-
-function show(t, c) {
-  const el = document.getElementById("msg");
-  el.className = "alert " + c;
-  el.textContent = t;
-}
+  s.onload=()=>s.remove();
+});
 </script>
-
 </body>
 </html>
