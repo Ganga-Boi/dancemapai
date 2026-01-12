@@ -1,101 +1,80 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>DanceMap Admin</title>
 
 <style>
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #0f1220;
-  color: #fff;
-  padding: 20px;
-}
-.container {
-  max-width: 760px;
-  margin: auto;
-}
-.card {
-  background: #151a2e;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-}
-h2 { margin-top: 0; }
-label {
-  display: block;
-  margin-top: 14px;
-  font-size: 14px;
-  opacity: .85;
-}
-input, select, textarea {
-  width: 100%;
-  padding: 10px;
-  margin-top: 4px;
-  border-radius: 8px;
-  border: 1px solid #2a2f55;
-  background: #0f1220;
-  color: #fff;
-}
-textarea { min-height: 120px; }
-button {
-  margin-top: 20px;
-  padding: 12px 18px;
-  border-radius: 10px;
-  border: none;
-  background: linear-gradient(135deg,#667eea,#764ba2);
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-}
-button:disabled {
-  opacity: .6;
-  cursor: not-allowed;
-}
-.alert {
-  margin-bottom: 16px;
-  padding: 12px;
-  border-radius: 8px;
-}
-.alert.success { background:#1f6f3b; }
-.alert.error { background:#7a2e2e; }
-.alert.info { background:#2a3a7a; }
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0f1220;
+    color: #fff;
+    padding: 20px;
+  }
+  .container { max-width: 720px; margin: auto; }
+  .card {
+    background: #151a2e;
+    border-radius: 14px;
+    padding: 20px;
+    border: 1px solid #23285a;
+  }
+  h2 { margin-bottom: 12px; }
+  label {
+    display: block;
+    margin-top: 12px;
+    font-size: 14px;
+    opacity: .85;
+  }
+  input, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 4px;
+    border-radius: 8px;
+    border: 1px solid #2a2f55;
+    background: #0f1220;
+    color: #fff;
+  }
+  button {
+    margin-top: 20px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg,#667eea,#764ba2);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:disabled { opacity: .6; cursor: not-allowed; }
+  .alert {
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 8px;
+  }
+  .alert.success { background:#1f6f3b; }
+  .alert.error { background:#7a2e2e; }
 </style>
 </head>
 
 <body>
 <div class="container">
-
   <div id="alerts"></div>
 
-  <!-- COPY / PASTE -->
   <div class="card">
-    <h2>📋 Copy / paste (reference)</h2>
-    <p style="opacity:.7;font-size:13px">
-      Indsæt tekst fra Facebook / website her.  
-      Feltet gemmes <strong>ikke</strong> – det er kun visuel hjælp.
-    </p>
-    <textarea id="rawText" placeholder="Indsæt FB-event, tekst fra billede osv."></textarea>
-  </div>
+    <h2>Tilføj event</h2>
 
-  <!-- FORM -->
-  <div class="card">
-    <h2>➕ Tilføj event</h2>
-
-    <form id="eventForm">
-
+    <form id="eventForm" autocomplete="off">
       <label>Dato *</label>
-      <input type="date" id="dato" required>
+      <input type="date" id="dato" required />
 
       <label>Eventnavn *</label>
-      <input type="text" id="eventnavn" required>
+      <input type="text" id="eventnavn" required />
 
       <label>Starttid *</label>
-      <input type="time" id="starttid" required>
+      <input type="time" id="starttid" required />
 
       <label>Sluttid *</label>
-      <input type="time" id="sluttid" required>
+      <input type="time" id="sluttid" required />
 
       <label>Dansetype *</label>
       <select id="dansetype" required>
@@ -108,74 +87,89 @@ button:disabled {
       </select>
 
       <label>Sted *</label>
-      <input type="text" id="sted" required>
+      <input type="text" id="sted" required />
 
       <label>Adresse *</label>
-      <input type="text" id="adresse" required>
+      <input type="text" id="adresse" required />
 
       <label>By *</label>
-      <input type="text" id="by" required>
+      <input type="text" id="by" required />
 
-      <label>Pris *</label>
-      <input type="text" id="pris" required>
+      <label>Pris</label>
+      <input type="text" id="pris" />
 
       <button type="submit" id="submitBtn">Indsend event</button>
     </form>
   </div>
-
 </div>
 
 <script>
+/* =========================================================
+   KONFIG
+========================================================= */
 const SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec";
 
-function showAlert(msg, type){
-  const d=document.createElement('div');
-  d.className='alert '+type;
-  d.textContent=msg;
-  document.getElementById('alerts').appendChild(d);
-  setTimeout(()=>d.remove(),6000);
+/* =========================================================
+   HJÆLPERE
+========================================================= */
+function clearAlerts() {
+  document.getElementById('alerts').innerHTML = '';
 }
 
+function showAlert(msg, type) {
+  const d = document.createElement('div');
+  d.className = 'alert ' + type;
+  d.textContent = msg;
+  document.getElementById('alerts').appendChild(d);
+  setTimeout(() => d.remove(), 5000);
+}
+
+/* =========================================================
+   SUBMIT — JSONP, STATELESS
+========================================================= */
 document.getElementById('eventForm').addEventListener('submit', e => {
   e.preventDefault();
+  clearAlerts();
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
 
-  // Payload i PRÆCIS det format backend forventer
-  const payload = [
-    dato.value,                               // dato
-    eventnavn.value,                         // eventnavn
-    starttid.value + '–' + sluttid.value,    // tid
-    dansetype.value,                         // dansetype
-    sted.value + ', ' + adresse.value + ', ' + by.value,
-    pris.value
-  ].join('\n');
+  const payload = {
+    action: 'submitEvent',
+    dato: dato.value,
+    eventnavn: eventnavn.value,
+    starttid: starttid.value,
+    sluttid: sluttid.value,
+    dansetype: dansetype.value,
+    sted: sted.value,
+    adresse: adresse.value,
+    by: by.value,
+    pris: pris.value || ''
+  };
 
   const cb = 'cb_' + Date.now();
   window[cb] = res => {
     delete window[cb];
     btn.disabled = false;
 
-    if(res && res.success){
-      showAlert('✅ Event indsendt (pending)', 'success');
-      e.target.reset();
-      document.getElementById('rawText').value = '';
+    if (res && res.success) {
+      showAlert('✅ Event indsendt', 'success');
+      e.target.reset();            // HARD RESET
     } else {
       showAlert(res?.text || '❌ Fejl ved indsendelse', 'error');
     }
   };
 
-  const params = new URLSearchParams({
-    action: 'admin-import',
-    payload: payload,
-    recurring: 'false',
-    callback: cb
-  });
+  const params = new URLSearchParams(payload);
+  params.append('callback', cb);
 
   const s = document.createElement('script');
   s.src = SCRIPT_URL + '?' + params.toString();
+  s.onerror = () => {
+    btn.disabled = false;
+    showAlert('❌ Netværksfejl', 'error');
+  };
   document.body.appendChild(s);
   s.onload = () => s.remove();
 });
