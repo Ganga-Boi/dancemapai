@@ -6,139 +6,259 @@
 <title>DanceMap</title>
 
 <style>
-html,body{
+:root {
+  --bg:#0b0e17;
+  --card:#141a2a;
+  --muted:#8b93b6;
+  --accent:#6d6af2;
+}
+*{box-sizing:border-box}
+body{
   margin:0;
-  padding:0;
-  height:100%;
-  background:#0b0f1a;
+  height:100vh;
+  background:radial-gradient(circle at top,#12162a,#070911);
   font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
   color:#fff;
-}
-
-.app{
-  height:100%;
   display:flex;
   align-items:center;
   justify-content:center;
 }
-
-.card{
-  background:linear-gradient(180deg,#141a2b,#0f1422);
-  border-radius:16px;
-  padding:22px;
-  width:360px;
-  box-shadow:0 30px 80px rgba(0,0,0,.6);
+.app{
+  width:420px;
+  background:var(--card);
+  border-radius:18px;
+  padding:20px;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
 }
-
 .header{
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  margin-bottom:14px;
+  gap:10px;
+  margin-bottom:12px;
 }
-
-.logo{
+.admin-icon{
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  background:#1f263d;
   display:flex;
   align-items:center;
-  gap:10px;
+  justify-content:center;
   cursor:pointer;
 }
-
-.logo img{
-  width:28px;
-  height:28px;
+.admin-icon::before{
+  content:"🤖";
+  font-size:16px;
 }
-
-.logo span{
-  font-weight:600;
-  font-size:18px;
-}
-
+.title{font-weight:600}
 .hint{
-  font-size:13px;
-  opacity:.6;
+  background:#10162a;
+  padding:10px;
+  border-radius:10px;
+  color:var(--muted);
+  font-size:14px;
   margin-bottom:10px;
 }
-
 .search{
   display:flex;
-  gap:10px;
+  gap:8px;
 }
-
 .search input{
   flex:1;
   padding:14px;
   border-radius:12px;
-  border:1px solid #2a2f55;
-  background:#0b0f1a;
+  border:1px solid #222a44;
+  background:#0b1020;
   color:#fff;
   font-size:15px;
 }
-
 .search button{
   width:48px;
   border-radius:12px;
   border:none;
-  background:linear-gradient(135deg,#667eea,#764ba2);
+  background:var(--accent);
+  color:#fff;
+  font-size:20px;
   cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+}
+.search button::before{
+  content:"→";
 }
 
-.search button svg{
-  width:20px;
-  height:20px;
-  stroke:#fff;
-  stroke-width:2;
-  fill:none;
+/* MODAL */
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+.modal{
+  width:420px;
+  background:#141a2a;
+  border-radius:18px;
+  padding:20px;
+}
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:14px;
+}
+.modal-header h2{
+  margin:0;
+  font-size:18px;
+}
+.close{
+  cursor:pointer;
+  font-size:20px;
+  opacity:.7;
+}
+.tabs{
+  display:flex;
+  gap:10px;
+  margin-bottom:14px;
+}
+.tab{
+  flex:1;
+  padding:10px;
+  text-align:center;
+  border-radius:10px;
+  background:#0f152b;
+  cursor:pointer;
+  opacity:.6;
+}
+.tab.active{
+  background:var(--accent);
+  opacity:1;
+}
+.form label{
+  font-size:13px;
+  color:var(--muted);
+  margin-top:10px;
+  display:block;
+}
+.form input, .form select{
+  width:100%;
+  margin-top:4px;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #222a44;
+  background:#0b1020;
+  color:#fff;
+}
+.form .send{
+  margin-top:16px;
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:var(--accent);
+  color:#fff;
+  font-weight:600;
+}
+.pending{
+  text-align:center;
+  color:var(--muted);
+  padding:20px;
 }
 </style>
 </head>
 
 <body>
-<div class="app">
-  <div class="card">
 
-    <!-- HEADER / ICON -->
-    <div class="header">
-      <div class="logo" id="adminIcon" title="Admin">
-        <img src="dancemap-icon.svg" alt="DanceMap">
-        <span>DanceMap</span>
+<div class="app">
+  <div class="header">
+    <div class="admin-icon" id="openAdmin"></div>
+    <div class="title">DanceMap</div>
+  </div>
+
+  <div class="hint">Skriv fx: salsa eller bachata</div>
+
+  <div class="search">
+    <input id="query" placeholder="Søg events…" />
+    <button id="searchBtn"></button>
+  </div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div class="modal-backdrop" id="adminModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Admin</h2>
+      <div class="close" id="closeAdmin">✕</div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="add">Tilføj Event</div>
+      <div class="tab" data-tab="approve">Godkend Events</div>
+    </div>
+
+    <div class="tab-content add">
+      <div class="form">
+        <label>Dato *</label>
+        <input type="date">
+
+        <label>Event navn *</label>
+        <input type="text">
+
+        <label>Start *</label>
+        <input type="time">
+
+        <label>Slut *</label>
+        <input type="time">
+
+        <label>Dansetype *</label>
+        <select>
+          <option>Salsa</option>
+          <option>Bachata</option>
+          <option>Kizomba</option>
+        </select>
+
+        <label>Sted *</label>
+        <input type="text">
+
+        <label>Adresse *</label>
+        <input type="text">
+
+        <label>By *</label>
+        <input type="text">
+
+        <button class="send">➜ Indsend (dummy)</button>
       </div>
     </div>
 
-    <!-- HINT -->
-    <div class="hint">Skriv fx: salsa eller bachata</div>
-
-    <!-- SEARCH -->
-    <div class="search">
-      <input id="query" placeholder="Søg events…" />
-      <button id="sendBtn" title="Søg">
-        <!-- PIL -->
-        <svg viewBox="0 0 24 24">
-          <line x1="5" y1="12" x2="19" y2="12"/>
-          <polyline points="13,6 19,12 13,18"/>
-        </svg>
-      </button>
+    <div class="tab-content approve" style="display:none">
+      <div class="pending">Ingen events afventer godkendelse</div>
     </div>
-
   </div>
 </div>
 
 <script>
-/* ADMIN ICON */
-document.getElementById('adminIcon').addEventListener('click', () => {
-  // midlertidig – næste trin åbner modal
-  alert('Admin åbnes i næste trin');
+const adminModal = document.getElementById('adminModal');
+
+document.getElementById('openAdmin').onclick = () => {
+  adminModal.style.display = 'flex';
+};
+
+document.getElementById('closeAdmin').onclick = () => {
+  adminModal.style.display = 'none';
+};
+
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.onclick = ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');
+    document.querySelector('.'+tab.dataset.tab).style.display='block';
+  };
 });
 
-/* SEARCH */
-document.getElementById('sendBtn').addEventListener('click', () => {
-  const q = document.getElementById('query').value.trim();
-  if(!q) return;
-  console.log('SEARCH:', q);
-});
+document.getElementById('searchBtn').onclick = () => {
+  console.log('SEARCH (frontend only):', document.getElementById('query').value);
+};
 </script>
 
 </body>
