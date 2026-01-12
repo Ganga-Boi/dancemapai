@@ -1,69 +1,137 @@
 <!doctype html>
 <html lang="da">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DanceMap</title>
 
-  <!-- PWA (manifest må gerne blive) -->
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#6366f1" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="DanceMap" />
-  <link rel="apple-touch-icon" href="/icon-192.png" />
-
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WYGJJJV2E6"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-WYGJJJV2E6');
-  </script>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
-  <!-- STYLES -->
-  <!-- (hele dit eksisterende CSS er uændret og derfor udeladt her for overskuelighed i forklaring –
-       i din faktiske fil skal det naturligvis være med, præcis som du sendte) -->
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: #161b22;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,.5);
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      padding: 16px;
+      border-bottom: 1px solid #21262d;
+      font-weight: 600;
+    }
+    .chat {
+      padding: 16px;
+      flex: 1;
+      overflow-y: auto;
+      font-size: 14px;
+    }
+    .msg {
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      background: #21262d;
+      border-radius: 10px;
+    }
+    .input {
+      display: flex;
+      border-top: 1px solid #21262d;
+      padding: 12px;
+      gap: 8px;
+    }
+    input {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #30363d;
+      background: #0d1117;
+      color: #e6edf3;
+      font-size: 14px;
+    }
+    button {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: none;
+      background: #6366f1;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: .6;
+    }
+  </style>
 </head>
 
 <body>
-
-<!--
-  HELE DIN HTML STRUCTURE:
-  - Chat
-  - Admin modal
-  - OCR
-  - Pending list
-  - Install banner
-  - osv.
-  ER UÆNDRET
--->
+  <div class="card">
+    <div class="header">DanceMap</div>
+    <div id="chat" class="chat">
+      <div class="msg">Skriv fx: salsa eller bachata</div>
+    </div>
+    <div class="input">
+      <input id="q" placeholder="Søg events…" autocomplete="off">
+      <button id="send">Søg</button>
+    </div>
+  </div>
 
 <script>
-/* ============================================================
-   HELE DIT EKSISTERENDE JAVASCRIPT
-   (admin, JSONP, OCR, preview, pending, etc.)
-   ER UÆNDRET
-============================================================ */
+const API = 'https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec';
 
-/* ⚠️ VIGTIGT ⚠️
-   DER ER MED VILJE IKKE NOGEN SERVICE WORKER REGISTRERING HER.
-   DEN ER FJERNET FULDT BEVIDST.
-*/
+const chat = document.getElementById('chat');
+const input = document.getElementById('q');
+const btn = document.getElementById('send');
 
-/*
-❌ DETTE FINDES IKKE LÆNGERE:
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
+function add(text) {
+  const d = document.createElement('div');
+  d.className = 'msg';
+  d.textContent = text;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
 }
 
-*/
+function jsonp(url) {
+  return new Promise((resolve, reject) => {
+    const cb = 'cb_' + Date.now();
+    window[cb] = data => {
+      delete window[cb];
+      script.remove();
+      resolve(data);
+    };
+    const script = document.createElement('script');
+    script.src = url + '&callback=' + cb;
+    script.onerror = reject;
+    document.body.appendChild(script);
+  });
+}
 
+async function search() {
+  const q = input.value.trim();
+  if (!q) return;
+  add('🔍 ' + q);
+  input.value = '';
+  btn.disabled = true;
+  try {
+    const data = await jsonp(API + '?query=' + encodeURIComponent(q));
+    add(data.text || 'Ingen resultater');
+  } catch {
+    add('Fejl – prøv igen');
+  }
+  btn.disabled = false;
+}
+
+btn.onclick = search;
+input.onkeydown = e => { if (e.key === 'Enter') search(); };
 </script>
 </body>
 </html>
