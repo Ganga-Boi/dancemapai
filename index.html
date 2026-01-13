@@ -260,14 +260,14 @@
 
     <div id="adminAddView">
       <div id="adminStep1">
-        <p class="admin-intro">Paste event-tekst og klik "Parse tekst" for at udfylde felterne.</p>
+        <p class="admin-intro">📸 Paste et skærmbillede (Ctrl+V) eller upload en event-flyer. Claude AI udfylder alle felter automatisk.</p>
         <button type="button" class="upload-btn" id="uploadBtn">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="18" height="18" rx="2"/>
             <circle cx="8.5" cy="8.5" r="1.5"/>
             <polyline points="21 15 16 10 5 21"/>
           </svg>
-          Upload billede
+          Upload event-billede (Claude Vision AI)
         </button>
         <input type="file" id="fileInput" accept="image/*" style="display:none" />
         <img id="imagePreview" class="image-preview" />
@@ -362,8 +362,8 @@
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.0.1-2025-01-12';
-const FORM_VERSION = '6.0.1'; // Bump this to clear old form cache
+const FRONTEND_VERSION = 'v6.0.3-2025-01-13';
+const FORM_VERSION = '6.0.3'; // Bump this to clear old form cache
 const API = 'https://script.google.com/macros/s/AKfycbyJdVscl-4f-ow7Ynj-LGsazpGFSR8VzVZWHruWdNE66HbVK6LJLOXKRmS6TFUUFC6i/exec';
 
 // Clear old form cache on load
@@ -386,7 +386,7 @@ const modal = $('adminModal'), payload = $('adminPayload'), status = $('adminSta
 const recurring = $('recurringCheck'), preview = $('imagePreview'), ocrStatus = $('ocrStatus');
 const step1 = $('adminStep1'), step2 = $('adminStep2'), warnings = $('fieldWarnings');
 
-let lastQ = '', page = 0, hasMore = false, loading = false, moreBtn = null, tesseractLoaded = false;
+let lastQ = '', page = 0, hasMore = false, loading = false, moreBtn = null;
 
 const fields = {
   dato: $('fieldDato'), navn: $('fieldNavn'), start: $('fieldStart'), slut: $('fieldSlut'),
@@ -411,7 +411,7 @@ function jsonp(url) {
 // ═══════════════════════════════════════════════════════════
 // VERSION CHECK (viser "Version 6.0.1" når match)
 // ═══════════════════════════════════════════════════════════
-const DISPLAY_VERSION = 'Version 6.0.1';
+const DISPLAY_VERSION = 'Version 6.0.3';
 
 async function checkVersion() {
   try {
@@ -709,29 +709,147 @@ $('parseBtn').onclick = () => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// OCR
+// CLAUDE VISION - Smart billede-parsing
 // ═══════════════════════════════════════════════════════════
-async function loadTesseract() {
-  if (tesseractLoaded) return;
-  ocrStatus.style.display = 'block'; ocrStatus.textContent = 'Indlæser OCR...';
-  const s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-  document.head.appendChild(s);
-  await new Promise(r => s.onload = r);
-  tesseractLoaded = true;
-}
-async function processImage(img) {
+
+async function processImageWithClaude(file) {
+  ocrStatus.style.display = 'block';
+  ocrStatus.innerHTML = '🤖 <span class="loading-text">Claude analyserer billede...</span>';
+  
   try {
-    await loadTesseract();
-    ocrStatus.style.display = 'block'; ocrStatus.textContent = 'Læser billede...';
-    const result = await Tesseract.recognize(img, 'dan+eng', { logger: m => { if (m.status === 'recognizing text') ocrStatus.textContent = 'Læser... ' + Math.round(m.progress*100) + '%'; } });
-    if (result.data.text.trim()) { payload.value = result.data.text.trim(); ocrStatus.textContent = '✅ Tekst fundet'; setTimeout(() => ocrStatus.style.display = 'none', 2000); }
-    else { ocrStatus.textContent = '⚠️ Ingen tekst fundet'; }
-  } catch (e) { ocrStatus.textContent = '❌ OCR fejl'; }
+    // Konverter fil til base64
+    const base64 = await fileToBase64(file);
+    const mediaType = file.type || 'image/png';
+    
+    // Send til backend
+    const response = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'parse-image',
+        image: base64,
+        mediaType: mediaType
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success && result.data) {
+      // Udfyld felter automatisk
+      const d = result.data;
+      
+      if (d.dato) fields.dato.value = d.dato;
+      if (d.navn) fields.navn.value = d.navn;
+      if (d.starttid) fields.start.value = d.starttid;
+      if (d.sluttid) fields.slut.value = d.sluttid;
+      if (d.dansetype) fields.dans.value = d.dansetype;
+      if (d.sted) fields.sted.value = d.sted;
+      if (d.adresse) fields.adresse.value = d.adresse;
+      if (d.by) fields.by.value = d.by;
+      if (d.pris) {
+        // Smart pris-håndtering
+        if (d.pris.toLowerCase() === 'gratis') {
+          fields.prisType.value = 'gratis';
+          $('prisFields').style.display = 'none';
+        } else {
+          fields.prisType.value = 'angiv';
+          $('prisFields').style.display = 'block';
+          // Prøv at parse priser
+          const prisMatch = d.pris.match(/(\d+)/g);
+          if (prisMatch) {
+            if (prisMatch.length >= 2) {
+              fields.prisOnline.value = prisMatch[0];
+              fields.prisDropin.value = prisMatch[1];
+            } else {
+              fields.prisDropin.value = prisMatch[0];
+            }
+          }
+        }
+      }
+      if (d.recurring) recurring.checked = d.recurring;
+      
+      updatePrisField();
+      updatePreview();
+      
+      const confidence = Math.round((result.confidence || 0.8) * 100);
+      ocrStatus.innerHTML = `✅ Parsed med ${confidence}% sikkerhed`;
+      ocrStatus.style.color = confidence > 80 ? '#3fb950' : '#f0883e';
+      
+      // Gå til step 2
+      step1.style.display = 'none';
+      step2.style.display = 'block';
+      
+      // Vis warnings hvis der mangler felter
+      const {errors} = validateFields();
+      if (errors.length) {
+        warnings.innerHTML = errors.join('<br>');
+        warnings.classList.add('show');
+      } else {
+        warnings.classList.remove('show');
+      }
+      
+      saveFormState();
+      
+      setTimeout(() => {
+        ocrStatus.style.display = 'none';
+      }, 3000);
+      
+    } else if (result.needsSetup) {
+      ocrStatus.innerHTML = '⚠️ API-nøgle mangler. <a href="#" onclick="alert(\'Kør setupApiKey() i Apps Script\')">Se instruktioner</a>';
+      ocrStatus.style.color = '#f85149';
+    } else {
+      ocrStatus.innerHTML = '❌ ' + (result.text || 'Kunne ikke parse billede');
+      ocrStatus.style.color = '#f85149';
+    }
+    
+  } catch (err) {
+    console.error('Claude Vision error:', err);
+    ocrStatus.innerHTML = '❌ Netværksfejl - prøv igen';
+    ocrStatus.style.color = '#f85149';
+  }
 }
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// Upload knap
 $('uploadBtn').onclick = () => $('fileInput').click();
-$('fileInput').onchange = e => { const f = e.target.files[0]; if (f?.type.startsWith('image/')) { preview.src = URL.createObjectURL(f); preview.style.display = 'block'; processImage(f); } e.target.value = ''; };
-modal.onpaste = e => { for (const item of (e.clipboardData?.items||[])) { if (item.type.startsWith('image/')) { e.preventDefault(); const f = item.getAsFile(); preview.src = URL.createObjectURL(f); preview.style.display = 'block'; processImage(f); return; } } };
+
+// File input change
+$('fileInput').onchange = e => {
+  const f = e.target.files[0];
+  if (f?.type.startsWith('image/')) {
+    preview.src = URL.createObjectURL(f);
+    preview.style.display = 'block';
+    processImageWithClaude(f);
+  }
+  e.target.value = '';
+};
+
+// Paste handler - både billeder og tekst
+modal.onpaste = e => {
+  const items = e.clipboardData?.items || [];
+  
+  // Check for billede først
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      e.preventDefault();
+      const f = item.getAsFile();
+      preview.src = URL.createObjectURL(f);
+      preview.style.display = 'block';
+      processImageWithClaude(f);
+      return;
+    }
+  }
+  
+  // Hvis ingen billede, lad tekst-paste ske normalt
+};
 
 // ═══════════════════════════════════════════════════════════
 // ADMIN SUBMIT - SEPARATE PARAMS (NO-PARSE MODE)
@@ -822,10 +940,11 @@ async function loadPendingList() {
           <div class="pending-item-row"><span>💃</span><span>${esc(e.dansetype)}</span></div>
           <div class="pending-item-row"><span>📍</span><span>${esc(e.sted)}, ${esc(e.adresse)}, ${esc(e.by)}</span></div>
           <div class="pending-item-row"><span>💰</span><span>${esc(e.pris)}</span></div>
+          ${e.insertedAt ? `<div class="pending-item-row" style="font-size:11px;color:#7d8590"><span>📥</span><span>Tilføjet: ${esc(e.insertedAt.substring(0,10))}</span></div>` : ''}
         </div>
         <div class="pending-actions">
-          <select class="pending-status-select"><option value="pending" selected>pending</option><option value="active">active</option></select>
-          <button class="pending-approve-btn" onclick="changeStatus(${e.row},'active')">Sæt til Active</button>
+          <button class="pending-approve-btn" onclick="changeStatus(${e.row},'active')">Godkend ✓</button>
+          <button class="pending-reject-btn" onclick="deleteEvent(${e.row})" style="padding:10px 12px;background:#da3633;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;">Afvis ✕</button>
         </div>
       </div>
     `).join('');
@@ -840,8 +959,21 @@ async function changeStatus(row, nextStatus) {
   try {
     const data = await jsonp(API + '?action=update-status&row=' + row + '&status=' + encodeURIComponent(nextStatus) + '&_=' + Date.now());
     if (data?.success && nextStatus === 'active') {
-      if (item) { item.style.background = '#238636'; if (btn) btn.textContent = '✓ Active'; setTimeout(() => item.remove(), 600); }
+      if (item) { item.style.background = '#238636'; if (btn) btn.textContent = '✓ Godkendt'; setTimeout(() => item.remove(), 600); }
       loadWeekCount();
+    } else { if (btn) { btn.disabled = false; btn.textContent = 'Fejl'; } }
+  } catch (e) { if (btn) { btn.disabled = false; btn.textContent = 'Fejl'; } }
+}
+
+async function deleteEvent(row) {
+  if (!confirm('Er du sikker på du vil afvise dette event?')) return;
+  const item = document.querySelector(`.pending-item[data-row="${row}"]`);
+  const btn = item?.querySelector('.pending-reject-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Sletter...'; }
+  try {
+    const data = await jsonp(API + '?action=delete-row&row=' + row + '&_=' + Date.now());
+    if (data?.success) {
+      if (item) { item.style.background = '#da3633'; item.style.opacity = '0.5'; setTimeout(() => item.remove(), 400); }
     } else { if (btn) { btn.disabled = false; btn.textContent = 'Fejl'; } }
   } catch (e) { if (btn) { btn.disabled = false; btn.textContent = 'Fejl'; } }
 }
