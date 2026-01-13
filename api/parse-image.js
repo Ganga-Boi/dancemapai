@@ -50,11 +50,11 @@ Returner KUN valid JSON (ingen anden tekst):
   "navn": "Event navn",
   "starttid": "HH:MM",
   "sluttid": "HH:MM",
-  "dansetype": "Salsa|Bachata|Kizomba|Zouk|Tango|Swing|Latin",
+  "dansetype": "Salsa & Bachata",
   "sted": "Venue navn",
   "adresse": "Gade og nummer",
   "by": "By",
-  "pris": "Pris info",
+  "pris": "Pris info eller MobilePay info",
   "confidence": 0.95
 }
 
@@ -62,6 +62,9 @@ Regler:
 - Dato i ISO format (YYYY-MM-DD), brug ${new Date().getFullYear()} hvis årstal mangler
 - Tider i 24-timers format (HH:MM)
 - Hvis sluttid mangler: sociale +4 timer, workshop +2 timer
+- dansetype: Hvis der er flere dansetyper, skriv dem med "&" (fx "Salsa & Bachata")
+- Gyldige dansetyper: Salsa, Bachata, Kizomba, Zouk, Tango, Swing
+- pris: Inkluder MobilePay nummer hvis det nævnes (fx "50 kr (MobilePay: 12345)")
 - Tom streng "" hvis værdi ikke findes
 
 Kendte venues:
