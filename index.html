@@ -184,13 +184,13 @@
           </div>
         </div>
         <div id="mobilepayFields" style="display:none;">
-          <div class="field-row">
-            <label>MobilePay nummer/boks</label>
-            <input type="text" id="fieldMobilepay" placeholder="Fx 12345 eller MyShop navn" />
-          </div>
           <div class="field-row two-col">
-            <div><label>Pris (kr)</label><input type="text" id="fieldMobilepayPris" placeholder="50" /></div>
-            <div></div>
+            <div><label>Pris (kr) *</label><input type="text" id="fieldMobilepayPris" placeholder="50" /></div>
+            <div><label>MobilePay nr/boks</label><input type="text" id="fieldMobilepay" placeholder="12345" /></div>
+          </div>
+          <div class="field-row">
+            <label>Betalingsinfo (vises til brugere)</label>
+            <input type="text" id="fieldMobilepayInfo" placeholder="Fx: Skriv dit navn i beskeden" />
           </div>
         </div>
         <input type="hidden" id="fieldPris" />
@@ -217,8 +217,8 @@
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.0.7-2025-01-13';
-const FORM_VERSION = '6.0.7';
+const FRONTEND_VERSION = 'v6.0.9-2025-01-13';
+const FORM_VERSION = '6.0.9';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -235,7 +235,7 @@ const step1=$('adminStep1'),step2=$('adminStep2'),warnings=$('fieldWarnings');
 
 let lastQ='',page=0,hasMore=false,loading=false,moreBtn=null;
 
-const fields={dato:$('fieldDato'),navn:$('fieldNavn'),start:$('fieldStart'),slut:$('fieldSlut'),dans:$('fieldDans'),sted:$('fieldSted'),adresse:$('fieldAdresse'),by:$('fieldBy'),pris:$('fieldPris'),prisType:$('fieldPrisType'),prisOnline:$('fieldPrisOnline'),prisDropin:$('fieldPrisDropin'),mobilepay:$('fieldMobilepay'),mobilepayPris:$('fieldMobilepayPris')};
+const fields={dato:$('fieldDato'),navn:$('fieldNavn'),start:$('fieldStart'),slut:$('fieldSlut'),dans:$('fieldDans'),sted:$('fieldSted'),adresse:$('fieldAdresse'),by:$('fieldBy'),pris:$('fieldPris'),prisType:$('fieldPrisType'),prisOnline:$('fieldPrisOnline'),prisDropin:$('fieldPrisDropin'),mobilepay:$('fieldMobilepay'),mobilepayPris:$('fieldMobilepayPris'),mobilepayInfo:$('fieldMobilepayInfo')};
 
 // Dansetype checkboxes handler
 function getSelectedDanceTypes(){
@@ -279,12 +279,12 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.0.7':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.0.7':'⚠️ Version mismatch';frontEl.style.color=match?'#484f58':'#f85149';}
+      if(adminEl){adminEl.textContent=match?'Version 6.0.9':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.0.9':'⚠️ Version mismatch';frontEl.style.color=match?'#484f58':'#f85149';}
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.0.7 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.0.9 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
@@ -303,12 +303,15 @@ function updatePrisField(){
   if(pt==='gratis')fields.pris.value='Gratis';
   else if(pt==='kontakt')fields.pris.value='Kontakt arrangør';
   else if(pt==='mobilepay'){
-    const mp=fields.mobilepay.value.trim();
     const pris=fields.mobilepayPris.value.trim();
-    if(mp&&pris)fields.pris.value=pris+' kr (MobilePay: '+mp+')';
-    else if(pris)fields.pris.value=pris+' kr (MobilePay)';
-    else if(mp)fields.pris.value='MobilePay: '+mp;
-    else fields.pris.value='MobilePay';
+    const mp=fields.mobilepay.value.trim();
+    const info=fields.mobilepayInfo.value.trim();
+    let val='';
+    if(pris)val=pris+' kr';
+    if(mp)val+=(val?' via ':'')+' MobilePay: '+mp;
+    else if(pris)val+=' (MobilePay)';
+    if(info)val+=(val?' – ':'')+info;
+    fields.pris.value=val||'MobilePay';
   }
   else{
     const o=fields.prisOnline.value.trim(),d=fields.prisDropin.value.trim();
@@ -343,13 +346,13 @@ document.querySelector('.header').onclick=()=>{clicks++;if(clicks===3){clicks=0;
 
 function openAdmin(){modal.classList.add('open');status.style.display='none';preview.style.display='none';ocrStatus.style.display='none';warnings.classList.remove('show');restoreFormState();checkVersion();showWelcome();}
 
-function saveFormState(){localStorage.setItem('dancemap_admin_form',JSON.stringify({formVersion:FORM_VERSION,payload:payload.value,dato:fields.dato.value,navn:fields.navn.value,start:fields.start.value,slut:fields.slut.value,dansTypes:getSelectedDanceTypes(),sted:fields.sted.value,adresse:fields.adresse.value,by:fields.by.value,prisType:fields.prisType.value,prisOnline:fields.prisOnline.value,prisDropin:fields.prisDropin.value,mobilepay:fields.mobilepay.value,mobilepayPris:fields.mobilepayPris.value,recurring:recurring.checked,step:step2.style.display==='block'?2:1}));}
+function saveFormState(){localStorage.setItem('dancemap_admin_form',JSON.stringify({formVersion:FORM_VERSION,payload:payload.value,dato:fields.dato.value,navn:fields.navn.value,start:fields.start.value,slut:fields.slut.value,dansTypes:getSelectedDanceTypes(),sted:fields.sted.value,adresse:fields.adresse.value,by:fields.by.value,prisType:fields.prisType.value,prisOnline:fields.prisOnline.value,prisDropin:fields.prisDropin.value,mobilepay:fields.mobilepay.value,mobilepayPris:fields.mobilepayPris.value,mobilepayInfo:fields.mobilepayInfo.value,recurring:recurring.checked,step:step2.style.display==='block'?2:1}));}
 
-function restoreFormState(){try{const saved=localStorage.getItem('dancemap_admin_form');if(!saved){step1.style.display='block';step2.style.display='none';payload.value='';clearFields();return;}const s=JSON.parse(saved);payload.value=s.payload||'';fields.dato.value=s.dato||'';fields.navn.value=s.navn||'';fields.start.value=s.start||'';fields.slut.value=s.slut||'';if(s.dansTypes)setSelectedDanceTypes(s.dansTypes);else if(s.dans)setSelectedDanceTypes([s.dans]);updateDansField();fields.sted.value=s.sted||'';fields.adresse.value=s.adresse||'';fields.by.value=s.by||'København';fields.prisType.value=s.prisType||'angiv';fields.prisOnline.value=s.prisOnline||'';fields.prisDropin.value=s.prisDropin||'';fields.mobilepay.value=s.mobilepay||'';fields.mobilepayPris.value=s.mobilepayPris||'';recurring.checked=s.recurring||false;$('prisFields').style.display=s.prisType==='angiv'?'block':'none';$('mobilepayFields').style.display=s.prisType==='mobilepay'?'block':'none';if(s.step===2){step1.style.display='none';step2.style.display='block';updatePrisField();updatePreview();}else{step1.style.display='block';step2.style.display='none';}}catch(e){step1.style.display='block';step2.style.display='none';}}
+function restoreFormState(){try{const saved=localStorage.getItem('dancemap_admin_form');if(!saved){step1.style.display='block';step2.style.display='none';payload.value='';clearFields();return;}const s=JSON.parse(saved);payload.value=s.payload||'';fields.dato.value=s.dato||'';fields.navn.value=s.navn||'';fields.start.value=s.start||'';fields.slut.value=s.slut||'';if(s.dansTypes)setSelectedDanceTypes(s.dansTypes);else if(s.dans)setSelectedDanceTypes([s.dans]);updateDansField();fields.sted.value=s.sted||'';fields.adresse.value=s.adresse||'';fields.by.value=s.by||'København';fields.prisType.value=s.prisType||'angiv';fields.prisOnline.value=s.prisOnline||'';fields.prisDropin.value=s.prisDropin||'';fields.mobilepay.value=s.mobilepay||'';fields.mobilepayPris.value=s.mobilepayPris||'';fields.mobilepayInfo.value=s.mobilepayInfo||'';recurring.checked=s.recurring||false;$('prisFields').style.display=s.prisType==='angiv'?'block':'none';$('mobilepayFields').style.display=s.prisType==='mobilepay'?'block':'none';if(s.step===2){step1.style.display='none';step2.style.display='block';updatePrisField();updatePreview();}else{step1.style.display='block';step2.style.display='none';}}catch(e){step1.style.display='block';step2.style.display='none';}}
 
 function clearFormState(){localStorage.removeItem('dancemap_admin_form');}
 
-function clearFields(){fields.dato.value='';fields.navn.value='';fields.start.value='';fields.slut.value='';document.querySelectorAll('input[name="dansetype"]').forEach(c=>c.checked=false);fields.dans.value='';fields.sted.value='';fields.adresse.value='';fields.by.value='København';fields.pris.value='';fields.prisType.value='angiv';fields.prisOnline.value='';fields.prisDropin.value='';fields.mobilepay.value='';fields.mobilepayPris.value='';$('prisFields').style.display='block';$('mobilepayFields').style.display='none';warnings.classList.remove('show');$('previewContent').innerHTML='';$('previewCard').style.borderColor='';}
+function clearFields(){fields.dato.value='';fields.navn.value='';fields.start.value='';fields.slut.value='';document.querySelectorAll('input[name="dansetype"]').forEach(c=>c.checked=false);fields.dans.value='';fields.sted.value='';fields.adresse.value='';fields.by.value='København';fields.pris.value='';fields.prisType.value='angiv';fields.prisOnline.value='';fields.prisDropin.value='';fields.mobilepay.value='';fields.mobilepayPris.value='';fields.mobilepayInfo.value='';$('prisFields').style.display='block';$('mobilepayFields').style.display='none';warnings.classList.remove('show');$('previewContent').innerHTML='';$('previewCard').style.borderColor='';}
 
 $('closeAdmin').onclick=()=>{saveFormState();modal.classList.remove('open');};
 $('backBtn').onclick=()=>{step1.style.display='block';step2.style.display='none';status.style.display='none';saveFormState();};
@@ -373,6 +376,7 @@ recurring.addEventListener('change',()=>{updatePreview();saveFormState();});
 // Also listen to mobilepay fields specifically
 if(fields.mobilepay)fields.mobilepay.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
 if(fields.mobilepayPris)fields.mobilepayPris.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
+if(fields.mobilepayInfo)fields.mobilepayInfo.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
 
 $('parseBtn').onclick=()=>{const txt=payload.value.trim();if(!txt)return;const p=parseTextToFields(txt);fields.dato.value=p.dato;fields.navn.value=p.navn;fields.start.value=p.start;fields.slut.value=p.slut;setSelectedDanceTypes([p.dans]);updateDansField();fields.sted.value=p.sted;fields.adresse.value=p.adresse;fields.by.value=p.by;fields.prisType.value=p.prisType;fields.prisOnline.value=p.prisOnline;fields.prisDropin.value=p.prisDropin;$('prisFields').style.display=p.prisType==='angiv'?'block':'none';$('mobilepayFields').style.display=p.prisType==='mobilepay'?'block':'none';updatePrisField();const{errors}=validateFields();if(errors.length){warnings.innerHTML=errors.join('<br>');warnings.classList.add('show');}else{warnings.classList.remove('show');}updatePreview();step1.style.display='none';step2.style.display='block';saveFormState();};
 
@@ -527,6 +531,7 @@ $('adminSubmitBtn').onclick=async()=>{
   params.set('by',fields.by.value);
   params.set('pris',fields.pris.value);
   params.set('recurring',recurring.checked);
+  params.set('kilde',localStorage.getItem('dancemap_admin_name')||'Admin');
   params.set('_',Date.now());
   const btn=$('adminSubmitBtn');
   btn.disabled=true;btn.textContent='Sender...';
