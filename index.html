@@ -363,7 +363,22 @@
 
 <script>
 const FRONTEND_VERSION = 'v6.0.1-2025-01-12';
+const FORM_VERSION = '6.0.1'; // Bump this to clear old form cache
 const API = 'https://script.google.com/macros/s/AKfycbyJdVscl-4f-ow7Ynj-LGsazpGFSR8VzVZWHruWdNE66HbVK6LJLOXKRmS6TFUUFC6i/exec';
+
+// Clear old form cache on load
+(function() {
+  try {
+    const saved = localStorage.getItem('dancemap_admin_form');
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (data.formVersion !== FORM_VERSION) {
+        localStorage.removeItem('dancemap_admin_form');
+        console.log('Cleared old form cache');
+      }
+    }
+  } catch(e) { localStorage.removeItem('dancemap_admin_form'); }
+})();
 
 const $ = id => document.getElementById(id);
 const chat = $('chat'), input = $('q'), sendBtn = $('sendBtn');
@@ -394,19 +409,22 @@ function jsonp(url) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// VERSION CHECK
+// VERSION CHECK (viser "Version 6.0.1" når match)
 // ═══════════════════════════════════════════════════════════
+const DISPLAY_VERSION = 'Version 6.0.1';
+
 async function checkVersion() {
   try {
     const data = await jsonp(API + '?action=ping&_=' + Date.now());
     const el = $('backendVersion');
     if (data.version) {
-      el.textContent = 'Backend: ' + data.version + ' | Frontend: ' + FRONTEND_VERSION;
-      if (data.version !== FRONTEND_VERSION) {
+      if (data.version === FRONTEND_VERSION) {
+        el.textContent = DISPLAY_VERSION;
+        el.style.color = '#3fb950';
+      } else {
+        el.textContent = 'Mismatch: Backend ' + data.version + ' | Frontend ' + FRONTEND_VERSION;
         el.style.color = '#f85149';
         console.warn('VERSION MISMATCH:', data.version, '≠', FRONTEND_VERSION);
-      } else {
-        el.style.color = '#3fb950';
       }
     }
   } catch(e) {
@@ -511,8 +529,7 @@ async function doSearch() {
     hasMore = !!data.hasMore;
     addMsg(data.text || 'Ingen resultater.', false, hasMore);
   } catch (e) { addMsg('Fejl. Prøv igen.', false); }
-  loading = false;
-  sendBtn.disabled = false;
+  finally { loading = false; sendBtn.disabled = false; }
 }
 
 async function loadMore() {
@@ -525,7 +542,7 @@ async function loadMore() {
     hasMore = !!data.hasMore;
     addMsg(data.text, false, hasMore);
   } catch (e) { addMsg('Fejl.', false); hasMore = false; }
-  loading = false;
+  finally { loading = false; if (moreBtn) moreBtn.disabled = false; }
 }
 
 sendBtn.onclick = doSearch;
@@ -553,6 +570,7 @@ function openAdmin() {
 
 function saveFormState() {
   localStorage.setItem('dancemap_admin_form', JSON.stringify({
+    formVersion: FORM_VERSION,
     payload: payload.value, dato: fields.dato.value, navn: fields.navn.value,
     start: fields.start.value, slut: fields.slut.value, dans: fields.dans.value,
     sted: fields.sted.value, adresse: fields.adresse.value, by: fields.by.value,
@@ -599,7 +617,9 @@ function clearFields() {
 }
 
 $('closeAdmin').onclick = () => { saveFormState(); modal.classList.remove('open'); };
-modal.onclick = e => { if (e.target === modal) { saveFormState(); modal.classList.remove('open'); } };
+
+// Modal lukker IKKE ved klik udenfor
+modal.onclick = () => { /* intentionally empty */ };
 $('backBtn').onclick = () => { step1.style.display = 'block'; step2.style.display = 'none'; status.style.display = 'none'; saveFormState(); };
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) { saveFormState(); modal.classList.remove('open'); } });
 payload.addEventListener('input', saveFormState);
