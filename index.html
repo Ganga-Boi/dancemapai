@@ -54,8 +54,9 @@
     body.light-mode .chat{background:#f6f8fa}
     body.light-mode .msg{background:#ffffff;color:#1a1a2e;border-color:#d1d5da}
     body.light-mode .msg.bot{background:#f0f3f6}
-    body.light-mode .input-row input{background:#ffffff;color:#1a1a2e;border-color:#d1d5da}
-    body.light-mode .input-row input::placeholder{color:#6e7781}
+    body.light-mode .input-area input{background:#ffffff;color:#1a1a2e;border-color:#d1d5da}
+    body.light-mode .input-area input::placeholder{color:#6e7781}
+    body.light-mode .input-area{background:#ffffff}
     body.light-mode .theme-label{color:#57606a}
     body.light-mode .toggle-track{fill:#e8ebef;stroke:#d1d5da}
     body.light-mode .toggle-sun circle{fill:none;stroke:#c4d82e}
@@ -75,7 +76,7 @@
     .event-row.title{font-weight:600;color:#e6edf3;font-size:15px}
     .more-btn{margin-top:12px;padding:10px 16px;border-radius:10px;border:1px solid #30363d;background:transparent;color:#7d8590;font-size:14px;cursor:pointer}
     .more-btn:hover{background:#21262d;color:#c9d1d9}
-    .input-area{padding:16px 20px;border-top:1px solid #21262d;display:flex;gap:12px}
+    .input-area{padding:16px 20px;border-top:1px solid #21262d;display:flex;gap:12px;position:sticky;bottom:0;background:#0d1117;z-index:10}
     .input-area input{flex:1;padding:14px 18px;border-radius:12px;border:1px solid #30363d;background:#0d1117;font-size:15px;font-family:inherit;color:#e6edf3;outline:none}
     .input-area input:focus{border-color:#6366f1}.input-area input::placeholder{color:#7d8590}
     .send-btn{width:48px;height:48px;border-radius:12px;border:none;background:#6366f1;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -139,7 +140,11 @@
     <div class="hint"><span>→</span> Swipe for at starte</div>
   </div>
 </div>
-<!-- Removed localStorage check - popup always shows now -->
+<script>
+if(localStorage.getItem('dancemap_welcomed')){
+  document.getElementById('welcomeOverlay').style.display='none';
+}
+</script>
 
 <div class="card">
   <div class="theme-toggle" onclick="toggleTheme()" title="Skift tema">
@@ -291,8 +296,8 @@
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.3.1-2025-01-13';
-const FORM_VERSION = '6.3.1';
+const FRONTEND_VERSION = 'v6.3.3-2025-01-13';
+const FORM_VERSION = '6.3.3';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -353,8 +358,8 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.3.1':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.3.1':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
+      if(adminEl){adminEl.textContent=match?'Version 6.3.3':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.3.3':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
       
       // Auto-refresh hvis version mismatch
       if(!match){
@@ -370,7 +375,7 @@ async function checkVersion(){
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.3.1 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.3.3 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
@@ -795,6 +800,25 @@ if(welcomePopup){
 // THEME TOGGLE (DARK/LIGHT/AUTO MODE)
 const themes = ['dark', 'light', 'auto'];
 let currentThemeIndex = 0;
+
+// MOBILE KEYBOARD FIX - scroll input into view
+const chatInput = $('q');
+if(chatInput){
+  chatInput.addEventListener('focus', () => {
+    setTimeout(() => {
+      chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  });
+}
+
+// Visual viewport resize handler for mobile keyboards
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', () => {
+    if(document.activeElement === chatInput){
+      setTimeout(() => chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+    }
+  });
+}
 
 function applyTheme(theme) {
   const label = $('themeLabel');
