@@ -71,6 +71,15 @@
     .msg.bot .bubble{background:#21262d;color:#c9d1d9;border-bottom-left-radius:4px}
     .events{display:flex;flex-direction:column;gap:10px;margin-top:12px}
     .event-card{background:#2d333b;border-radius:12px;padding:14px 16px}
+    .event-actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #444c56}
+    .cal-btn{flex:1;padding:8px 12px;border-radius:8px;border:1px solid #444c56;background:transparent;color:#8b949e;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s}
+    .cal-btn:hover{background:#444c56;color:#e6edf3}
+    .cal-btn.google{border-color:#4285f4;color:#4285f4}.cal-btn.google:hover{background:rgba(66,133,244,0.15)}
+    .cal-btn.apple{border-color:#a2aaad;color:#a2aaad}.cal-btn.apple:hover{background:rgba(162,170,173,0.15)}
+    body.light-mode .event-card{background:#f6f8fa}
+    body.light-mode .event-actions{border-color:#d1d5da}
+    body.light-mode .cal-btn{border-color:#d1d5da;color:#57606a}
+    body.light-mode .cal-btn:hover{background:#e8ebef}
     .event-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:14px;color:#c9d1d9}
     .event-row:last-child{margin-bottom:0}.event-row .icon{width:20px;text-align:center;flex-shrink:0}
     .event-row.title{font-weight:600;color:#e6edf3;font-size:15px}
@@ -296,8 +305,8 @@ if(localStorage.getItem('dancemap_welcomed')){
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.3.3-2025-01-13';
-const FORM_VERSION = '6.3.3';
+const FRONTEND_VERSION = 'v6.3.4-2025-01-13';
+const FORM_VERSION = '6.3.4';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -358,8 +367,8 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.3.3':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.3.3':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
+      if(adminEl){adminEl.textContent=match?'Version 6.3.4':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.3.4':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
       
       // Auto-refresh hvis version mismatch
       if(!match){
@@ -375,7 +384,7 @@ async function checkVersion(){
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.3.3 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.3.4 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
@@ -444,7 +453,98 @@ function setSearchCache(query, data) {
 
 function parseEvents(text){return String(text||'').split('\n\n').filter(e=>e.trim()).map(event=>{const p={};event.split('\n').forEach(l=>{if(l.startsWith('🗓'))p.dato=l.replace('🗓','').trim();else if(l.startsWith('📌'))p.navn=l.replace('📌','').trim();else if(l.startsWith('🕗'))p.tid=l.replace('🕗','').trim();else if(l.startsWith('💃'))p.type=l.replace('💃','').trim();else if(l.startsWith('📍'))p.sted=l.replace('📍','').trim();else if(l.startsWith('💰'))p.pris=l.replace('💰','').trim();});return p;}).filter(e=>e.dato);}
 
-function renderEvents(events){return events.map(e=>`<div class="event-card"><div class="event-row title"><span class="icon">📅</span><span>${esc(e.dato)}</span></div>${e.navn?`<div class="event-row title"><span class="icon">📌</span><span>${esc(e.navn)}</span></div>`:''} ${e.tid?`<div class="event-row"><span class="icon">🕐</span><span>${esc(e.tid)}</span></div>`:''} ${e.sted?`<div class="event-row"><span class="icon">📍</span><span>${esc(e.sted)}</span></div>`:''} ${e.pris?`<div class="event-row"><span class="icon">💰</span><span>${esc(e.pris)}</span></div>`:''}</div>`).join('');}
+// CALENDAR FUNCTIONS
+function createGoogleCalUrl(event){
+  const title = encodeURIComponent(event.navn || 'Dance Event');
+  const location = encodeURIComponent(event.sted || '');
+  const details = encodeURIComponent(`${event.type || ''}\n${event.pris || ''}`);
+  
+  // Parse date and time
+  const dateMatch = event.dato && event.dato.match(/(\d{1,2})\.?\s*(\w+)/i);
+  const timeMatch = event.tid && event.tid.match(/(\d{1,2})[:\.]?(\d{2})?/);
+  
+  if(!dateMatch) return null;
+  
+  const months = {'jan':0,'feb':1,'mar':2,'apr':3,'maj':4,'jun':5,'jul':6,'aug':7,'sep':8,'okt':9,'nov':10,'dec':11};
+  const day = parseInt(dateMatch[1]);
+  const monthStr = dateMatch[2].toLowerCase().substring(0,3);
+  const month = months[monthStr] ?? new Date().getMonth();
+  const year = new Date().getFullYear();
+  
+  let startHour = 19, startMin = 0;
+  if(timeMatch){
+    startHour = parseInt(timeMatch[1]);
+    startMin = parseInt(timeMatch[2] || 0);
+  }
+  
+  const start = new Date(year, month, day, startHour, startMin);
+  const end = new Date(start.getTime() + 3*60*60*1000); // 3 hours later
+  
+  const formatDate = d => d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+  
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${formatDate(start)}/${formatDate(end)}&details=${details}&location=${location}`;
+}
+
+function createIcsFile(event){
+  const dateMatch = event.dato && event.dato.match(/(\d{1,2})\.?\s*(\w+)/i);
+  const timeMatch = event.tid && event.tid.match(/(\d{1,2})[:\.]?(\d{2})?/);
+  
+  if(!dateMatch) return;
+  
+  const months = {'jan':0,'feb':1,'mar':2,'apr':3,'maj':4,'jun':5,'jul':6,'aug':7,'sep':8,'okt':9,'nov':10,'dec':11};
+  const day = parseInt(dateMatch[1]);
+  const monthStr = dateMatch[2].toLowerCase().substring(0,3);
+  const month = months[monthStr] ?? new Date().getMonth();
+  const year = new Date().getFullYear();
+  
+  let startHour = 19, startMin = 0;
+  if(timeMatch){
+    startHour = parseInt(timeMatch[1]);
+    startMin = parseInt(timeMatch[2] || 0);
+  }
+  
+  const start = new Date(year, month, day, startHour, startMin);
+  const end = new Date(start.getTime() + 3*60*60*1000);
+  
+  const formatDate = d => d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+  
+  const ics = `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+DTSTART:${formatDate(start)}
+DTEND:${formatDate(end)}
+SUMMARY:${event.navn || 'Dance Event'}
+LOCATION:${event.sted || ''}
+DESCRIPTION:${event.type || ''} - ${event.pris || ''}
+END:VEVENT
+END:VCALENDAR`;
+  
+  const blob = new Blob([ics], {type: 'text/calendar'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${(event.navn || 'event').replace(/\s+/g, '_')}.ics`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Store events for calendar access
+let currentEvents = [];
+
+function renderEvents(events){
+  currentEvents = events;
+  return events.map((e,i)=>`<div class="event-card">
+    <div class="event-row title"><span class="icon">📅</span><span>${esc(e.dato)}</span></div>
+    ${e.navn?`<div class="event-row title"><span class="icon">📌</span><span>${esc(e.navn)}</span></div>`:''}
+    ${e.tid?`<div class="event-row"><span class="icon">🕐</span><span>${esc(e.tid)}</span></div>`:''}
+    ${e.sted?`<div class="event-row"><span class="icon">📍</span><span>${esc(e.sted)}</span></div>`:''}
+    ${e.pris?`<div class="event-row"><span class="icon">💰</span><span>${esc(e.pris)}</span></div>`:''}
+    <div class="event-actions">
+      <button class="cal-btn google" onclick="window.open(createGoogleCalUrl(currentEvents[${i}]),'_blank')">📅 Google</button>
+      <button class="cal-btn apple" onclick="createIcsFile(currentEvents[${i}])">🍎 Apple</button>
+    </div>
+  </div>`).join('');
+}
 
 function addMsg(text,isUser,showMore=false){if(moreBtn){moreBtn.remove();moreBtn=null;}const loadingMsg=chat.querySelector('.loading-msg');if(loadingMsg)loadingMsg.remove();const msg=document.createElement('div');msg.className='msg '+(isUser?'user':'bot');if(isUser){msg.innerHTML=`<div class="bubble">${esc(text)}</div>`;}else{const events=parseEvents(text);msg.innerHTML=events.length>0?`<div class="bubble">Her er events:<div class="events">${renderEvents(events)}</div></div>`:`<div class="bubble">${esc(text)}</div>`;}chat.appendChild(msg);if(showMore){moreBtn=document.createElement('button');moreBtn.className='more-btn';moreBtn.textContent='Vis flere';moreBtn.onclick=loadMore;chat.appendChild(moreBtn);}chat.scrollTop=chat.scrollHeight;}
 
