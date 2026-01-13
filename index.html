@@ -154,19 +154,37 @@
           <div><label>Start *</label><input type="time" id="fieldStart" required /></div>
           <div><label>Slut *</label><input type="time" id="fieldSlut" /></div>
         </div>
-        <div class="field-row"><label>Dansetype *</label>
-          <select id="fieldDans"><option value="Salsa">Salsa</option><option value="Bachata">Bachata</option><option value="Kizomba">Kizomba</option><option value="Zouk">Zouk</option><option value="Tango">Tango</option><option value="Swing">Swing</option><option value="Latin">Latin</option></select>
+        <div class="field-row"><label>Dansetype * (vælg én eller flere)</label>
+          <div id="danceTypeGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Salsa" style="accent-color:#6366f1;"> Salsa</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Bachata" style="accent-color:#6366f1;"> Bachata</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Kizomba" style="accent-color:#6366f1;"> Kizomba</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Zouk" style="accent-color:#6366f1;"> Zouk</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Tango" style="accent-color:#6366f1;"> Tango</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Swing" style="accent-color:#6366f1;"> Swing</label>
+          </div>
+          <input type="hidden" id="fieldDans" />
         </div>
         <div class="field-row"><label>Sted *</label><input type="text" id="fieldSted" placeholder="Fx Kedelhallen" required /></div>
         <div class="field-row"><label>Adresse *</label><input type="text" id="fieldAdresse" placeholder="Fx Nyelandsvej 75A" /></div>
         <div class="field-row"><label>By *</label><input type="text" id="fieldBy" value="København" /></div>
         <div class="field-row"><label>Pristype</label>
-          <select id="fieldPrisType"><option value="angiv">Angiv priser</option><option value="gratis">Gratis</option><option value="kontakt">Kontakt arrangør</option></select>
+          <select id="fieldPrisType"><option value="angiv">Angiv priser</option><option value="gratis">Gratis</option><option value="mobilepay">MobilePay</option><option value="kontakt">Kontakt arrangør</option></select>
         </div>
         <div id="prisFields">
           <div class="field-row two-col">
             <div><label>Online (kr)</label><input type="text" id="fieldPrisOnline" placeholder="50" /></div>
             <div><label>Drop-in (kr)</label><input type="text" id="fieldPrisDropin" placeholder="70" /></div>
+          </div>
+        </div>
+        <div id="mobilepayFields" style="display:none;">
+          <div class="field-row">
+            <label>MobilePay nummer/boks</label>
+            <input type="text" id="fieldMobilepay" placeholder="Fx 12345 eller MyShop navn" />
+          </div>
+          <div class="field-row two-col">
+            <div><label>Pris (kr)</label><input type="text" id="fieldMobilepayPris" placeholder="50" /></div>
+            <div></div>
           </div>
         </div>
         <input type="hidden" id="fieldPris" />
@@ -193,8 +211,8 @@
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.0.5-2025-01-13';
-const FORM_VERSION = '6.0.5';
+const FRONTEND_VERSION = 'v6.0.6-2025-01-13';
+const FORM_VERSION = '6.0.6';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -211,7 +229,29 @@ const step1=$('adminStep1'),step2=$('adminStep2'),warnings=$('fieldWarnings');
 
 let lastQ='',page=0,hasMore=false,loading=false,moreBtn=null;
 
-const fields={dato:$('fieldDato'),navn:$('fieldNavn'),start:$('fieldStart'),slut:$('fieldSlut'),dans:$('fieldDans'),sted:$('fieldSted'),adresse:$('fieldAdresse'),by:$('fieldBy'),pris:$('fieldPris'),prisType:$('fieldPrisType'),prisOnline:$('fieldPrisOnline'),prisDropin:$('fieldPrisDropin')};
+const fields={dato:$('fieldDato'),navn:$('fieldNavn'),start:$('fieldStart'),slut:$('fieldSlut'),dans:$('fieldDans'),sted:$('fieldSted'),adresse:$('fieldAdresse'),by:$('fieldBy'),pris:$('fieldPris'),prisType:$('fieldPrisType'),prisOnline:$('fieldPrisOnline'),prisDropin:$('fieldPrisDropin'),mobilepay:$('fieldMobilepay'),mobilepayPris:$('fieldMobilepayPris')};
+
+// Dansetype checkboxes handler
+function getSelectedDanceTypes(){
+  const checked=document.querySelectorAll('input[name="dansetype"]:checked');
+  return Array.from(checked).map(c=>c.value);
+}
+function setSelectedDanceTypes(types){
+  document.querySelectorAll('input[name="dansetype"]').forEach(c=>c.checked=false);
+  if(!types)return;
+  const arr=Array.isArray(types)?types:types.split(/\s*[&,]\s*/);
+  arr.forEach(t=>{
+    const cb=document.querySelector(`input[name="dansetype"][value="${t.trim()}"]`);
+    if(cb)cb.checked=true;
+  });
+}
+function updateDansField(){
+  const types=getSelectedDanceTypes();
+  fields.dans.value=types.join(' & ');
+}
+document.querySelectorAll('input[name="dansetype"]').forEach(cb=>{
+  cb.addEventListener('change',()=>{updateDansField();updatePreview();saveFormState();});
+});
 
 function esc(t){return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
@@ -233,23 +273,37 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.0.5':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.0.5':'⚠️ Version mismatch';frontEl.style.color=match?'#484f58':'#f85149';}
+      if(adminEl){adminEl.textContent=match?'Version 6.0.6':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.0.6':'⚠️ Version mismatch';frontEl.style.color=match?'#484f58':'#f85149';}
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.0.5 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.0.6 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
 
 // PRIS
-$('fieldPrisType').onchange=function(){$('prisFields').style.display=this.value==='angiv'?'block':'none';if(this.value!=='angiv'){fields.prisOnline.value='';fields.prisDropin.value='';}updatePrisField();updatePreview();};
+$('fieldPrisType').onchange=function(){
+  $('prisFields').style.display=this.value==='angiv'?'block':'none';
+  $('mobilepayFields').style.display=this.value==='mobilepay'?'block':'none';
+  if(this.value!=='angiv'){fields.prisOnline.value='';fields.prisDropin.value='';}
+  if(this.value!=='mobilepay'){fields.mobilepay.value='';fields.mobilepayPris.value='';}
+  updatePrisField();updatePreview();
+};
 
 function updatePrisField(){
   const pt=fields.prisType.value;
   if(pt==='gratis')fields.pris.value='Gratis';
   else if(pt==='kontakt')fields.pris.value='Kontakt arrangør';
+  else if(pt==='mobilepay'){
+    const mp=fields.mobilepay.value.trim();
+    const pris=fields.mobilepayPris.value.trim();
+    if(mp&&pris)fields.pris.value=pris+' kr (MobilePay: '+mp+')';
+    else if(pris)fields.pris.value=pris+' kr (MobilePay)';
+    else if(mp)fields.pris.value='MobilePay: '+mp;
+    else fields.pris.value='MobilePay';
+  }
   else{
     const o=fields.prisOnline.value.trim(),d=fields.prisDropin.value.trim();
     if(o&&d)fields.pris.value=o+' kr (online) / '+d+' kr (drop-in)';
@@ -283,13 +337,13 @@ document.querySelector('.header').onclick=()=>{clicks++;if(clicks===3){clicks=0;
 
 function openAdmin(){modal.classList.add('open');status.style.display='none';preview.style.display='none';ocrStatus.style.display='none';warnings.classList.remove('show');restoreFormState();checkVersion();showWelcome();}
 
-function saveFormState(){localStorage.setItem('dancemap_admin_form',JSON.stringify({formVersion:FORM_VERSION,payload:payload.value,dato:fields.dato.value,navn:fields.navn.value,start:fields.start.value,slut:fields.slut.value,dans:fields.dans.value,sted:fields.sted.value,adresse:fields.adresse.value,by:fields.by.value,prisType:fields.prisType.value,prisOnline:fields.prisOnline.value,prisDropin:fields.prisDropin.value,recurring:recurring.checked,step:step2.style.display==='block'?2:1}));}
+function saveFormState(){localStorage.setItem('dancemap_admin_form',JSON.stringify({formVersion:FORM_VERSION,payload:payload.value,dato:fields.dato.value,navn:fields.navn.value,start:fields.start.value,slut:fields.slut.value,dansTypes:getSelectedDanceTypes(),sted:fields.sted.value,adresse:fields.adresse.value,by:fields.by.value,prisType:fields.prisType.value,prisOnline:fields.prisOnline.value,prisDropin:fields.prisDropin.value,mobilepay:fields.mobilepay.value,mobilepayPris:fields.mobilepayPris.value,recurring:recurring.checked,step:step2.style.display==='block'?2:1}));}
 
-function restoreFormState(){try{const saved=localStorage.getItem('dancemap_admin_form');if(!saved){step1.style.display='block';step2.style.display='none';payload.value='';clearFields();return;}const s=JSON.parse(saved);payload.value=s.payload||'';fields.dato.value=s.dato||'';fields.navn.value=s.navn||'';fields.start.value=s.start||'';fields.slut.value=s.slut||'';fields.dans.value=s.dans||'Salsa';fields.sted.value=s.sted||'';fields.adresse.value=s.adresse||'';fields.by.value=s.by||'København';fields.prisType.value=s.prisType||'angiv';fields.prisOnline.value=s.prisOnline||'';fields.prisDropin.value=s.prisDropin||'';recurring.checked=s.recurring||false;$('prisFields').style.display=s.prisType==='angiv'?'block':'none';if(s.step===2){step1.style.display='none';step2.style.display='block';updatePrisField();updatePreview();}else{step1.style.display='block';step2.style.display='none';}}catch(e){step1.style.display='block';step2.style.display='none';}}
+function restoreFormState(){try{const saved=localStorage.getItem('dancemap_admin_form');if(!saved){step1.style.display='block';step2.style.display='none';payload.value='';clearFields();return;}const s=JSON.parse(saved);payload.value=s.payload||'';fields.dato.value=s.dato||'';fields.navn.value=s.navn||'';fields.start.value=s.start||'';fields.slut.value=s.slut||'';if(s.dansTypes)setSelectedDanceTypes(s.dansTypes);else if(s.dans)setSelectedDanceTypes([s.dans]);updateDansField();fields.sted.value=s.sted||'';fields.adresse.value=s.adresse||'';fields.by.value=s.by||'København';fields.prisType.value=s.prisType||'angiv';fields.prisOnline.value=s.prisOnline||'';fields.prisDropin.value=s.prisDropin||'';fields.mobilepay.value=s.mobilepay||'';fields.mobilepayPris.value=s.mobilepayPris||'';recurring.checked=s.recurring||false;$('prisFields').style.display=s.prisType==='angiv'?'block':'none';$('mobilepayFields').style.display=s.prisType==='mobilepay'?'block':'none';if(s.step===2){step1.style.display='none';step2.style.display='block';updatePrisField();updatePreview();}else{step1.style.display='block';step2.style.display='none';}}catch(e){step1.style.display='block';step2.style.display='none';}}
 
 function clearFormState(){localStorage.removeItem('dancemap_admin_form');}
 
-function clearFields(){fields.dato.value='';fields.navn.value='';fields.start.value='';fields.slut.value='';fields.dans.value='Salsa';fields.sted.value='';fields.adresse.value='';fields.by.value='København';fields.pris.value='';fields.prisType.value='angiv';fields.prisOnline.value='';fields.prisDropin.value='';$('prisFields').style.display='block';warnings.classList.remove('show');$('previewContent').innerHTML='';$('previewCard').style.borderColor='';}
+function clearFields(){fields.dato.value='';fields.navn.value='';fields.start.value='';fields.slut.value='';document.querySelectorAll('input[name="dansetype"]').forEach(c=>c.checked=false);fields.dans.value='';fields.sted.value='';fields.adresse.value='';fields.by.value='København';fields.pris.value='';fields.prisType.value='angiv';fields.prisOnline.value='';fields.prisDropin.value='';fields.mobilepay.value='';fields.mobilepayPris.value='';$('prisFields').style.display='block';$('mobilepayFields').style.display='none';warnings.classList.remove('show');$('previewContent').innerHTML='';$('previewCard').style.borderColor='';}
 
 $('closeAdmin').onclick=()=>{saveFormState();modal.classList.remove('open');};
 $('backBtn').onclick=()=>{step1.style.display='block';step2.style.display='none';status.style.display='none';saveFormState();};
@@ -304,14 +358,17 @@ const VENUE_ADDRESSES={'kaffesalonen':{adresse:'Peblinge Dossering 7',by:'Køben
 
 function parseTextToFields(txt){const t=txt.toLowerCase();const r={dato:'',navn:'',start:'',slut:'',dans:'Salsa',sted:'',adresse:'',by:'København',pris:'',prisType:'angiv',prisOnline:'',prisDropin:''};const isoMatch=txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);if(isoMatch)r.dato=isoMatch[0];else{const dm=txt.match(/\b(\d{1,2})\.?\s*(januar|februar|marts|april|maj|juni|juli|august|september|oktober|november|december|jan|feb|mar|apr|jun|jul|aug|sep|okt|nov|dec)\.?\s*(20\d{2})?\b/i);if(dm)r.dato=`${dm[3]||new Date().getFullYear()}-${MONTHS[dm[2].toLowerCase()]}-${dm[1].padStart(2,'0')}`;}const times=txt.match(/\b([01]?\d|2[0-3])[\.:,]([0-5]\d)\b/g);if(times?.length>0){r.start=times[0].replace(/[\.,]/g,':').replace(/^(\d):/,'0$1:');if(times.length>1)r.slut=times[times.length-1].replace(/[\.,]/g,':').replace(/^(\d):/,'0$1:');}for(const a of Object.keys(DANCE_ALIASES).sort((a,b)=>b.length-a.length)){if(t.includes(a)){r.dans=DANCE_ALIASES[a];break;}}for(const v of VENUES){if(t.includes(v)){r.sted=v.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');if(VENUE_ADDRESSES[v]){r.adresse=VENUE_ADDRESSES[v].adresse;r.by=VENUE_ADDRESSES[v].by;}break;}}const lines=txt.split('\n').map(s=>s.trim()).filter(Boolean);if(lines[1])r.navn=lines[1];if(/\bgratis\b/i.test(txt)){r.prisType='gratis';r.pris='Gratis';}return r;}
 
-function validateFields(){const e=[];if(!fields.dato.value)e.push('❌ Dato mangler');if(!fields.navn.value)e.push('❌ Navn mangler');if(!fields.start.value)e.push('❌ Starttid mangler');if(!fields.slut.value)e.push('❌ Sluttid mangler');if(!fields.dans.value)e.push('❌ Dansetype mangler');if(!fields.sted.value)e.push('❌ Sted mangler');if(!fields.adresse.value)e.push('❌ Adresse mangler');if(!fields.by.value)e.push('❌ By mangler');if(fields.prisType.value==='angiv'&&!fields.prisOnline.value&&!fields.prisDropin.value)e.push('❌ Angiv mindst én pris');return{errors:e};}
+function validateFields(){const e=[];if(!fields.dato.value)e.push('❌ Dato mangler');if(!fields.navn.value)e.push('❌ Navn mangler');if(!fields.start.value)e.push('❌ Starttid mangler');if(!fields.slut.value)e.push('❌ Sluttid mangler');if(getSelectedDanceTypes().length===0)e.push('❌ Vælg mindst én dansetype');if(!fields.sted.value)e.push('❌ Sted mangler');if(!fields.adresse.value)e.push('❌ Adresse mangler');if(!fields.by.value)e.push('❌ By mangler');if(fields.prisType.value==='angiv'&&!fields.prisOnline.value&&!fields.prisDropin.value)e.push('❌ Angiv mindst én pris');if(fields.prisType.value==='mobilepay'&&!fields.mobilepayPris.value)e.push('❌ Angiv MobilePay pris');return{errors:e};}
 
-function updatePreview(){updatePrisField();const dage=['Søn','Man','Tir','Ons','Tor','Fre','Lør'];const mdr=['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];let datoStr='—';if(fields.dato.value){const d=new Date(fields.dato.value);if(!isNaN(d.getTime())){datoStr=dage[d.getDay()]+' '+d.getDate()+'. '+mdr[d.getMonth()];if(recurring.checked)datoStr+=' 🔁';}}let tidStr=fields.start.value||'—';if(fields.slut.value)tidStr+='–'+fields.slut.value;let stedStr=fields.sted.value||'—';if(fields.adresse.value)stedStr+=', '+fields.adresse.value;if(fields.by.value)stedStr+=', '+fields.by.value;const previewEl=$('previewContent');previewEl.innerHTML=`<div class="line"><span class="icon">🗓</span><span>${esc(datoStr)}</span></div><div class="line"><span class="icon">📌</span><span>${esc(fields.navn.value||'—')}</span></div><div class="line"><span class="icon">🕗</span><span>${esc(tidStr)}</span></div><div class="line"><span class="icon">💃</span><span>${esc(fields.dans.value||'—')}</span></div><div class="line"><span class="icon">📍</span><span>${esc(stedStr)}</span></div><div class="line"><span class="icon">💰</span><span>${esc(fields.pris.value||'—')}</span></div>`;const{errors}=validateFields();const pc=$('previewCard');pc.querySelector('.preview-label').textContent=errors.length===0?'✅ Klar':'Forhåndsvisning';pc.style.borderColor=errors.length===0?'#3fb950':'';}
+function updatePreview(){updateDansField();updatePrisField();const dage=['Søn','Man','Tir','Ons','Tor','Fre','Lør'];const mdr=['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];let datoStr='—';if(fields.dato.value){const d=new Date(fields.dato.value);if(!isNaN(d.getTime())){datoStr=dage[d.getDay()]+' '+d.getDate()+'. '+mdr[d.getMonth()];if(recurring.checked)datoStr+=' 🔁';}}let tidStr=fields.start.value||'—';if(fields.slut.value)tidStr+='–'+fields.slut.value;let stedStr=fields.sted.value||'—';if(fields.adresse.value)stedStr+=', '+fields.adresse.value;if(fields.by.value)stedStr+=', '+fields.by.value;const dansStr=fields.dans.value||'—';const previewEl=$('previewContent');previewEl.innerHTML=`<div class="line"><span class="icon">🗓</span><span>${esc(datoStr)}</span></div><div class="line"><span class="icon">📌</span><span>${esc(fields.navn.value||'—')}</span></div><div class="line"><span class="icon">🕗</span><span>${esc(tidStr)}</span></div><div class="line"><span class="icon">💃</span><span>${esc(dansStr)}</span></div><div class="line"><span class="icon">📍</span><span>${esc(stedStr)}</span></div><div class="line"><span class="icon">💰</span><span>${esc(fields.pris.value||'—')}</span></div>`;const{errors}=validateFields();const pc=$('previewCard');pc.querySelector('.preview-label').textContent=errors.length===0?'✅ Klar':'Forhåndsvisning';pc.style.borderColor=errors.length===0?'#3fb950':'';}
 
 Object.values(fields).forEach(f=>{if(f?.addEventListener){f.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});f.addEventListener('change',()=>{updatePrisField();updatePreview();saveFormState();});}});
 recurring.addEventListener('change',()=>{updatePreview();saveFormState();});
+// Also listen to mobilepay fields specifically
+if(fields.mobilepay)fields.mobilepay.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
+if(fields.mobilepayPris)fields.mobilepayPris.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
 
-$('parseBtn').onclick=()=>{const txt=payload.value.trim();if(!txt)return;const p=parseTextToFields(txt);fields.dato.value=p.dato;fields.navn.value=p.navn;fields.start.value=p.start;fields.slut.value=p.slut;fields.dans.value=p.dans;fields.sted.value=p.sted;fields.adresse.value=p.adresse;fields.by.value=p.by;fields.prisType.value=p.prisType;fields.prisOnline.value=p.prisOnline;fields.prisDropin.value=p.prisDropin;$('prisFields').style.display=p.prisType==='angiv'?'block':'none';updatePrisField();const{errors}=validateFields();if(errors.length){warnings.innerHTML=errors.join('<br>');warnings.classList.add('show');}else{warnings.classList.remove('show');}updatePreview();step1.style.display='none';step2.style.display='block';saveFormState();};
+$('parseBtn').onclick=()=>{const txt=payload.value.trim();if(!txt)return;const p=parseTextToFields(txt);fields.dato.value=p.dato;fields.navn.value=p.navn;fields.start.value=p.start;fields.slut.value=p.slut;setSelectedDanceTypes([p.dans]);updateDansField();fields.sted.value=p.sted;fields.adresse.value=p.adresse;fields.by.value=p.by;fields.prisType.value=p.prisType;fields.prisOnline.value=p.prisOnline;fields.prisDropin.value=p.prisDropin;$('prisFields').style.display=p.prisType==='angiv'?'block':'none';$('mobilepayFields').style.display=p.prisType==='mobilepay'?'block':'none';updatePrisField();const{errors}=validateFields();if(errors.length){warnings.innerHTML=errors.join('<br>');warnings.classList.add('show');}else{warnings.classList.remove('show');}updatePreview();step1.style.display='none';step2.style.display='block';saveFormState();};
 
 // CLAUDE VISION (via Vercel proxy)
 async function processImageWithClaude(file){
@@ -332,7 +389,7 @@ async function processImageWithClaude(file){
     if(d.navn)fields.navn.value=d.navn;
     if(d.starttid)fields.start.value=d.starttid;
     if(d.sluttid)fields.slut.value=d.sluttid;
-    if(d.dansetype)fields.dans.value=d.dansetype;
+    if(d.dansetype){setSelectedDanceTypes(d.dansetype.split(/\s*[&,\/]\s*/));updateDansField();}
     if(d.sted)fields.sted.value=d.sted;
     if(d.adresse)fields.adresse.value=d.adresse;
     if(d.by)fields.by.value=d.by;
