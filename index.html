@@ -217,8 +217,8 @@
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.1.0-2025-01-13';
-const FORM_VERSION = '6.1.0';
+const FRONTEND_VERSION = 'v6.1.1-2025-01-13';
+const FORM_VERSION = '6.1.1';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -279,8 +279,8 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.1.0':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.1.0':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
+      if(adminEl){adminEl.textContent=match?'Version 6.1.1':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.1.1':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
       
       // Auto-refresh hvis version mismatch
       if(!match){
@@ -296,7 +296,7 @@ async function checkVersion(){
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.1.0 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.1.1 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
@@ -430,9 +430,29 @@ async function loadMore(){
 sendBtn.onclick=doSearch;
 input.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();doSearch();}};
 
-// ADMIN MODAL
+// HEADER CLICK: 1x = reset chat, 3x = admin
 let clicks=0,clickTimer;
-document.querySelector('.header').onclick=()=>{clicks++;if(clicks===3){clicks=0;clearTimeout(clickTimer);openAdmin();}else{clearTimeout(clickTimer);clickTimer=setTimeout(()=>clicks=0,500);}};
+document.querySelector('.header').onclick=()=>{
+  clicks++;
+  clearTimeout(clickTimer);
+  
+  if(clicks===3){
+    // 3x klik = åbn admin
+    clicks=0;
+    openAdmin();
+  } else {
+    clickTimer=setTimeout(()=>{
+      if(clicks===1){
+        // 1x klik = reset chat
+        chat.innerHTML='';
+        addMsg('Skriv fx: salsa eller bachata',false);
+        input.value='';
+        lastQ='';page=0;hasMore=false;
+      }
+      clicks=0;
+    },400);
+  }
+};
 
 function openAdmin(){modal.classList.add('open');status.style.display='none';preview.style.display='none';ocrStatus.style.display='none';warnings.classList.remove('show');restoreFormState();checkVersion();showWelcome();}
 
