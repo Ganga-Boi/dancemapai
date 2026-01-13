@@ -790,6 +790,9 @@ async function processImageWithClaude(file) {
       
       saveFormState();
       
+      // SMART DUBLET-CHECK
+      await checkForDuplicates();
+      
       setTimeout(() => {
         ocrStatus.style.display = 'none';
       }, 3000);
@@ -806,6 +809,62 @@ async function processImageWithClaude(file) {
     console.error('Claude Vision error:', err);
     ocrStatus.innerHTML = '❌ Netværksfejl - prøv igen';
     ocrStatus.style.color = '#f85149';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// SMART DUBLET-CHECK
+// ═══════════════════════════════════════════════════════════
+
+async function checkForDuplicates() {
+  const params = new URLSearchParams();
+  params.set('action', 'check-duplicate');
+  params.set('dato', fields.dato.value);
+  params.set('navn', fields.navn.value);
+  params.set('starttid', fields.start.value);
+  params.set('sted', fields.sted.value);
+  params.set('dansetype', fields.dans.value);
+  params.set('_', Date.now());
+  
+  try {
+    const result = await jsonp(API + '?' + params.toString());
+    
+    if (result.success && result.matches && result.matches.length > 0) {
+      const match = result.matches[0];
+      
+      if (result.isDuplicate) {
+        // Høj sandsynlighed for dublet - blokér
+        warnings.innerHTML = `⚠️ <strong>Mulig dublet fundet!</strong><br><br>
+          📅 ${esc(match.dato)}<br>
+          📌 ${esc(match.navn)}<br>
+          🕗 ${esc(match.starttid)}<br>
+          📍 ${esc(match.sted)}<br>
+          <span style="color:#7d8590">(${match.reasons.join(', ')})</span><br><br>
+          <span style="color:#f85149">Status: ${match.status}</span>`;
+        warnings.classList.add('show');
+        
+        // Gør preview-kort rødt
+        $('previewCard').style.borderColor = '#f85149';
+        $('previewCard').querySelector('.preview-label').textContent = '⛔ Sandsynlig dublet';
+        
+      } else if (result.isLikelyDuplicate) {
+        // Medium sandsynlighed - advar men tillad
+        warnings.innerHTML = `⚠️ <strong>Lignende event findes:</strong><br><br>
+          📅 ${esc(match.dato)}<br>
+          📌 ${esc(match.navn)}<br>
+          📍 ${esc(match.sted)}<br>
+          <span style="color:#7d8590">(${match.reasons.join(', ')})</span><br><br>
+          <span style="color:#f0883e">Du kan stadig tilføje eventet hvis det er forskelligt.</span>`;
+        warnings.classList.add('show');
+        
+        // Gør preview-kort orange
+        $('previewCard').style.borderColor = '#f0883e';
+        $('previewCard').querySelector('.preview-label').textContent = '⚠️ Tjek for dublet';
+      }
+    }
+  } catch (err) {
+    console.log('Duplicate check failed:', err);
+    // Ignorer fejl - lad brugeren fortsætte
   }
 }
 
