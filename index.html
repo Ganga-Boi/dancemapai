@@ -217,8 +217,8 @@
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.1.4-2025-01-13';
-const FORM_VERSION = '6.1.4';
+const FRONTEND_VERSION = 'v6.1.5-2025-01-13';
+const FORM_VERSION = '6.1.5';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -279,8 +279,8 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.1.4':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.1.4':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
+      if(adminEl){adminEl.textContent=match?'Version 6.1.5':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.1.5':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
       
       // Auto-refresh hvis version mismatch
       if(!match){
@@ -296,7 +296,7 @@ async function checkVersion(){
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.1.4 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.1.5 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
@@ -479,7 +479,7 @@ function parseTextToFields(txt){const t=txt.toLowerCase();const r={dato:'',navn:
 
 function validateFields(){const e=[];if(!fields.dato.value)e.push('❌ Dato mangler');if(!fields.navn.value)e.push('❌ Navn mangler');if(!fields.start.value)e.push('❌ Starttid mangler');if(!fields.slut.value)e.push('❌ Sluttid mangler');if(getSelectedDanceTypes().length===0)e.push('❌ Vælg mindst én dansetype');if(!fields.sted.value)e.push('❌ Sted mangler');if(!fields.adresse.value)e.push('❌ Adresse mangler');if(!fields.by.value)e.push('❌ By mangler');if(fields.prisType.value==='angiv'&&!fields.prisOnline.value&&!fields.prisDropin.value)e.push('❌ Angiv mindst én pris');if(fields.prisType.value==='mobilepay'&&!fields.mobilepayPris.value)e.push('❌ Angiv MobilePay pris');return{errors:e};}
 
-function updatePreview(){updateDansField();updatePrisField();const dage=['Søn','Man','Tir','Ons','Tor','Fre','Lør'];const mdr=['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];let datoStr='—';if(fields.dato.value){const d=new Date(fields.dato.value);if(!isNaN(d.getTime())){datoStr=dage[d.getDay()]+' '+d.getDate()+'. '+mdr[d.getMonth()];if(recurring.checked)datoStr+=' 🔁';}}let tidStr=fields.start.value||'—';if(fields.slut.value)tidStr+='–'+fields.slut.value;let stedStr=fields.sted.value||'—';if(fields.adresse.value)stedStr+=', '+fields.adresse.value;if(fields.by.value)stedStr+=', '+fields.by.value;const dansStr=fields.dans.value||'—';const previewEl=$('previewContent');previewEl.innerHTML=`<div class="line"><span class="icon">🗓</span><span>${esc(datoStr)}</span></div><div class="line"><span class="icon">📌</span><span>${esc(fields.navn.value||'—')}</span></div><div class="line"><span class="icon">🕗</span><span>${esc(tidStr)}</span></div><div class="line"><span class="icon">💃</span><span>${esc(dansStr)}</span></div><div class="line"><span class="icon">📍</span><span>${esc(stedStr)}</span></div><div class="line"><span class="icon">💰</span><span>${esc(fields.pris.value||'—')}</span></div>`;const{errors}=validateFields();const pc=$('previewCard');pc.querySelector('.preview-label').textContent=errors.length===0?'✅ Klar':'Forhåndsvisning';pc.style.borderColor=errors.length===0?'#3fb950':'';}
+function updatePreview(){updateDansField();updatePrisField();const dage=['Søn','Man','Tir','Ons','Tor','Fre','Lør'];const mdr=['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];let datoStr='—';if(fields.dato.value){const d=new Date(fields.dato.value);if(!isNaN(d.getTime())){datoStr=dage[d.getDay()]+' '+d.getDate()+'. '+mdr[d.getMonth()];if(recurring.checked)datoStr+=' 🔁';}}let tidStr=fields.start.value||'—';if(fields.slut.value)tidStr+='–'+fields.slut.value;let stedStr=fields.sted.value||'—';if(fields.adresse.value)stedStr+=', '+fields.adresse.value;if(fields.by.value)stedStr+=', '+fields.by.value;const dansStr=fields.dans.value||'—';const previewEl=$('previewContent');previewEl.innerHTML=`<div class="line"><span class="icon">🗓</span><span>${esc(datoStr)}</span></div><div class="line"><span class="icon">📌</span><span>${esc(fields.navn.value||'—')}</span></div><div class="line"><span class="icon">🕗</span><span>${esc(tidStr)}</span></div><div class="line"><span class="icon">💃</span><span>${esc(dansStr)}</span></div><div class="line"><span class="icon">📍</span><span>${esc(stedStr)}</span></div><div class="line"><span class="icon">💰</span><span>${esc(fields.pris.value||'—')}</span></div>`;const{errors}=validateFields();const pc=$('previewCard');if(errors.length===0){pc.querySelector('.preview-label').textContent='✅ Klar til indsendelse';pc.style.borderColor='#3fb950';warnings.classList.remove('show');}else{pc.querySelector('.preview-label').textContent='Forhåndsvisning';pc.style.borderColor='';}}
 
 Object.values(fields).forEach(f=>{if(f?.addEventListener){f.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});f.addEventListener('change',()=>{updatePrisField();updatePreview();saveFormState();});}});
 recurring.addEventListener('change',()=>{updatePreview();saveFormState();});
@@ -488,7 +488,23 @@ if(fields.mobilepay)fields.mobilepay.addEventListener('input',()=>{updatePrisFie
 if(fields.mobilepayPris)fields.mobilepayPris.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
 if(fields.mobilepayInfo)fields.mobilepayInfo.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
 
-$('parseBtn').onclick=()=>{const txt=payload.value.trim();if(!txt)return;const p=parseTextToFields(txt);fields.dato.value=p.dato;fields.navn.value=p.navn;fields.start.value=p.start;fields.slut.value=p.slut;setSelectedDanceTypes([p.dans]);updateDansField();fields.sted.value=p.sted;fields.adresse.value=p.adresse;fields.by.value=p.by;fields.prisType.value=p.prisType;fields.prisOnline.value=p.prisOnline;fields.prisDropin.value=p.prisDropin;$('prisFields').style.display=p.prisType==='angiv'?'block':'none';$('mobilepayFields').style.display=p.prisType==='mobilepay'?'block':'none';updatePrisField();const{errors}=validateFields();if(errors.length){warnings.innerHTML=errors.join('<br>');warnings.classList.add('show');}else{warnings.classList.remove('show');}updatePreview();step2.style.display='block';saveFormState();};
+$('parseBtn').onclick=()=>{const txt=payload.value.trim();if(!txt)return;const p=parseTextToFields(txt);
+if(p.dato && !fields.dato.value)fields.dato.value=p.dato;
+if(p.navn && !fields.navn.value)fields.navn.value=p.navn;
+if(p.start && !fields.start.value)fields.start.value=p.start;
+if(p.slut && !fields.slut.value)fields.slut.value=p.slut;
+if(p.dans && getSelectedDanceTypes().length===0){setSelectedDanceTypes([p.dans]);updateDansField();}
+if(p.sted && !fields.sted.value)fields.sted.value=p.sted;
+if(p.adresse && !fields.adresse.value)fields.adresse.value=p.adresse;
+if(p.by && !fields.by.value)fields.by.value=p.by;
+if(p.prisType && fields.prisType.value==='angiv' && !fields.prisOnline.value && !fields.prisDropin.value){
+  fields.prisType.value=p.prisType;
+  fields.prisOnline.value=p.prisOnline;
+  fields.prisDropin.value=p.prisDropin;
+  $('prisFields').style.display=p.prisType==='angiv'?'block':'none';
+  $('mobilepayFields').style.display=p.prisType==='mobilepay'?'block':'none';
+}
+updatePrisField();updatePreview();step2.style.display='block';saveFormState();};
 
 // CLAUDE VISION (via Vercel proxy)
 async function processImageWithClaude(file){
@@ -505,22 +521,22 @@ async function processImageWithClaude(file){
     const result=await response.json();
     if(!result.success){ocrStatus.innerHTML='❌ '+(result.error||'Fejl');ocrStatus.style.color='#f85149';return;}
     const d=result.data;
-    if(d.dato)fields.dato.value=d.dato;
-    if(d.navn)fields.navn.value=d.navn;
-    if(d.starttid)fields.start.value=d.starttid;
-    if(d.sluttid)fields.slut.value=d.sluttid;
-    if(d.dansetype){setSelectedDanceTypes(d.dansetype.split(/\s*[&,\/]\s*/));updateDansField();}
-    if(d.sted)fields.sted.value=d.sted;
-    if(d.adresse)fields.adresse.value=d.adresse;
-    if(d.by)fields.by.value=d.by;
-    if(d.pris){if(d.pris.toLowerCase()==='gratis'){fields.prisType.value='gratis';$('prisFields').style.display='none';}else{fields.prisType.value='angiv';$('prisFields').style.display='block';const prisMatch=d.pris.match(/(\d+)/g);if(prisMatch){if(prisMatch.length>=2){fields.prisOnline.value=prisMatch[0];fields.prisDropin.value=prisMatch[1];}else{fields.prisDropin.value=prisMatch[0];}}}}
+    if(d.dato && !fields.dato.value)fields.dato.value=d.dato;
+    if(d.navn && !fields.navn.value)fields.navn.value=d.navn;
+    if(d.starttid && !fields.start.value)fields.start.value=d.starttid;
+    if(d.sluttid && !fields.slut.value)fields.slut.value=d.sluttid;
+    if(d.dansetype && getSelectedDanceTypes().length===0){setSelectedDanceTypes(d.dansetype.split(/\s*[&,\/]\s*/));updateDansField();}
+    if(d.sted && !fields.sted.value)fields.sted.value=d.sted;
+    if(d.adresse && !fields.adresse.value)fields.adresse.value=d.adresse;
+    if(d.by && !fields.by.value)fields.by.value=d.by;
+    if(d.pris && fields.prisType.value==='angiv' && !fields.prisOnline.value && !fields.prisDropin.value){if(d.pris.toLowerCase()==='gratis'){fields.prisType.value='gratis';$('prisFields').style.display='none';}else{fields.prisType.value='angiv';$('prisFields').style.display='block';const prisMatch=d.pris.match(/(\d+)/g);if(prisMatch){if(prisMatch.length>=2){fields.prisOnline.value=prisMatch[0];fields.prisDropin.value=prisMatch[1];}else{fields.prisDropin.value=prisMatch[0];}}}}
     updatePrisField();updatePreview();
     const confidence=Math.round((result.confidence||0.8)*100);
     ocrStatus.innerHTML=`✅ Parsed med ${confidence}% sikkerhed`;
     ocrStatus.style.color=confidence>80?'#3fb950':'#f0883e';
     step2.style.display='block';
     const{errors}=validateFields();
-    if(errors.length){warnings.innerHTML=errors.join('<br>');warnings.classList.add('show');}else{warnings.classList.remove('show');}
+    if(errors.length){warnings.innerHTML=errors.join('<br>');warnings.classList.add('show');}
     saveFormState();
     await checkForDuplicates();
     setTimeout(()=>ocrStatus.style.display='none',3000);
