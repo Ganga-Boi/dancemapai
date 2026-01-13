@@ -139,12 +139,7 @@
     <div class="hint"><span>→</span> Swipe for at starte</div>
   </div>
 </div>
-<script>
-// Hide welcome immediately if already seen
-if(localStorage.getItem('dancemap_welcomed')){
-  document.getElementById('welcomeOverlay').style.display='none';
-}
-</script>
+<!-- Removed localStorage check - popup always shows now -->
 
 <div class="card">
   <div class="theme-toggle" onclick="toggleTheme()" title="Skift tema">
@@ -296,8 +291,8 @@ if(localStorage.getItem('dancemap_welcomed')){
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.3.0-2025-01-13';
-const FORM_VERSION = '6.3.0';
+const FRONTEND_VERSION = 'v6.3.1-2025-01-13';
+const FORM_VERSION = '6.3.1';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -358,8 +353,8 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.3.0':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.3.0':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
+      if(adminEl){adminEl.textContent=match?'Version 6.3.1':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.3.1':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
       
       // Auto-refresh hvis version mismatch
       if(!match){
@@ -375,7 +370,7 @@ async function checkVersion(){
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.3.0 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.3.1 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
