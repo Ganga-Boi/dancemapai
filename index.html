@@ -127,33 +127,33 @@
         <div style="font-size:12px;color:rgba(255,255,255,0.8);margin-top:4px;">Sammen får vi DanceMap til at vokse! 💃</div>
       </div>
       
-      <!-- ALTID SYNLIG: Paste og upload knapper -->
-      <div style="display:flex;gap:10px;margin-bottom:16px;">
+      <!-- ALTID SYNLIG: Paste, upload og ryd knapper -->
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
         <button type="button" class="upload-btn" id="pasteBtn" style="flex:1;margin-bottom:0;background:rgba(99,102,241,0.1);border-color:#6366f1;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
           📋 Indsæt billede
         </button>
-        <button type="button" class="upload-btn" id="uploadBtn" style="flex:0 0 auto;width:50px;margin-bottom:0;padding:16px 12px;" title="Upload fil">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        </button>
-        <button type="button" class="upload-btn" id="clearAllBtn" style="flex:0 0 auto;width:50px;margin-bottom:0;padding:16px 12px;border-color:#da3633;" title="Ryd alt">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#da3633" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-        </button>
+        <button type="button" class="upload-btn" id="uploadBtn" style="flex:0 0 auto;width:48px;margin-bottom:0;padding:14px;" title="Upload fil">📁</button>
+        <button type="button" class="upload-btn" id="clearAllBtn" style="flex:0 0 auto;width:48px;margin-bottom:0;padding:14px;border-color:#da3633;color:#da3633;" title="Ryd alt">🗑️</button>
       </div>
+      
+      <!-- ALTID SYNLIG: Tekst paste område -->
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;gap:8px;">
+          <textarea id="adminPayload" placeholder="Eller paste tekst her..." style="flex:1;min-height:60px;padding:12px;border-radius:10px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:14px;font-family:inherit;resize:vertical;"></textarea>
+          <button type="button" id="parseBtn" style="flex:0 0 auto;padding:12px 16px;border-radius:10px;border:1px solid #6366f1;background:rgba(99,102,241,0.1);color:#6366f1;cursor:pointer;font-size:14px;">Parse →</button>
+        </div>
+      </div>
+      
       <input type="file" id="fileInput" accept="image/*" style="display:none" />
       <img id="imagePreview" class="image-preview" />
       <div id="ocrStatus" class="ocr-status" style="display:none"></div>
       
-      <div id="adminStep1">
-        <p class="admin-intro">📸 Indsæt et billede, eller skriv event-tekst nedenfor.</p>
-        <div class="form-group">
-          <label>Paste tekst eller billede (Ctrl+V)</label>
-          <textarea id="adminPayload" placeholder="Paste event-tekst her..."></textarea>
-        </div>
-        <button type="button" class="submit-btn" id="parseBtn">Parse tekst →</button>
+      <div id="adminStep1" style="display:none;">
+        <!-- Tom - alt er flyttet op -->
       </div>
+      
       <div id="adminStep2" style="display:none">
-        <button type="button" class="back-btn" id="backBtn">← Tilbage</button>
+        <button type="button" class="back-btn" id="backBtn">← Skjul felter</button>
         <div class="field-row"><label>Dato *</label><input type="date" id="fieldDato" required /></div>
         <div class="field-row"><label>Event navn *</label><input type="text" id="fieldNavn" placeholder="Fx Salsa Social" /></div>
         <div class="field-row two-col">
@@ -217,8 +217,8 @@
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.1.3-2025-01-13';
-const FORM_VERSION = '6.1.3';
+const FRONTEND_VERSION = 'v6.1.4-2025-01-13';
+const FORM_VERSION = '6.1.4';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -231,7 +231,7 @@ const $=id=>document.getElementById(id);
 const chat=$('chat'),input=$('q'),sendBtn=$('sendBtn');
 const modal=$('adminModal'),payload=$('adminPayload'),status=$('adminStatus');
 const recurring=$('recurringCheck'),preview=$('imagePreview'),ocrStatus=$('ocrStatus');
-const step1=$('adminStep1'),step2=$('adminStep2'),warnings=$('fieldWarnings');
+const step2=$('adminStep2'),warnings=$('fieldWarnings');
 
 let lastQ='',page=0,hasMore=false,loading=false,moreBtn=null;
 
@@ -279,8 +279,8 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.1.3':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.1.3':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
+      if(adminEl){adminEl.textContent=match?'Version 6.1.4':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.1.4':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
       
       // Auto-refresh hvis version mismatch
       if(!match){
@@ -296,7 +296,7 @@ async function checkVersion(){
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.1.3 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.1.4 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
@@ -458,14 +458,14 @@ function openAdmin(){modal.classList.add('open');status.style.display='none';pre
 
 function saveFormState(){localStorage.setItem('dancemap_admin_form',JSON.stringify({formVersion:FORM_VERSION,payload:payload.value,dato:fields.dato.value,navn:fields.navn.value,start:fields.start.value,slut:fields.slut.value,dansTypes:getSelectedDanceTypes(),sted:fields.sted.value,adresse:fields.adresse.value,by:fields.by.value,prisType:fields.prisType.value,prisOnline:fields.prisOnline.value,prisDropin:fields.prisDropin.value,mobilepay:fields.mobilepay.value,mobilepayPris:fields.mobilepayPris.value,mobilepayInfo:fields.mobilepayInfo.value,recurring:recurring.checked,step:step2.style.display==='block'?2:1}));}
 
-function restoreFormState(){try{const saved=localStorage.getItem('dancemap_admin_form');if(!saved){step1.style.display='block';step2.style.display='none';payload.value='';clearFields();return;}const s=JSON.parse(saved);payload.value=s.payload||'';fields.dato.value=s.dato||'';fields.navn.value=s.navn||'';fields.start.value=s.start||'';fields.slut.value=s.slut||'';if(s.dansTypes)setSelectedDanceTypes(s.dansTypes);else if(s.dans)setSelectedDanceTypes([s.dans]);updateDansField();fields.sted.value=s.sted||'';fields.adresse.value=s.adresse||'';fields.by.value=s.by||'København';fields.prisType.value=s.prisType||'angiv';fields.prisOnline.value=s.prisOnline||'';fields.prisDropin.value=s.prisDropin||'';fields.mobilepay.value=s.mobilepay||'';fields.mobilepayPris.value=s.mobilepayPris||'';fields.mobilepayInfo.value=s.mobilepayInfo||'';recurring.checked=s.recurring||false;$('prisFields').style.display=s.prisType==='angiv'?'block':'none';$('mobilepayFields').style.display=s.prisType==='mobilepay'?'block':'none';if(s.step===2){step1.style.display='none';step2.style.display='block';updatePrisField();updatePreview();}else{step1.style.display='block';step2.style.display='none';}}catch(e){step1.style.display='block';step2.style.display='none';}}
+function restoreFormState(){try{const saved=localStorage.getItem('dancemap_admin_form');if(!saved){step2.style.display='none';payload.value='';clearFields();return;}const s=JSON.parse(saved);payload.value=s.payload||'';fields.dato.value=s.dato||'';fields.navn.value=s.navn||'';fields.start.value=s.start||'';fields.slut.value=s.slut||'';if(s.dansTypes)setSelectedDanceTypes(s.dansTypes);else if(s.dans)setSelectedDanceTypes([s.dans]);updateDansField();fields.sted.value=s.sted||'';fields.adresse.value=s.adresse||'';fields.by.value=s.by||'København';fields.prisType.value=s.prisType||'angiv';fields.prisOnline.value=s.prisOnline||'';fields.prisDropin.value=s.prisDropin||'';fields.mobilepay.value=s.mobilepay||'';fields.mobilepayPris.value=s.mobilepayPris||'';fields.mobilepayInfo.value=s.mobilepayInfo||'';recurring.checked=s.recurring||false;$('prisFields').style.display=s.prisType==='angiv'?'block':'none';$('mobilepayFields').style.display=s.prisType==='mobilepay'?'block':'none';if(s.step===2){step2.style.display='block';updatePrisField();updatePreview();}else{step2.style.display='none';}}catch(e){step2.style.display='none';}}
 
 function clearFormState(){localStorage.removeItem('dancemap_admin_form');}
 
 function clearFields(){fields.dato.value='';fields.navn.value='';fields.start.value='';fields.slut.value='';document.querySelectorAll('input[name="dansetype"]').forEach(c=>c.checked=false);fields.dans.value='';fields.sted.value='';fields.adresse.value='';fields.by.value='København';fields.pris.value='';fields.prisType.value='angiv';fields.prisOnline.value='';fields.prisDropin.value='';fields.mobilepay.value='';fields.mobilepayPris.value='';fields.mobilepayInfo.value='';$('prisFields').style.display='block';$('mobilepayFields').style.display='none';warnings.classList.remove('show');$('previewContent').innerHTML='';$('previewCard').style.borderColor='';}
 
 $('closeAdmin').onclick=()=>{saveFormState();modal.classList.remove('open');};
-$('backBtn').onclick=()=>{step1.style.display='block';step2.style.display='none';status.style.display='none';saveFormState();};
+$('backBtn').onclick=()=>{step2.style.display='none';status.style.display='none';saveFormState();};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('open')){saveFormState();modal.classList.remove('open');}});
 payload.addEventListener('input',saveFormState);
 
@@ -488,7 +488,7 @@ if(fields.mobilepay)fields.mobilepay.addEventListener('input',()=>{updatePrisFie
 if(fields.mobilepayPris)fields.mobilepayPris.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
 if(fields.mobilepayInfo)fields.mobilepayInfo.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
 
-$('parseBtn').onclick=()=>{const txt=payload.value.trim();if(!txt)return;const p=parseTextToFields(txt);fields.dato.value=p.dato;fields.navn.value=p.navn;fields.start.value=p.start;fields.slut.value=p.slut;setSelectedDanceTypes([p.dans]);updateDansField();fields.sted.value=p.sted;fields.adresse.value=p.adresse;fields.by.value=p.by;fields.prisType.value=p.prisType;fields.prisOnline.value=p.prisOnline;fields.prisDropin.value=p.prisDropin;$('prisFields').style.display=p.prisType==='angiv'?'block':'none';$('mobilepayFields').style.display=p.prisType==='mobilepay'?'block':'none';updatePrisField();const{errors}=validateFields();if(errors.length){warnings.innerHTML=errors.join('<br>');warnings.classList.add('show');}else{warnings.classList.remove('show');}updatePreview();step1.style.display='none';step2.style.display='block';saveFormState();};
+$('parseBtn').onclick=()=>{const txt=payload.value.trim();if(!txt)return;const p=parseTextToFields(txt);fields.dato.value=p.dato;fields.navn.value=p.navn;fields.start.value=p.start;fields.slut.value=p.slut;setSelectedDanceTypes([p.dans]);updateDansField();fields.sted.value=p.sted;fields.adresse.value=p.adresse;fields.by.value=p.by;fields.prisType.value=p.prisType;fields.prisOnline.value=p.prisOnline;fields.prisDropin.value=p.prisDropin;$('prisFields').style.display=p.prisType==='angiv'?'block':'none';$('mobilepayFields').style.display=p.prisType==='mobilepay'?'block':'none';updatePrisField();const{errors}=validateFields();if(errors.length){warnings.innerHTML=errors.join('<br>');warnings.classList.add('show');}else{warnings.classList.remove('show');}updatePreview();step2.style.display='block';saveFormState();};
 
 // CLAUDE VISION (via Vercel proxy)
 async function processImageWithClaude(file){
@@ -518,7 +518,7 @@ async function processImageWithClaude(file){
     const confidence=Math.round((result.confidence||0.8)*100);
     ocrStatus.innerHTML=`✅ Parsed med ${confidence}% sikkerhed`;
     ocrStatus.style.color=confidence>80?'#3fb950':'#f0883e';
-    step1.style.display='none';step2.style.display='block';
+    step2.style.display='block';
     const{errors}=validateFields();
     if(errors.length){warnings.innerHTML=errors.join('<br>');warnings.classList.add('show');}else{warnings.classList.remove('show');}
     saveFormState();
@@ -567,7 +567,6 @@ $('clearAllBtn').onclick=()=>{
     payload.value='';
     preview.style.display='none';
     ocrStatus.style.display='none';
-    step1.style.display='block';
     step2.style.display='none';
     status.style.display='none';
     warnings.classList.remove('show');
@@ -650,7 +649,7 @@ $('adminSubmitBtn').onclick=async()=>{
   try{
     const data=await jsonp(API+'?'+params.toString());
     status.style.display='block';
-    if(data.success){status.textContent='Event tilføjet (pending)';status.className='submit-status success';$('previewCard').style.borderColor='#3fb950';clearFields();clearFormState();step1.style.display='block';step2.style.display='none';payload.value='';preview.style.display='none';recurring.checked=false;}
+    if(data.success){status.textContent='✅ Event tilføjet (pending)';status.className='submit-status success';$('previewCard').style.borderColor='#3fb950';clearFields();clearFormState();step2.style.display='none';payload.value='';preview.style.display='none';recurring.checked=false;}
     else if(data.error==='DUPLICATE'){status.textContent='⚠️ Dublet fundet';status.className='submit-status error';$('previewCard').style.borderColor='#f85149';}
     else{status.textContent=data.text||'❌ Fejl';status.className='submit-status error';}
   }catch(e){status.style.display='block';status.textContent='❌ Teknisk fejl';status.className='submit-status error';}
