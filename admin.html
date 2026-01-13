@@ -1,155 +1,305 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="da">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DanceMap Admin</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>DanceMap</title>
 
-<style>
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #0f1220;
-  color: #fff;
-  padding: 20px;
-}
-.container {
-  max-width: 720px;
-  margin: auto;
-}
-.card {
-  background: #151a2e;
-  border-radius: 12px;
-  padding: 20px;
-}
-label {
-  display: block;
-  margin-top: 12px;
-  font-size: 14px;
-  opacity: .85;
-}
-input, select {
-  width: 100%;
-  padding: 10px;
-  margin-top: 4px;
-  border-radius: 8px;
-  border: 1px solid #2a2f55;
-  background: #0f1220;
-  color: #fff;
-}
-button {
-  margin-top: 20px;
-  padding: 12px 18px;
-  border-radius: 10px;
-  border: none;
-  background: linear-gradient(135deg,#667eea,#764ba2);
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-}
-.alert {
-  margin-bottom: 16px;
-  padding: 12px;
-  border-radius: 8px;
-}
-.alert.success { background:#1f6f3b; }
-.alert.error { background:#7a2e2e; }
-</style>
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#6366f1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="DanceMap" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0d1117;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      color: #e6edf3;
+    }
+
+    .card {
+      background: #161b22;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+    }
+
+    .header {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 1px solid #21262d;
+      cursor: pointer;
+    }
+
+    .logo { width: 48px; height: 48px; border-radius: 14px; overflow: hidden; }
+    .logo img { width: 100%; height: 100%; object-fit: cover; }
+
+    .header-text h1 { font-size: 18px; font-weight: 600; margin-bottom: 2px; }
+    .header-text .sub { font-size: 13px; color: #7d8590; }
+    .header-text .week-count { font-size: 12px; color: #6366f1; margin-top: 4px; }
+
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .msg { display: flex; flex-direction: column; }
+    .msg.user { align-items: flex-end; }
+    .msg.bot { align-items: flex-start; }
+
+    .bubble {
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 15px;
+      line-height: 1.5;
+      max-width: 90%;
+    }
+    .msg.user .bubble { background: #2d333b; border-bottom-right-radius: 4px; }
+    .msg.bot .bubble { background: #21262d; border-bottom-left-radius: 4px; color: #c9d1d9; }
+
+    .events { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+    .event-card { background: #2d333b; border-radius: 12px; padding: 14px 16px; }
+    .event-row { display: flex; gap: 10px; margin-bottom: 6px; font-size: 14px; color: #c9d1d9; }
+    .event-row.title { font-weight: 600; color: #e6edf3; font-size: 15px; }
+
+    .input-area {
+      padding: 16px 20px;
+      border-top: 1px solid #21262d;
+      display: flex;
+      gap: 12px;
+    }
+    .input-area input {
+      flex: 1;
+      padding: 14px 18px;
+      border-radius: 12px;
+      border: 1px solid #30363d;
+      background: #0d1117;
+      font-size: 15px;
+      color: #e6edf3;
+      outline: none;
+    }
+    .send-btn {
+      width: 48px; height: 48px;
+      border-radius: 12px; border: none;
+      background: #6366f1; color: white;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .version-info {
+      font-size: 11px;
+      color: #3fb950;
+      text-align: center;
+      padding: 8px 0 12px;
+      border-top: 1px solid #21262d;
+    }
+
+    /* ADMIN MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #161b22;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 420px;
+      padding: 24px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-header h2 { font-size: 18px; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 26px;
+      color: #7d8590;
+      cursor: pointer;
+    }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; margin-bottom: 6px; color: #7d8590; }
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #30363d;
+      background: #0d1117;
+      color: #e6edf3;
+      font-family: inherit;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: #6366f1;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 
 <body>
-<div class="container">
-  <div id="alerts"></div>
-
   <div class="card">
-    <h2>Tilføj event</h2>
+    <div class="header" id="header">
+      <div class="logo"><img src="./dancemap-icon.svg" alt="DanceMap" /></div>
+      <div class="header-text">
+        <h1>DanceMap</h1>
+        <div class="sub">Danseevents i København og omegn</div>
+        <div class="week-count" id="weekCount"></div>
+      </div>
+    </div>
 
-    <form id="eventForm">
-      <label>Dato *</label>
-      <input type="date" id="dato" required>
+    <div id="chat" class="chat"></div>
 
-      <label>Eventnavn *</label>
-      <input type="text" id="eventnavn" required>
+    <div class="input-area">
+      <input id="q" type="text" placeholder="Skriv fx: salsa eller bachata" autocomplete="off" />
+      <button id="sendBtn" class="send-btn">✈️</button>
+    </div>
 
-      <label>Starttid *</label>
-      <input type="time" id="starttid" required>
-
-      <label>Sluttid *</label>
-      <input type="time" id="sluttid" required>
-
-      <label>Dansetype *</label>
-      <select id="dansetype" required>
-        <option value="">Vælg…</option>
-        <option>Salsa</option>
-        <option>Bachata</option>
-        <option>Kizomba</option>
-        <option>Workshop</option>
-        <option>Social</option>
-      </select>
-
-      <label>Sted *</label>
-      <input type="text" id="sted" required>
-
-      <label>Adresse *</label>
-      <input type="text" id="adresse" required>
-
-      <label>By *</label>
-      <input type="text" id="by" required>
-
-      <label>Pris</label>
-      <input type="text" id="pris">
-
-      <button type="submit">Indsend event</button>
-    </form>
+    <div class="version-info">Version 6.0.1</div>
   </div>
-</div>
+
+  <!-- ADMIN -->
+  <div class="modal-overlay" id="adminModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Admin</h2>
+        <button class="modal-close" id="closeAdmin">×</button>
+      </div>
+
+      <div class="form-group">
+        <label>Event navn</label>
+        <input id="adminName" />
+      </div>
+
+      <div class="form-group">
+        <label>Sted</label>
+        <input id="adminVenue" />
+      </div>
+
+      <div class="form-group">
+        <label>Adresse</label>
+        <input id="adminAddress" />
+      </div>
+
+      <div class="form-group">
+        <label>By</label>
+        <input id="adminCity" />
+      </div>
+
+      <button class="submit-btn">Gem (pending)</button>
+    </div>
+  </div>
 
 <script>
-const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbxnZiO0bDkCrrwGJXwAvA5mWKPBoQoL-t1smx5m0A5j51gSbTOtF1MLT3qkdwbZkTX_/exec";
+  const API = 'https://script.google.com/macros/s/AKfycbyJdVscl-4f-ow7Ynj-LGsazpGFSR8VzVZWHruWdNE66HbVK6LJLOXKRmS6TFUUFC6i/exec';
 
-function alertBox(msg,type){
-  const d=document.createElement('div');
-  d.className='alert '+type;
-  d.textContent=msg;
-  document.getElementById('alerts').appendChild(d);
-  setTimeout(()=>d.remove(),5000);
-}
+  const $ = id => document.getElementById(id);
+  const chat = $('chat'), input = $('q'), sendBtn = $('sendBtn');
+  const modal = $('adminModal');
 
-document.getElementById('eventForm').addEventListener('submit',e=>{
-  e.preventDefault();
+  function esc(t){return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
-  const payload = [
-    dato.value,
-    eventnavn.value,
-    starttid.value + '-' + sluttid.value,
-    dansetype.value,
-    sted.value + ', ' + adresse.value + ', ' + by.value,
-    pris.value || ''
-  ].join('\n');
+  function addMsg(text,isUser){
+    const msg=document.createElement('div');
+    msg.className='msg '+(isUser?'user':'bot');
+    msg.innerHTML=`<div class="bubble">${esc(text)}</div>`;
+    chat.appendChild(msg);
+    chat.scrollTop=chat.scrollHeight;
+  }
 
-  const cb = 'cb_' + Date.now();
-  window[cb] = res => {
-    delete window[cb];
-    if(res.success){
-      alertBox(res.text,'success');
-      e.target.reset();
-    } else {
-      alertBox(res.text || 'Fejl','error');
+  function jsonp(url){
+    return new Promise((resolve,reject)=>{
+      const cb='cb_'+Date.now();
+      window[cb]=d=>{delete window[cb];s.remove();resolve(d)};
+      const s=document.createElement('script');
+      s.src=url+(url.includes('?')?'&':'?')+'callback='+cb;
+      s.onerror=()=>reject();
+      document.body.appendChild(s);
+    });
+  }
+
+  async function doSearch(){
+    const q=input.value.trim();
+    if(!q) return;
+    addMsg(q,true);
+    input.value='';
+    try{
+      const d=await jsonp(API+'?query='+encodeURIComponent(q));
+      addMsg(d.text||'Ingen events fundet.',false);
+    }catch{
+      addMsg('Fejl. Prøv igen.',false);
     }
+  }
+
+  sendBtn.onclick=doSearch;
+  input.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); doSearch(); } };
+
+  addMsg('Skriv fx: salsa eller bachata',false);
+
+  // ADMIN OPEN (3 klik)
+  let clicks=0, timer;
+  $('header').onclick=()=>{
+    clicks++;
+    if(clicks===3){
+      clicks=0;
+      modal.classList.add('open');
+    }
+    clearTimeout(timer);
+    timer=setTimeout(()=>clicks=0,400);
   };
 
-  const params = new URLSearchParams({
-    action:'admin-import',
-    payload: payload,
-    recurring:'false',
-    callback:cb
+  // ADMIN CLOSE – kun via knap eller ESC
+  $('closeAdmin').onclick=()=>modal.classList.remove('open');
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape' && modal.classList.contains('open')){
+      modal.classList.remove('open');
+    }
   });
-
-  const s=document.createElement('script');
-  s.src = SCRIPT_URL + '?' + params.toString();
-  document.body.appendChild(s);
-  s.onload=()=>s.remove();
-});
 </script>
 </body>
 </html>
