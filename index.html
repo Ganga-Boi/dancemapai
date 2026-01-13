@@ -4,226 +4,91 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>DanceMap</title>
-
-  <!-- PWA -->
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#6366f1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="DanceMap" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
-
-  <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-WYGJJJV2E6"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-WYGJJJV2E6');
-  </script>
-
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-WYGJJJV2E6');</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    html, body { height: 100%; }
-
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #0d1117;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-
-    .card {
-      background: #161b22;
-      border-radius: 20px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-      display: flex;
-      flex-direction: column;
-      max-height: 90vh;
-    }
-
-    .header {
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      border-bottom: 1px solid #21262d;
-      cursor: pointer;
-    }
-
-    .logo { width: 48px; height: 48px; border-radius: 14px; overflow: hidden; }
-    .logo img { width: 100%; height: 100%; object-fit: cover; }
-
-    .header-text h1 { font-size: 18px; font-weight: 600; color: #e6edf3; margin-bottom: 2px; }
-    .header-text .sub { font-size: 13px; color: #7d8590; }
-    .header-text .week-count { font-size: 12px; color: #6366f1; margin-top: 4px; }
-
-    .chat {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      min-height: 200px;
-      max-height: 60vh;
-    }
-
-    .msg { display: flex; flex-direction: column; }
-    .msg.user { align-items: flex-end; }
-    .msg.bot { align-items: flex-start; }
-
-    .bubble { padding: 12px 16px; border-radius: 16px; font-size: 15px; line-height: 1.5; max-width: 90%; }
-    .msg.user .bubble { background: #2d333b; color: #e6edf3; border-bottom-right-radius: 4px; }
-    .msg.bot .bubble { background: #21262d; color: #c9d1d9; border-bottom-left-radius: 4px; }
-
-    .events { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
-    .event-card { background: #2d333b; border-radius: 12px; padding: 14px 16px; }
-    .event-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 14px; color: #c9d1d9; }
-    .event-row:last-child { margin-bottom: 0; }
-    .event-row .icon { width: 20px; text-align: center; flex-shrink: 0; }
-    .event-row.title { font-weight: 600; color: #e6edf3; font-size: 15px; }
-
-    .more-btn { margin-top: 12px; padding: 10px 16px; border-radius: 10px; border: 1px solid #30363d; background: transparent; color: #7d8590; font-size: 14px; cursor: pointer; }
-    .more-btn:hover { background: #21262d; color: #c9d1d9; }
-
-    .input-area { padding: 16px 20px; border-top: 1px solid #21262d; display: flex; gap: 12px; }
-    .input-area input { flex: 1; padding: 14px 18px; border-radius: 12px; border: 1px solid #30363d; background: #0d1117; font-size: 15px; font-family: inherit; color: #e6edf3; outline: none; }
-    .input-area input:focus { border-color: #6366f1; }
-    .input-area input::placeholder { color: #7d8590; }
-
-    .send-btn { width: 48px; height: 48px; border-radius: 12px; border: none; background: #6366f1; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .send-btn:active { transform: scale(0.95); }
-    .send-btn:disabled { opacity: 0.5; }
-    .send-btn svg { width: 20px; height: 20px; }
-
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
-    .modal-overlay.open { display: flex; }
-    .modal { background: #161b22; border-radius: 20px; width: 100%; max-width: 400px; padding: 24px; max-height: 90vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .modal-header h2 { font-size: 18px; font-weight: 600; color: #e6edf3; }
-    .modal-close { background: none; border: none; color: #7d8590; font-size: 28px; cursor: pointer; }
-
-    .upload-btn { width: 100%; padding: 16px; border-radius: 12px; border: 2px dashed #30363d; background: transparent; color: #7d8590; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px; }
-    .upload-btn:hover { border-color: #6366f1; color: #c9d1d9; }
-
-    .image-preview { max-width: 100%; max-height: 150px; border-radius: 12px; margin-bottom: 12px; display: none; }
-    .ocr-status { font-size: 14px; color: #7d8590; text-align: center; padding: 12px; }
-
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 13px; margin-bottom: 8px; color: #7d8590; }
-    .form-group textarea { width: 100%; min-height: 150px; padding: 14px; border-radius: 12px; border: 1px solid #30363d; background: #0d1117; color: #e6edf3; font-size: 14px; font-family: inherit; outline: none; resize: vertical; }
-    .form-group textarea:focus { border-color: #6366f1; }
-
-    .checkbox-group { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding: 14px; background: #0d1117; border-radius: 10px; }
-    .checkbox-group input[type="checkbox"] { width: 20px; height: 20px; accent-color: #6366f1; }
-    .checkbox-group label { font-size: 14px; color: #c9d1d9; cursor: pointer; }
-
-    .submit-btn { width: 100%; padding: 16px; border-radius: 12px; border: none; background: #6366f1; color: white; font-size: 15px; font-weight: 500; cursor: pointer; }
-    .submit-btn:disabled { opacity: 0.5; }
-
-    .submit-status { text-align: center; padding: 12px; font-size: 14px; margin-top: 12px; border-radius: 10px; }
-    .submit-status.success { color: #3fb950; background: rgba(63,185,80,0.1); }
-    .submit-status.error { color: #f85149; background: rgba(248,81,73,0.1); }
-
-    .back-btn { background: none; border: none; color: #7d8590; font-size: 14px; cursor: pointer; margin-bottom: 16px; padding: 0; }
-    .back-btn:hover { color: #c9d1d9; }
-
-    .field-row { margin-bottom: 14px; }
-    .field-row label { display: block; font-size: 12px; margin-bottom: 6px; color: #7d8590; }
-    .field-row input, .field-row select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #30363d; background: #0d1117; color: #e6edf3; font-size: 14px; font-family: inherit; outline: none; }
-    .field-row input:focus, .field-row select:focus { border-color: #6366f1; }
-    .field-row.two-col { display: flex; gap: 12px; }
-    .field-row.two-col > div { flex: 1; }
-
-    .field-warnings { margin-bottom: 14px; padding: 12px; background: rgba(248,81,73,0.1); border-radius: 10px; font-size: 13px; color: #f85149; display: none; }
-    .field-warnings.show { display: block; }
-
-    .admin-intro { font-size: 13px; color: #7d8590; margin-bottom: 16px; line-height: 1.5; }
-    .admin-confirm { font-size: 12px; color: #7d8590; margin-bottom: 14px; line-height: 1.4; text-align: center; }
-
-    .preview-card { background: #21262d; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; }
-    .preview-label { font-size: 11px; color: #7d8590; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
-    .preview-content { font-size: 14px; color: #c9d1d9; line-height: 1.6; }
-    .preview-content .line { display: flex; gap: 8px; margin-bottom: 4px; }
-    .preview-content .line:last-child { margin-bottom: 0; }
-    .preview-content .icon { width: 20px; text-align: center; }
-
-    .version-info { font-size: 10px; color: #484f58; text-align: center; margin-top: 8px; }
-
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-    .loading-text { animation: pulse 1.5s ease-in-out infinite; }
-
-    .install-banner { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(135deg, #1c2128 0%, #161b22 100%); padding: 16px 20px; align-items: center; justify-content: space-between; gap: 12px; z-index: 50; border-top: 1px solid #30363d; }
-    .install-banner.show { display: flex; }
-    .install-banner-text { display: flex; flex-direction: column; gap: 2px; flex: 1; }
-    .install-banner-text strong { color: #e6edf3; font-size: 15px; }
-    .install-banner-text span { color: #7d8590; font-size: 13px; }
-    .install-banner button { padding: 10px 20px; border-radius: 10px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; }
-    #installBtn { background: #6366f1; color: white; }
-    .install-close { background: transparent; color: #7d8590; font-size: 18px; padding: 8px; }
-
-    .install-guide { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
-    .install-guide.show { display: flex; }
-    .install-guide-content { background: linear-gradient(135deg, #1c2128 0%, #161b22 100%); border: 1px solid #30363d; border-radius: 20px; padding: 28px 24px; max-width: 320px; text-align: center; }
-    .install-guide h3 { color: #e6edf3; margin-bottom: 24px; font-size: 18px; font-weight: 600; }
-    .install-guide p { color: #c9d1d9; margin-bottom: 16px; font-size: 15px; text-align: left; line-height: 1.5; }
-    .install-guide-close { margin-top: 20px; padding: 14px 24px; background: #6366f1; color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 500; cursor: pointer; width: 100%; }
-
-    .admin-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-    .admin-tab { flex: 1; padding: 10px; border: 1px solid #30363d; background: transparent; color: #7d8590; border-radius: 8px; cursor: pointer; font-size: 14px; }
-    .admin-tab.active { background: #6366f1; color: white; border-color: #6366f1; }
-
-    .pending-list { display: flex; flex-direction: column; gap: 12px; max-height: 420px; overflow-y: auto; margin-bottom: 16px; }
-    .pending-item { background: #21262d; border-radius: 10px; padding: 14px; }
-    .pending-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .pending-item-title { font-weight: 600; color: #e6edf3; }
-    .pending-item-details { font-size: 13px; color: #c9d1d9; line-height: 1.5; }
-    .pending-item-row { display: flex; gap: 8px; margin-bottom: 4px; }
-    .pending-item-row span:first-child { width: 20px; }
-
-    .pending-actions { display: flex; gap: 10px; margin-top: 10px; align-items: center; }
-    .pending-status-select { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: #e6edf3; font-size: 13px; outline: none; }
-    .pending-approve-btn { padding: 10px 12px; background: #238636; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; }
-    .pending-approve-btn:disabled { opacity: 0.5; }
-
-    .pending-empty { text-align: center; color: #7d8590; padding: 40px 20px; }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#0d1117;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+    .card{background:#161b22;border-radius:20px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;flex-direction:column;max-height:90vh}
+    .header{padding:20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #21262d;cursor:pointer}
+    .logo{width:48px;height:48px;border-radius:14px;overflow:hidden}.logo img{width:100%;height:100%;object-fit:cover}
+    .header-text h1{font-size:18px;font-weight:600;color:#e6edf3;margin-bottom:2px}.header-text .sub{font-size:13px;color:#7d8590}
+    .header-text .week-count{font-size:12px;color:#6366f1;margin-top:4px}.header-text .version-display{font-size:10px;color:#484f58;margin-top:2px}
+    .chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;min-height:200px;max-height:60vh}
+    .msg{display:flex;flex-direction:column}.msg.user{align-items:flex-end}.msg.bot{align-items:flex-start}
+    .bubble{padding:12px 16px;border-radius:16px;font-size:15px;line-height:1.5;max-width:90%}
+    .msg.user .bubble{background:#2d333b;color:#e6edf3;border-bottom-right-radius:4px}
+    .msg.bot .bubble{background:#21262d;color:#c9d1d9;border-bottom-left-radius:4px}
+    .events{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .event-card{background:#2d333b;border-radius:12px;padding:14px 16px}
+    .event-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:14px;color:#c9d1d9}
+    .event-row:last-child{margin-bottom:0}.event-row .icon{width:20px;text-align:center;flex-shrink:0}
+    .event-row.title{font-weight:600;color:#e6edf3;font-size:15px}
+    .more-btn{margin-top:12px;padding:10px 16px;border-radius:10px;border:1px solid #30363d;background:transparent;color:#7d8590;font-size:14px;cursor:pointer}
+    .more-btn:hover{background:#21262d;color:#c9d1d9}
+    .input-area{padding:16px 20px;border-top:1px solid #21262d;display:flex;gap:12px}
+    .input-area input{flex:1;padding:14px 18px;border-radius:12px;border:1px solid #30363d;background:#0d1117;font-size:15px;font-family:inherit;color:#e6edf3;outline:none}
+    .input-area input:focus{border-color:#6366f1}.input-area input::placeholder{color:#7d8590}
+    .send-btn{width:48px;height:48px;border-radius:12px;border:none;background:#6366f1;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .send-btn:active{transform:scale(0.95)}.send-btn:disabled{opacity:0.5}.send-btn svg{width:20px;height:20px}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100;align-items:center;justify-content:center;padding:16px}
+    .modal-overlay.open{display:flex}.modal{background:#161b22;border-radius:20px;width:100%;max-width:400px;padding:24px;max-height:90vh;overflow-y:auto}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .modal-header h2{font-size:18px;font-weight:600;color:#e6edf3}.modal-close{background:none;border:none;color:#7d8590;font-size:28px;cursor:pointer}
+    .upload-btn{width:100%;padding:16px;border-radius:12px;border:2px dashed #30363d;background:transparent;color:#7d8590;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
+    .upload-btn:hover{border-color:#6366f1;color:#c9d1d9}
+    .image-preview{max-width:100%;max-height:150px;border-radius:12px;margin-bottom:12px;display:none}
+    .ocr-status{font-size:14px;color:#7d8590;text-align:center;padding:12px}
+    .form-group{margin-bottom:16px}.form-group label{display:block;font-size:13px;margin-bottom:8px;color:#7d8590}
+    .form-group textarea{width:100%;min-height:150px;padding:14px;border-radius:12px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:14px;font-family:inherit;outline:none;resize:vertical}
+    .form-group textarea:focus{border-color:#6366f1}
+    .checkbox-group{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:14px;background:#0d1117;border-radius:10px}
+    .checkbox-group input[type="checkbox"]{width:20px;height:20px;accent-color:#6366f1}
+    .checkbox-group label{font-size:14px;color:#c9d1d9;cursor:pointer}
+    .submit-btn{width:100%;padding:16px;border-radius:12px;border:none;background:#6366f1;color:white;font-size:15px;font-weight:500;cursor:pointer}
+    .submit-btn:disabled{opacity:0.5}
+    .submit-status{text-align:center;padding:12px;font-size:14px;margin-top:12px;border-radius:10px}
+    .submit-status.success{color:#3fb950;background:rgba(63,185,80,0.1)}
+    .submit-status.error{color:#f85149;background:rgba(248,81,73,0.1)}
+    .back-btn{background:none;border:none;color:#7d8590;font-size:14px;cursor:pointer;margin-bottom:16px;padding:0}.back-btn:hover{color:#c9d1d9}
+    .field-row{margin-bottom:14px}.field-row label{display:block;font-size:12px;margin-bottom:6px;color:#7d8590}
+    .field-row input,.field-row select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:14px;font-family:inherit;outline:none}
+    .field-row input:focus,.field-row select:focus{border-color:#6366f1}
+    .field-row.two-col{display:flex;gap:12px}.field-row.two-col>div{flex:1}
+    .field-warnings{margin-bottom:14px;padding:12px;background:rgba(248,81,73,0.1);border-radius:10px;font-size:13px;color:#f85149;display:none}
+    .field-warnings.show{display:block}
+    .admin-intro{font-size:13px;color:#7d8590;margin-bottom:16px;line-height:1.5}
+    .preview-card{background:#21262d;border-radius:12px;padding:14px 16px;margin-bottom:16px}
+    .preview-label{font-size:11px;color:#7d8590;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px}
+    .preview-content{font-size:14px;color:#c9d1d9;line-height:1.6}
+    .preview-content .line{display:flex;gap:8px;margin-bottom:4px}.preview-content .line:last-child{margin-bottom:0}
+    .preview-content .icon{width:20px;text-align:center}
+    .version-info{font-size:10px;color:#484f58;text-align:center;margin-top:8px}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}.loading-text{animation:pulse 1.5s ease-in-out infinite}
+    .admin-tabs{display:flex;gap:8px;margin-bottom:16px}
+    .admin-tab{flex:1;padding:10px;border:1px solid #30363d;background:transparent;color:#7d8590;border-radius:8px;cursor:pointer;font-size:14px}
+    .admin-tab.active{background:#6366f1;color:white;border-color:#6366f1}
+    .pending-list{display:flex;flex-direction:column;gap:12px;max-height:420px;overflow-y:auto;margin-bottom:16px}
+    .pending-item{background:#21262d;border-radius:10px;padding:14px}
+    .pending-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .pending-item-title{font-weight:600;color:#e6edf3}
+    .pending-item-details{font-size:13px;color:#c9d1d9;line-height:1.5}
+    .pending-item-row{display:flex;gap:8px;margin-bottom:4px}.pending-item-row span:first-child{width:20px}
+    .pending-actions{display:flex;gap:10px;margin-top:10px}
+    .pending-approve-btn{padding:10px 12px;background:#238636;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px}
+    .pending-approve-btn:disabled{opacity:0.5}
+    .pending-empty{text-align:center;color:#7d8590;padding:40px 20px}
   </style>
 </head>
 <body>
-
-<div class="install-banner" id="installBanner">
-  <img src="/icon-192.png" alt="" style="width:40px;height:40px;border-radius:10px;">
-  <div class="install-banner-text">
-    <strong>DanceMap</strong>
-    <span>Installer som app</span>
-  </div>
-  <button id="installBtn">Installer</button>
-  <button class="install-close" id="installClose">✕</button>
-</div>
-
-<div class="install-guide" id="installGuide">
-  <div class="install-guide-content">
-    <h3>Installer DanceMap</h3>
-    <div id="guideIOS">
-      <p>1. Tryk på <strong>Del-ikonet</strong></p>
-      <p>2. Vælg <strong>"Føj til hjemmeskærm"</strong></p>
-    </div>
-    <div id="guideAndroid" style="display:none">
-      <p>1. Tryk på <strong>⋮</strong> menuen</p>
-      <p>2. Vælg <strong>"Installer app"</strong></p>
-    </div>
-    <button class="install-guide-close" id="guideClose">Forstået</button>
-  </div>
-</div>
 
 <div class="card">
   <div class="header">
@@ -232,6 +97,7 @@
       <h1>DanceMap</h1>
       <div class="sub">Dansevents i København</div>
       <div class="week-count" id="weekCount"></div>
+      <div class="version-display" id="versionDisplay"></div>
     </div>
   </div>
   <div id="chat" class="chat"></div>
@@ -239,8 +105,7 @@
     <input id="q" type="text" placeholder="Skriv fx: salsa eller bachata" autocomplete="off" enterkeyhint="search" />
     <button id="sendBtn" class="send-btn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="22" y1="2" x2="11" y2="13"></line>
-        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        <line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
       </svg>
     </button>
   </div>
@@ -252,21 +117,15 @@
       <h2>Admin</h2>
       <button class="modal-close" id="closeAdmin">&times;</button>
     </div>
-
     <div class="admin-tabs">
       <button class="admin-tab active" id="tabAdd">Tilføj Event</button>
       <button class="admin-tab" id="tabPending">Godkend Events</button>
     </div>
-
     <div id="adminAddView">
       <div id="adminStep1">
         <p class="admin-intro">📸 Paste et skærmbillede (Ctrl+V) eller upload en event-flyer. Claude AI udfylder alle felter automatisk.</p>
         <button type="button" class="upload-btn" id="uploadBtn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21 15 16 10 5 21"/>
-          </svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
           Upload event-billede (Claude Vision AI)
         </button>
         <input type="file" id="fileInput" accept="image/*" style="display:none" />
@@ -278,53 +137,22 @@
         </div>
         <button type="button" class="submit-btn" id="parseBtn">Parse tekst →</button>
       </div>
-
       <div id="adminStep2" style="display:none">
         <button type="button" class="back-btn" id="backBtn">← Tilbage</button>
-
-        <div class="field-row">
-          <label>Dato *</label>
-          <input type="date" id="fieldDato" required />
-        </div>
-        <div class="field-row">
-          <label>Event navn *</label>
-          <input type="text" id="fieldNavn" placeholder="Fx Salsa Social" />
-        </div>
+        <div class="field-row"><label>Dato *</label><input type="date" id="fieldDato" required /></div>
+        <div class="field-row"><label>Event navn *</label><input type="text" id="fieldNavn" placeholder="Fx Salsa Social" /></div>
         <div class="field-row two-col">
           <div><label>Start *</label><input type="time" id="fieldStart" required /></div>
           <div><label>Slut *</label><input type="time" id="fieldSlut" /></div>
         </div>
-        <div class="field-row">
-          <label>Dansetype *</label>
-          <select id="fieldDans">
-            <option value="Salsa">Salsa</option>
-            <option value="Bachata">Bachata</option>
-            <option value="Kizomba">Kizomba</option>
-            <option value="Zouk">Zouk</option>
-            <option value="Tango">Tango</option>
-            <option value="Swing">Swing</option>
-            <option value="Latin">Latin</option>
-          </select>
+        <div class="field-row"><label>Dansetype *</label>
+          <select id="fieldDans"><option value="Salsa">Salsa</option><option value="Bachata">Bachata</option><option value="Kizomba">Kizomba</option><option value="Zouk">Zouk</option><option value="Tango">Tango</option><option value="Swing">Swing</option><option value="Latin">Latin</option></select>
         </div>
-        <div class="field-row">
-          <label>Sted *</label>
-          <input type="text" id="fieldSted" placeholder="Fx Kedelhallen" required />
-        </div>
-        <div class="field-row">
-          <label>Adresse *</label>
-          <input type="text" id="fieldAdresse" placeholder="Fx Nyelandsvej 75A" />
-        </div>
-        <div class="field-row">
-          <label>By *</label>
-          <input type="text" id="fieldBy" value="København" />
-        </div>
-        <div class="field-row">
-          <label>Pristype</label>
-          <select id="fieldPrisType">
-            <option value="angiv">Angiv priser</option>
-            <option value="gratis">Gratis</option>
-            <option value="kontakt">Kontakt arrangør</option>
-          </select>
+        <div class="field-row"><label>Sted *</label><input type="text" id="fieldSted" placeholder="Fx Kedelhallen" required /></div>
+        <div class="field-row"><label>Adresse *</label><input type="text" id="fieldAdresse" placeholder="Fx Nyelandsvej 75A" /></div>
+        <div class="field-row"><label>By *</label><input type="text" id="fieldBy" value="København" /></div>
+        <div class="field-row"><label>Pristype</label>
+          <select id="fieldPrisType"><option value="angiv">Angiv priser</option><option value="gratis">Gratis</option><option value="kontakt">Kontakt arrangør</option></select>
         </div>
         <div id="prisFields">
           <div class="field-row two-col">
@@ -333,26 +161,20 @@
           </div>
         </div>
         <input type="hidden" id="fieldPris" />
-
         <div id="fieldWarnings" class="field-warnings"></div>
-
         <div id="previewCard" class="preview-card">
           <div class="preview-label">Forhåndsvisning</div>
           <div id="previewContent" class="preview-content"></div>
         </div>
-
         <div class="checkbox-group">
           <input type="checkbox" id="recurringCheck" />
           <label for="recurringCheck">Gentager ugentligt</label>
         </div>
-
         <button type="button" class="submit-btn" id="adminSubmitBtn">Tilføj Event (pending)</button>
       </div>
-
       <div id="adminStatus" class="submit-status" style="display:none"></div>
       <div id="backendVersion" class="version-info"></div>
     </div>
-
     <div id="adminPendingView" style="display:none">
       <div id="pendingList" class="pending-list"></div>
       <div id="pendingEmpty" class="pending-empty">Ingen events afventer godkendelse</div>
@@ -362,682 +184,278 @@
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.0.3-2025-01-13';
-const FORM_VERSION = '6.0.3'; // Bump this to clear old form cache
+const FRONTEND_VERSION = 'v6.0.4-2025-01-13';
+const FORM_VERSION = '6.0.4';
+
+// ═══════════════════════════════════════════════════════════
+// ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
+// ═══════════════════════════════════════════════════════════
 const API = 'https://script.google.com/macros/s/AKfycbyJdVscl-4f-ow7Ynj-LGsazpGFSR8VzVZWHruWdNE66HbVK6LJLOXKRmS6TFUUFC6i/exec';
 
-// Clear old form cache on load
-(function() {
-  try {
-    const saved = localStorage.getItem('dancemap_admin_form');
-    if (saved) {
-      const data = JSON.parse(saved);
-      if (data.formVersion !== FORM_VERSION) {
-        localStorage.removeItem('dancemap_admin_form');
-        console.log('Cleared old form cache');
-      }
-    }
-  } catch(e) { localStorage.removeItem('dancemap_admin_form'); }
-})();
+(function(){try{const s=localStorage.getItem('dancemap_admin_form');if(s){const d=JSON.parse(s);if(d.formVersion!==FORM_VERSION)localStorage.removeItem('dancemap_admin_form');}}catch(e){localStorage.removeItem('dancemap_admin_form');}})();
 
-const $ = id => document.getElementById(id);
-const chat = $('chat'), input = $('q'), sendBtn = $('sendBtn');
-const modal = $('adminModal'), payload = $('adminPayload'), status = $('adminStatus');
-const recurring = $('recurringCheck'), preview = $('imagePreview'), ocrStatus = $('ocrStatus');
-const step1 = $('adminStep1'), step2 = $('adminStep2'), warnings = $('fieldWarnings');
+const $=id=>document.getElementById(id);
+const chat=$('chat'),input=$('q'),sendBtn=$('sendBtn');
+const modal=$('adminModal'),payload=$('adminPayload'),status=$('adminStatus');
+const recurring=$('recurringCheck'),preview=$('imagePreview'),ocrStatus=$('ocrStatus');
+const step1=$('adminStep1'),step2=$('adminStep2'),warnings=$('fieldWarnings');
 
-let lastQ = '', page = 0, hasMore = false, loading = false, moreBtn = null;
+let lastQ='',page=0,hasMore=false,loading=false,moreBtn=null;
 
-const fields = {
-  dato: $('fieldDato'), navn: $('fieldNavn'), start: $('fieldStart'), slut: $('fieldSlut'),
-  dans: $('fieldDans'), sted: $('fieldSted'), adresse: $('fieldAdresse'),
-  by: $('fieldBy'), pris: $('fieldPris'), prisType: $('fieldPrisType'),
-  prisOnline: $('fieldPrisOnline'), prisDropin: $('fieldPrisDropin')
-};
+const fields={dato:$('fieldDato'),navn:$('fieldNavn'),start:$('fieldStart'),slut:$('fieldSlut'),dans:$('fieldDans'),sted:$('fieldSted'),adresse:$('fieldAdresse'),by:$('fieldBy'),pris:$('fieldPris'),prisType:$('fieldPrisType'),prisOnline:$('fieldPrisOnline'),prisDropin:$('fieldPrisDropin')};
 
-function esc(t) { return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function esc(t){return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
-function jsonp(url) {
-  return new Promise((resolve, reject) => {
-    const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-    window[cb] = data => { delete window[cb]; script.remove(); resolve(data); };
-    const script = document.createElement('script');
-    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
-    script.onerror = () => { delete window[cb]; script.remove(); reject(new Error('JSONP failed')); };
+function jsonp(url){
+  return new Promise((resolve,reject)=>{
+    const cb='cb_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+    window[cb]=data=>{delete window[cb];script.remove();resolve(data);};
+    const script=document.createElement('script');
+    script.src=url+(url.includes('?')?'&':'?')+'callback='+cb;
+    script.onerror=()=>{delete window[cb];script.remove();reject(new Error('JSONP failed'));};
     document.body.appendChild(script);
   });
 }
 
-// ═══════════════════════════════════════════════════════════
-// VERSION CHECK (viser "Version 6.0.1" når match)
-// ═══════════════════════════════════════════════════════════
-const DISPLAY_VERSION = 'Version 6.0.3';
-
-async function checkVersion() {
-  try {
-    const data = await jsonp(API + '?action=ping&_=' + Date.now());
-    const el = $('backendVersion');
-    if (data.version) {
-      if (data.version === FRONTEND_VERSION) {
-        el.textContent = DISPLAY_VERSION;
-        el.style.color = '#3fb950';
-      } else {
-        el.textContent = 'Mismatch: Backend ' + data.version + ' | Frontend ' + FRONTEND_VERSION;
-        el.style.color = '#f85149';
-        console.warn('VERSION MISMATCH:', data.version, '≠', FRONTEND_VERSION);
-      }
+// VERSION CHECK
+async function checkVersion(){
+  try{
+    const data=await jsonp(API+'?action=ping&_='+Date.now());
+    const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
+    if(data.version){
+      const match=data.version===FRONTEND_VERSION;
+      if(adminEl){adminEl.textContent=match?'Version 6.0.4':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.0.4':'⚠️ Version mismatch';frontEl.style.color=match?'#484f58':'#f85149';}
     }
-  } catch(e) {
-    console.error('Version check failed:', e);
+  }catch(e){
+    const frontEl=$('versionDisplay');
+    if(frontEl){frontEl.textContent='Version 6.0.4 (offline)';frontEl.style.color='#f85149';}
+  }
+}
+checkVersion();
+
+// PRIS
+$('fieldPrisType').onchange=function(){$('prisFields').style.display=this.value==='angiv'?'block':'none';if(this.value!=='angiv'){fields.prisOnline.value='';fields.prisDropin.value='';}updatePrisField();updatePreview();};
+
+function updatePrisField(){
+  const pt=fields.prisType.value;
+  if(pt==='gratis')fields.pris.value='Gratis';
+  else if(pt==='kontakt')fields.pris.value='Kontakt arrangør';
+  else{
+    const o=fields.prisOnline.value.trim(),d=fields.prisDropin.value.trim();
+    if(o&&d)fields.pris.value=o+' kr (online) / '+d+' kr (drop-in)';
+    else if(o)fields.pris.value=o+' kr (online)';
+    else if(d)fields.pris.value=d+' kr (drop-in)';
+    else fields.pris.value='';
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// PRIS HANDLING
-// ═══════════════════════════════════════════════════════════
-$('fieldPrisType').onchange = function() {
-  $('prisFields').style.display = this.value === 'angiv' ? 'block' : 'none';
-  if (this.value !== 'angiv') { fields.prisOnline.value = ''; fields.prisDropin.value = ''; }
-  updatePrisField(); updatePreview();
-};
-
-function updatePrisField() {
-  const pt = fields.prisType.value;
-  if (pt === 'gratis') { fields.pris.value = 'Gratis'; }
-  else if (pt === 'kontakt') { fields.pris.value = 'Kontakt arrangør'; }
-  else {
-    const o = fields.prisOnline.value.trim(), d = fields.prisDropin.value.trim();
-    if (o && d) fields.pris.value = o + ' kr (online) / ' + d + ' kr (drop-in)';
-    else if (o) fields.pris.value = o + ' kr (online)';
-    else if (d) fields.pris.value = d + ' kr (drop-in)';
-    else fields.pris.value = '';
-  }
-}
-
-// ═══════════════════════════════════════════════════════════
 // SEARCH
-// ═══════════════════════════════════════════════════════════
-function parseEvents(text) {
-  return String(text||'').split('\n\n').filter(e=>e.trim()).map(event => {
-    const p = {};
-    event.split('\n').forEach(l => {
-      if (l.startsWith('🗓')) p.dato = l.replace('🗓','').trim();
-      else if (l.startsWith('📌')) p.navn = l.replace('📌','').trim();
-      else if (l.startsWith('🕗')) p.tid = l.replace('🕗','').trim();
-      else if (l.startsWith('💃')) p.type = l.replace('💃','').trim();
-      else if (l.startsWith('📍')) p.sted = l.replace('📍','').trim();
-      else if (l.startsWith('💰')) p.pris = l.replace('💰','').trim();
-    });
-    return p;
-  }).filter(e => e.dato);
-}
+function parseEvents(text){return String(text||'').split('\n\n').filter(e=>e.trim()).map(event=>{const p={};event.split('\n').forEach(l=>{if(l.startsWith('🗓'))p.dato=l.replace('🗓','').trim();else if(l.startsWith('📌'))p.navn=l.replace('📌','').trim();else if(l.startsWith('🕗'))p.tid=l.replace('🕗','').trim();else if(l.startsWith('💃'))p.type=l.replace('💃','').trim();else if(l.startsWith('📍'))p.sted=l.replace('📍','').trim();else if(l.startsWith('💰'))p.pris=l.replace('💰','').trim();});return p;}).filter(e=>e.dato);}
 
-function renderEvents(events) {
-  return events.map(e => `<div class="event-card">
-    <div class="event-row title"><span class="icon">📅</span><span>${esc(e.dato)}</span></div>
-    ${e.navn ? `<div class="event-row title"><span class="icon">📌</span><span>${esc(e.navn)}</span></div>` : ''}
-    ${e.tid ? `<div class="event-row"><span class="icon">🕐</span><span>${esc(e.tid)}</span></div>` : ''}
-    ${e.sted ? `<div class="event-row"><span class="icon">📍</span><span>${esc(e.sted)}</span></div>` : ''}
-    ${e.pris ? `<div class="event-row"><span class="icon">💰</span><span>${esc(e.pris)}</span></div>` : ''}
-  </div>`).join('');
-}
+function renderEvents(events){return events.map(e=>`<div class="event-card"><div class="event-row title"><span class="icon">📅</span><span>${esc(e.dato)}</span></div>${e.navn?`<div class="event-row title"><span class="icon">📌</span><span>${esc(e.navn)}</span></div>`:''} ${e.tid?`<div class="event-row"><span class="icon">🕐</span><span>${esc(e.tid)}</span></div>`:''} ${e.sted?`<div class="event-row"><span class="icon">📍</span><span>${esc(e.sted)}</span></div>`:''} ${e.pris?`<div class="event-row"><span class="icon">💰</span><span>${esc(e.pris)}</span></div>`:''}</div>`).join('');}
 
-function addMsg(text, isUser, showMore = false) {
-  if (moreBtn) { moreBtn.remove(); moreBtn = null; }
-  const loadingMsg = chat.querySelector('.loading-msg');
-  if (loadingMsg) loadingMsg.remove();
-  const msg = document.createElement('div');
-  msg.className = 'msg ' + (isUser ? 'user' : 'bot');
-  if (isUser) { msg.innerHTML = `<div class="bubble">${esc(text)}</div>`; }
-  else {
-    const events = parseEvents(text);
-    msg.innerHTML = events.length > 0
-      ? `<div class="bubble">Her er events:<div class="events">${renderEvents(events)}</div></div>`
-      : `<div class="bubble">${esc(text)}</div>`;
-  }
-  chat.appendChild(msg);
-  if (showMore) {
-    moreBtn = document.createElement('button');
-    moreBtn.className = 'more-btn';
-    moreBtn.textContent = 'Vis flere';
-    moreBtn.onclick = loadMore;
-    chat.appendChild(moreBtn);
-  }
-  chat.scrollTop = chat.scrollHeight;
-}
+function addMsg(text,isUser,showMore=false){if(moreBtn){moreBtn.remove();moreBtn=null;}const loadingMsg=chat.querySelector('.loading-msg');if(loadingMsg)loadingMsg.remove();const msg=document.createElement('div');msg.className='msg '+(isUser?'user':'bot');if(isUser){msg.innerHTML=`<div class="bubble">${esc(text)}</div>`;}else{const events=parseEvents(text);msg.innerHTML=events.length>0?`<div class="bubble">Her er events:<div class="events">${renderEvents(events)}</div></div>`:`<div class="bubble">${esc(text)}</div>`;}chat.appendChild(msg);if(showMore){moreBtn=document.createElement('button');moreBtn.className='more-btn';moreBtn.textContent='Vis flere';moreBtn.onclick=loadMore;chat.appendChild(moreBtn);}chat.scrollTop=chat.scrollHeight;}
 
-function showLoading() {
-  const msg = document.createElement('div');
-  msg.className = 'msg bot loading-msg';
-  msg.innerHTML = `<div class="bubble loading-text">Søger events...</div>`;
-  chat.appendChild(msg);
-  chat.scrollTop = chat.scrollHeight;
-}
+function showLoading(){const msg=document.createElement('div');msg.className='msg bot loading-msg';msg.innerHTML=`<div class="bubble loading-text">Søger events...</div>`;chat.appendChild(msg);chat.scrollTop=chat.scrollHeight;}
 
-async function search(q, p) { return await jsonp(API + '?query=' + encodeURIComponent(q) + '&page=' + p + '&_=' + Date.now()); }
+async function search(q,p){return await jsonp(API+'?query='+encodeURIComponent(q)+'&page='+p+'&_='+Date.now());}
 
-async function doSearch() {
-  const q = input.value.trim();
-  if (!q || loading) return;
-  addMsg(q, true);
-  input.value = '';
-  lastQ = q; page = 0; hasMore = false; loading = true;
-  sendBtn.disabled = true;
-  showLoading();
-  try {
-    const data = await search(q, 0);
-    hasMore = !!data.hasMore;
-    addMsg(data.text || 'Ingen resultater.', false, hasMore);
-  } catch (e) { addMsg('Fejl. Prøv igen.', false); }
-  finally { loading = false; sendBtn.disabled = false; }
-}
+async function doSearch(){const q=input.value.trim();if(!q||loading)return;addMsg(q,true);input.value='';lastQ=q;page=0;hasMore=false;loading=true;sendBtn.disabled=true;showLoading();try{const data=await search(q,0);hasMore=!!data.hasMore;addMsg(data.text||'Ingen resultater.',false,hasMore);}catch(e){addMsg('Fejl. Prøv igen.',false);}finally{loading=false;sendBtn.disabled=false;}}
 
-async function loadMore() {
-  if (loading || !hasMore) return;
-  page++; loading = true;
-  if (moreBtn) moreBtn.disabled = true;
-  showLoading();
-  try {
-    const data = await search(lastQ, page);
-    hasMore = !!data.hasMore;
-    addMsg(data.text, false, hasMore);
-  } catch (e) { addMsg('Fejl.', false); hasMore = false; }
-  finally { loading = false; if (moreBtn) moreBtn.disabled = false; }
-}
+async function loadMore(){if(loading||!hasMore)return;page++;loading=true;if(moreBtn)moreBtn.disabled=true;showLoading();try{const data=await search(lastQ,page);hasMore=!!data.hasMore;addMsg(data.text,false,hasMore);}catch(e){addMsg('Fejl.',false);hasMore=false;}finally{loading=false;if(moreBtn)moreBtn.disabled=false;}}
 
-sendBtn.onclick = doSearch;
-input.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } };
+sendBtn.onclick=doSearch;
+input.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();doSearch();}};
 
-// ═══════════════════════════════════════════════════════════
 // ADMIN MODAL
-// ═══════════════════════════════════════════════════════════
-let clicks = 0, clickTimer;
-document.querySelector('.header').onclick = () => {
-  clicks++;
-  if (clicks === 3) { clicks = 0; clearTimeout(clickTimer); openAdmin(); }
-  else { clearTimeout(clickTimer); clickTimer = setTimeout(() => clicks = 0, 500); }
-};
+let clicks=0,clickTimer;
+document.querySelector('.header').onclick=()=>{clicks++;if(clicks===3){clicks=0;clearTimeout(clickTimer);openAdmin();}else{clearTimeout(clickTimer);clickTimer=setTimeout(()=>clicks=0,500);}};
 
-function openAdmin() {
-  modal.classList.add('open');
-  status.style.display = 'none';
-  preview.style.display = 'none';
-  ocrStatus.style.display = 'none';
-  warnings.classList.remove('show');
-  restoreFormState();
-  checkVersion();
-}
+function openAdmin(){modal.classList.add('open');status.style.display='none';preview.style.display='none';ocrStatus.style.display='none';warnings.classList.remove('show');restoreFormState();checkVersion();}
 
-function saveFormState() {
-  localStorage.setItem('dancemap_admin_form', JSON.stringify({
-    formVersion: FORM_VERSION,
-    payload: payload.value, dato: fields.dato.value, navn: fields.navn.value,
-    start: fields.start.value, slut: fields.slut.value, dans: fields.dans.value,
-    sted: fields.sted.value, adresse: fields.adresse.value, by: fields.by.value,
-    prisType: fields.prisType.value, prisOnline: fields.prisOnline.value,
-    prisDropin: fields.prisDropin.value, recurring: recurring.checked,
-    step: step2.style.display === 'block' ? 2 : 1
-  }));
-}
+function saveFormState(){localStorage.setItem('dancemap_admin_form',JSON.stringify({formVersion:FORM_VERSION,payload:payload.value,dato:fields.dato.value,navn:fields.navn.value,start:fields.start.value,slut:fields.slut.value,dans:fields.dans.value,sted:fields.sted.value,adresse:fields.adresse.value,by:fields.by.value,prisType:fields.prisType.value,prisOnline:fields.prisOnline.value,prisDropin:fields.prisDropin.value,recurring:recurring.checked,step:step2.style.display==='block'?2:1}));}
 
-function restoreFormState() {
-  try {
-    const saved = localStorage.getItem('dancemap_admin_form');
-    if (!saved) { step1.style.display = 'block'; step2.style.display = 'none'; payload.value = ''; clearFields(); return; }
-    const s = JSON.parse(saved);
-    payload.value = s.payload || '';
-    fields.dato.value = s.dato || '';
-    fields.navn.value = s.navn || '';
-    fields.start.value = s.start || '';
-    fields.slut.value = s.slut || '';
-    fields.dans.value = s.dans || 'Salsa';
-    fields.sted.value = s.sted || '';
-    fields.adresse.value = s.adresse || '';
-    fields.by.value = s.by || 'København';
-    fields.prisType.value = s.prisType || 'angiv';
-    fields.prisOnline.value = s.prisOnline || '';
-    fields.prisDropin.value = s.prisDropin || '';
-    recurring.checked = s.recurring || false;
-    $('prisFields').style.display = s.prisType === 'angiv' ? 'block' : 'none';
-    if (s.step === 2) { step1.style.display = 'none'; step2.style.display = 'block'; updatePrisField(); updatePreview(); }
-    else { step1.style.display = 'block'; step2.style.display = 'none'; }
-  } catch (e) { step1.style.display = 'block'; step2.style.display = 'none'; }
-}
+function restoreFormState(){try{const saved=localStorage.getItem('dancemap_admin_form');if(!saved){step1.style.display='block';step2.style.display='none';payload.value='';clearFields();return;}const s=JSON.parse(saved);payload.value=s.payload||'';fields.dato.value=s.dato||'';fields.navn.value=s.navn||'';fields.start.value=s.start||'';fields.slut.value=s.slut||'';fields.dans.value=s.dans||'Salsa';fields.sted.value=s.sted||'';fields.adresse.value=s.adresse||'';fields.by.value=s.by||'København';fields.prisType.value=s.prisType||'angiv';fields.prisOnline.value=s.prisOnline||'';fields.prisDropin.value=s.prisDropin||'';recurring.checked=s.recurring||false;$('prisFields').style.display=s.prisType==='angiv'?'block':'none';if(s.step===2){step1.style.display='none';step2.style.display='block';updatePrisField();updatePreview();}else{step1.style.display='block';step2.style.display='none';}}catch(e){step1.style.display='block';step2.style.display='none';}}
 
-function clearFormState() { localStorage.removeItem('dancemap_admin_form'); }
+function clearFormState(){localStorage.removeItem('dancemap_admin_form');}
 
-function clearFields() {
-  fields.dato.value = ''; fields.navn.value = ''; fields.start.value = ''; fields.slut.value = '';
-  fields.dans.value = 'Salsa'; fields.sted.value = ''; fields.adresse.value = ''; fields.by.value = 'København';
-  fields.pris.value = ''; fields.prisType.value = 'angiv'; fields.prisOnline.value = ''; fields.prisDropin.value = '';
-  $('prisFields').style.display = 'block';
-  warnings.classList.remove('show');
-  $('previewContent').innerHTML = '';
-  $('previewCard').style.borderColor = '';
-}
+function clearFields(){fields.dato.value='';fields.navn.value='';fields.start.value='';fields.slut.value='';fields.dans.value='Salsa';fields.sted.value='';fields.adresse.value='';fields.by.value='København';fields.pris.value='';fields.prisType.value='angiv';fields.prisOnline.value='';fields.prisDropin.value='';$('prisFields').style.display='block';warnings.classList.remove('show');$('previewContent').innerHTML='';$('previewCard').style.borderColor='';}
 
-$('closeAdmin').onclick = () => { saveFormState(); modal.classList.remove('open'); };
+$('closeAdmin').onclick=()=>{saveFormState();modal.classList.remove('open');};
+$('backBtn').onclick=()=>{step1.style.display='block';step2.style.display='none';status.style.display='none';saveFormState();};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('open')){saveFormState();modal.classList.remove('open');}});
+payload.addEventListener('input',saveFormState);
 
-// Modal lukker IKKE ved klik udenfor
-modal.onclick = () => { /* intentionally empty */ };
-$('backBtn').onclick = () => { step1.style.display = 'block'; step2.style.display = 'none'; status.style.display = 'none'; saveFormState(); };
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) { saveFormState(); modal.classList.remove('open'); } });
-payload.addEventListener('input', saveFormState);
-
-// ═══════════════════════════════════════════════════════════
 // PARSE TEXT
-// ═══════════════════════════════════════════════════════════
-const MONTHS = {'januar':'01','februar':'02','marts':'03','april':'04','maj':'05','juni':'06','juli':'07','august':'08','september':'09','oktober':'10','november':'11','december':'12','jan':'01','feb':'02','mar':'03','apr':'04','jun':'06','jul':'07','aug':'08','sep':'09','okt':'10','nov':'11','dec':'12'};
-const DANCE_ALIASES = {'rueda de casino':'Salsa','rueda':'Salsa','cuban':'Salsa','cubansk':'Salsa','bachata':'Bachata','salsa':'Salsa','kizomba':'Kizomba','tango':'Tango','zouk':'Zouk','swing':'Swing','latin':'Latin'};
-const VENUES = ['kaffesalonen','kedelhallen','copenhagen salsa academy','csa','kulturhuset','dgi-byen'];
-const VENUE_ADDRESSES = {'kaffesalonen':{adresse:'Peblinge Dossering 7',by:'København'},'kedelhallen':{adresse:'Nyelandsvej 75A',by:'Frederiksberg'},'copenhagen salsa academy':{adresse:'Kastanie Allé 20',by:'Vanløse'},'csa':{adresse:'Kastanie Allé 20',by:'Vanløse'},'kulturhuset':{adresse:'Islands Brygge 18',by:'København'},'dgi-byen':{adresse:'Tietgensgade 65',by:'København'}};
+const MONTHS={'januar':'01','februar':'02','marts':'03','april':'04','maj':'05','juni':'06','juli':'07','august':'08','september':'09','oktober':'10','november':'11','december':'12','jan':'01','feb':'02','mar':'03','apr':'04','jun':'06','jul':'07','aug':'08','sep':'09','okt':'10','nov':'11','dec':'12'};
+const DANCE_ALIASES={'rueda de casino':'Salsa','rueda':'Salsa','cuban':'Salsa','cubansk':'Salsa','bachata':'Bachata','salsa':'Salsa','kizomba':'Kizomba','tango':'Tango','zouk':'Zouk','swing':'Swing','latin':'Latin'};
+const VENUES=['kaffesalonen','kedelhallen','copenhagen salsa academy','csa','kulturhuset','dgi-byen'];
+const VENUE_ADDRESSES={'kaffesalonen':{adresse:'Peblinge Dossering 7',by:'København'},'kedelhallen':{adresse:'Nyelandsvej 75A',by:'Frederiksberg'},'copenhagen salsa academy':{adresse:'Kastanie Allé 20',by:'Vanløse'},'csa':{adresse:'Kastanie Allé 20',by:'Vanløse'},'kulturhuset':{adresse:'Islands Brygge 18',by:'København'},'dgi-byen':{adresse:'Tietgensgade 65',by:'København'}};
 
-function parseTextToFields(txt) {
-  const t = txt.toLowerCase();
-  const r = {dato:'',navn:'',start:'',slut:'',dans:'Salsa',sted:'',adresse:'',by:'København',pris:'',prisType:'angiv',prisOnline:'',prisDropin:''};
-  const isoMatch = txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);
-  if (isoMatch) r.dato = isoMatch[0];
-  else {
-    const dm = txt.match(/\b(\d{1,2})\.?\s*(januar|februar|marts|april|maj|juni|juli|august|september|oktober|november|december|jan|feb|mar|apr|jun|jul|aug|sep|okt|nov|dec)\.?\s*(20\d{2})?\b/i);
-    if (dm) r.dato = `${dm[3]||new Date().getFullYear()}-${MONTHS[dm[2].toLowerCase()]}-${dm[1].padStart(2,'0')}`;
-  }
-  const times = txt.match(/\b([01]?\d|2[0-3])[\.:,]([0-5]\d)\b/g);
-  if (times?.length > 0) { r.start = times[0].replace(/[\.,]/g,':').replace(/^(\d):/,'0$1:'); if (times.length > 1) r.slut = times[times.length-1].replace(/[\.,]/g,':').replace(/^(\d):/,'0$1:'); }
-  for (const a of Object.keys(DANCE_ALIASES).sort((a,b)=>b.length-a.length)) { if (t.includes(a)) { r.dans = DANCE_ALIASES[a]; break; } }
-  for (const v of VENUES) { if (t.includes(v)) { r.sted = v.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' '); if (VENUE_ADDRESSES[v]) { r.adresse = VENUE_ADDRESSES[v].adresse; r.by = VENUE_ADDRESSES[v].by; } break; } }
-  const lines = txt.split('\n').map(s=>s.trim()).filter(Boolean);
-  if (lines[1]) r.navn = lines[1];
-  if (/\bgratis\b/i.test(txt)) { r.prisType = 'gratis'; r.pris = 'Gratis'; }
-  return r;
-}
+function parseTextToFields(txt){const t=txt.toLowerCase();const r={dato:'',navn:'',start:'',slut:'',dans:'Salsa',sted:'',adresse:'',by:'København',pris:'',prisType:'angiv',prisOnline:'',prisDropin:''};const isoMatch=txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);if(isoMatch)r.dato=isoMatch[0];else{const dm=txt.match(/\b(\d{1,2})\.?\s*(januar|februar|marts|april|maj|juni|juli|august|september|oktober|november|december|jan|feb|mar|apr|jun|jul|aug|sep|okt|nov|dec)\.?\s*(20\d{2})?\b/i);if(dm)r.dato=`${dm[3]||new Date().getFullYear()}-${MONTHS[dm[2].toLowerCase()]}-${dm[1].padStart(2,'0')}`;}const times=txt.match(/\b([01]?\d|2[0-3])[\.:,]([0-5]\d)\b/g);if(times?.length>0){r.start=times[0].replace(/[\.,]/g,':').replace(/^(\d):/,'0$1:');if(times.length>1)r.slut=times[times.length-1].replace(/[\.,]/g,':').replace(/^(\d):/,'0$1:');}for(const a of Object.keys(DANCE_ALIASES).sort((a,b)=>b.length-a.length)){if(t.includes(a)){r.dans=DANCE_ALIASES[a];break;}}for(const v of VENUES){if(t.includes(v)){r.sted=v.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');if(VENUE_ADDRESSES[v]){r.adresse=VENUE_ADDRESSES[v].adresse;r.by=VENUE_ADDRESSES[v].by;}break;}}const lines=txt.split('\n').map(s=>s.trim()).filter(Boolean);if(lines[1])r.navn=lines[1];if(/\bgratis\b/i.test(txt)){r.prisType='gratis';r.pris='Gratis';}return r;}
 
-function validateFields() {
-  const e = [];
-  if (!fields.dato.value) e.push('❌ Dato mangler');
-  if (!fields.navn.value) e.push('❌ Navn mangler');
-  if (!fields.start.value) e.push('❌ Starttid mangler');
-  if (!fields.slut.value) e.push('❌ Sluttid mangler');
-  if (!fields.dans.value) e.push('❌ Dansetype mangler');
-  if (!fields.sted.value) e.push('❌ Sted mangler');
-  if (!fields.adresse.value) e.push('❌ Adresse mangler');
-  if (!fields.by.value) e.push('❌ By mangler');
-  if (fields.prisType.value === 'angiv' && !fields.prisOnline.value && !fields.prisDropin.value) e.push('❌ Angiv mindst én pris');
-  return { errors: e };
-}
+function validateFields(){const e=[];if(!fields.dato.value)e.push('❌ Dato mangler');if(!fields.navn.value)e.push('❌ Navn mangler');if(!fields.start.value)e.push('❌ Starttid mangler');if(!fields.slut.value)e.push('❌ Sluttid mangler');if(!fields.dans.value)e.push('❌ Dansetype mangler');if(!fields.sted.value)e.push('❌ Sted mangler');if(!fields.adresse.value)e.push('❌ Adresse mangler');if(!fields.by.value)e.push('❌ By mangler');if(fields.prisType.value==='angiv'&&!fields.prisOnline.value&&!fields.prisDropin.value)e.push('❌ Angiv mindst én pris');return{errors:e};}
 
-function updatePreview() {
-  updatePrisField();
-  const dage = ['Søn','Man','Tir','Ons','Tor','Fre','Lør'];
-  const mdr = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
-  let datoStr = '—';
-  if (fields.dato.value) {
-    const d = new Date(fields.dato.value);
-    if (!isNaN(d.getTime())) { datoStr = dage[d.getDay()] + ' ' + d.getDate() + '. ' + mdr[d.getMonth()]; if (recurring.checked) datoStr += ' 🔁'; }
-  }
-  let tidStr = fields.start.value || '—'; if (fields.slut.value) tidStr += '–' + fields.slut.value;
-  let stedStr = fields.sted.value || '—'; if (fields.adresse.value) stedStr += ', ' + fields.adresse.value; if (fields.by.value) stedStr += ', ' + fields.by.value;
-  const previewEl = $('previewContent');
-  previewEl.innerHTML = `<div class="line"><span class="icon">🗓</span><span>${esc(datoStr)}</span></div>
-    <div class="line"><span class="icon">📌</span><span>${esc(fields.navn.value||'—')}</span></div>
-    <div class="line"><span class="icon">🕗</span><span>${esc(tidStr)}</span></div>
-    <div class="line"><span class="icon">💃</span><span>${esc(fields.dans.value||'—')}</span></div>
-    <div class="line"><span class="icon">📍</span><span>${esc(stedStr)}</span></div>
-    <div class="line"><span class="icon">💰</span><span>${esc(fields.pris.value||'—')}</span></div>`;
-  const {errors} = validateFields();
-  const pc = $('previewCard');
-  pc.querySelector('.preview-label').textContent = errors.length === 0 ? '✅ Klar' : 'Forhåndsvisning';
-  pc.style.borderColor = errors.length === 0 ? '#3fb950' : '';
-}
+function updatePreview(){updatePrisField();const dage=['Søn','Man','Tir','Ons','Tor','Fre','Lør'];const mdr=['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];let datoStr='—';if(fields.dato.value){const d=new Date(fields.dato.value);if(!isNaN(d.getTime())){datoStr=dage[d.getDay()]+' '+d.getDate()+'. '+mdr[d.getMonth()];if(recurring.checked)datoStr+=' 🔁';}}let tidStr=fields.start.value||'—';if(fields.slut.value)tidStr+='–'+fields.slut.value;let stedStr=fields.sted.value||'—';if(fields.adresse.value)stedStr+=', '+fields.adresse.value;if(fields.by.value)stedStr+=', '+fields.by.value;const previewEl=$('previewContent');previewEl.innerHTML=`<div class="line"><span class="icon">🗓</span><span>${esc(datoStr)}</span></div><div class="line"><span class="icon">📌</span><span>${esc(fields.navn.value||'—')}</span></div><div class="line"><span class="icon">🕗</span><span>${esc(tidStr)}</span></div><div class="line"><span class="icon">💃</span><span>${esc(fields.dans.value||'—')}</span></div><div class="line"><span class="icon">📍</span><span>${esc(stedStr)}</span></div><div class="line"><span class="icon">💰</span><span>${esc(fields.pris.value||'—')}</span></div>`;const{errors}=validateFields();const pc=$('previewCard');pc.querySelector('.preview-label').textContent=errors.length===0?'✅ Klar':'Forhåndsvisning';pc.style.borderColor=errors.length===0?'#3fb950':'';}
 
-Object.values(fields).forEach(f => { if (f?.addEventListener) { f.addEventListener('input', () => { updatePrisField(); updatePreview(); saveFormState(); }); f.addEventListener('change', () => { updatePrisField(); updatePreview(); saveFormState(); }); } });
-recurring.addEventListener('change', () => { updatePreview(); saveFormState(); });
+Object.values(fields).forEach(f=>{if(f?.addEventListener){f.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});f.addEventListener('change',()=>{updatePrisField();updatePreview();saveFormState();});}});
+recurring.addEventListener('change',()=>{updatePreview();saveFormState();});
 
-$('parseBtn').onclick = () => {
-  const txt = payload.value.trim();
-  if (!txt) return;
-  const p = parseTextToFields(txt);
-  fields.dato.value = p.dato; fields.navn.value = p.navn; fields.start.value = p.start; fields.slut.value = p.slut;
-  fields.dans.value = p.dans; fields.sted.value = p.sted; fields.adresse.value = p.adresse; fields.by.value = p.by;
-  fields.prisType.value = p.prisType; fields.prisOnline.value = p.prisOnline; fields.prisDropin.value = p.prisDropin;
-  $('prisFields').style.display = p.prisType === 'angiv' ? 'block' : 'none';
-  updatePrisField();
-  const {errors} = validateFields();
-  if (errors.length) { warnings.innerHTML = errors.join('<br>'); warnings.classList.add('show'); } else { warnings.classList.remove('show'); }
-  updatePreview();
-  step1.style.display = 'none'; step2.style.display = 'block';
-  saveFormState();
-};
+$('parseBtn').onclick=()=>{const txt=payload.value.trim();if(!txt)return;const p=parseTextToFields(txt);fields.dato.value=p.dato;fields.navn.value=p.navn;fields.start.value=p.start;fields.slut.value=p.slut;fields.dans.value=p.dans;fields.sted.value=p.sted;fields.adresse.value=p.adresse;fields.by.value=p.by;fields.prisType.value=p.prisType;fields.prisOnline.value=p.prisOnline;fields.prisDropin.value=p.prisDropin;$('prisFields').style.display=p.prisType==='angiv'?'block':'none';updatePrisField();const{errors}=validateFields();if(errors.length){warnings.innerHTML=errors.join('<br>');warnings.classList.add('show');}else{warnings.classList.remove('show');}updatePreview();step1.style.display='none';step2.style.display='block';saveFormState();};
 
-// ═══════════════════════════════════════════════════════════
-// CLAUDE VISION - Smart billede-parsing (VIA SIKKER PROXY)
-// API-nøgle er gemt sikkert i Vercel environment variables
-// ═══════════════════════════════════════════════════════════
-
-async function processImageWithClaude(file) {
-  ocrStatus.style.display = 'block';
-  ocrStatus.innerHTML = '🤖 <span class="loading-text">Claude analyserer billede...</span>';
-  
-  try {
-    // Konverter fil til base64
-    const base64Full = await fileToBase64(file);
-    const mediaType = file.type || 'image/png';
-    
-    // Send til SIKKER Vercel proxy (API-nøgle er server-side)
-    const response = await fetch('/api/parse-image', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        image: base64Full,
-        mediaType: mediaType
-      })
+// CLAUDE VISION (via Vercel proxy)
+async function processImageWithClaude(file){
+  ocrStatus.style.display='block';
+  ocrStatus.innerHTML='🤖 <span class="loading-text">Claude analyserer billede...</span>';
+  try{
+    const base64=await fileToBase64(file);
+    const mediaType=file.type||'image/png';
+    const response=await fetch('/api/parse-image',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({image:base64,mediaType:mediaType})
     });
-    
-    const result = await response.json();
-    
-    if (!result.success) {
-      ocrStatus.innerHTML = '❌ ' + (result.error || 'Fejl');
-      ocrStatus.style.color = '#f85149';
-      return;
-    }
-    
-    const d = result.data;
-    
-    // Udfyld felter
-    if (d.dato) fields.dato.value = d.dato;
-    if (d.navn) fields.navn.value = d.navn;
-    if (d.starttid) fields.start.value = d.starttid;
-    if (d.sluttid) fields.slut.value = d.sluttid;
-    if (d.dansetype) fields.dans.value = d.dansetype;
-    if (d.sted) fields.sted.value = d.sted;
-    if (d.adresse) fields.adresse.value = d.adresse;
-    if (d.by) fields.by.value = d.by;
-    if (d.pris) {
-      if (d.pris.toLowerCase() === 'gratis') {
-        fields.prisType.value = 'gratis';
-        $('prisFields').style.display = 'none';
-      } else {
-        fields.prisType.value = 'angiv';
-        $('prisFields').style.display = 'block';
-        const prisMatch = d.pris.match(/(\d+)/g);
-        if (prisMatch) {
-          if (prisMatch.length >= 2) { fields.prisOnline.value = prisMatch[0]; fields.prisDropin.value = prisMatch[1]; }
-          else { fields.prisDropin.value = prisMatch[0]; }
-        }
-      }
-    }
-    
-    updatePrisField();
-    updatePreview();
-    
-    const confidence = Math.round((result.confidence || 0.8) * 100);
-    ocrStatus.innerHTML = `✅ Parsed med ${confidence}% sikkerhed`;
-    ocrStatus.style.color = confidence > 80 ? '#3fb950' : '#f0883e';
-    
-    step1.style.display = 'none';
-    step2.style.display = 'block';
-    
-    const {errors} = validateFields();
-    if (errors.length) { warnings.innerHTML = errors.join('<br>'); warnings.classList.add('show'); }
-    else { warnings.classList.remove('show'); }
-    
+    const result=await response.json();
+    if(!result.success){ocrStatus.innerHTML='❌ '+(result.error||'Fejl');ocrStatus.style.color='#f85149';return;}
+    const d=result.data;
+    if(d.dato)fields.dato.value=d.dato;
+    if(d.navn)fields.navn.value=d.navn;
+    if(d.starttid)fields.start.value=d.starttid;
+    if(d.sluttid)fields.slut.value=d.sluttid;
+    if(d.dansetype)fields.dans.value=d.dansetype;
+    if(d.sted)fields.sted.value=d.sted;
+    if(d.adresse)fields.adresse.value=d.adresse;
+    if(d.by)fields.by.value=d.by;
+    if(d.pris){if(d.pris.toLowerCase()==='gratis'){fields.prisType.value='gratis';$('prisFields').style.display='none';}else{fields.prisType.value='angiv';$('prisFields').style.display='block';const prisMatch=d.pris.match(/(\d+)/g);if(prisMatch){if(prisMatch.length>=2){fields.prisOnline.value=prisMatch[0];fields.prisDropin.value=prisMatch[1];}else{fields.prisDropin.value=prisMatch[0];}}}}
+    updatePrisField();updatePreview();
+    const confidence=Math.round((result.confidence||0.8)*100);
+    ocrStatus.innerHTML=`✅ Parsed med ${confidence}% sikkerhed`;
+    ocrStatus.style.color=confidence>80?'#3fb950':'#f0883e';
+    step1.style.display='none';step2.style.display='block';
+    const{errors}=validateFields();
+    if(errors.length){warnings.innerHTML=errors.join('<br>');warnings.classList.add('show');}else{warnings.classList.remove('show');}
     saveFormState();
     await checkForDuplicates();
-    
-    setTimeout(() => ocrStatus.style.display = 'none', 3000);
-    
-  } catch (err) {
-    console.error('Claude Vision error:', err);
-    ocrStatus.innerHTML = '❌ ' + (err.message || 'Netværksfejl');
-    ocrStatus.style.color = '#f85149';
-  }
+    setTimeout(()=>ocrStatus.style.display='none',3000);
+  }catch(err){console.error('Claude Vision error:',err);ocrStatus.innerHTML='❌ '+(err.message||'Netværksfejl');ocrStatus.style.color='#f85149';}
 }
 
-// ═══════════════════════════════════════════════════════════
-// SMART DUBLET-CHECK
-// ═══════════════════════════════════════════════════════════
-
-async function checkForDuplicates() {
-  const params = new URLSearchParams();
-  params.set('action', 'check-duplicate');
-  params.set('dato', fields.dato.value);
-  params.set('navn', fields.navn.value);
-  params.set('starttid', fields.start.value);
-  params.set('sted', fields.sted.value);
-  params.set('dansetype', fields.dans.value);
-  params.set('_', Date.now());
-  
-  try {
-    const result = await jsonp(API + '?' + params.toString());
-    
-    if (result.success && result.matches && result.matches.length > 0) {
-      const match = result.matches[0];
-      
-      if (result.isDuplicate) {
-        // Høj sandsynlighed for dublet - blokér
-        warnings.innerHTML = `⚠️ <strong>Mulig dublet fundet!</strong><br><br>
-          📅 ${esc(match.dato)}<br>
-          📌 ${esc(match.navn)}<br>
-          🕗 ${esc(match.starttid)}<br>
-          📍 ${esc(match.sted)}<br>
-          <span style="color:#7d8590">(${match.reasons.join(', ')})</span><br><br>
-          <span style="color:#f85149">Status: ${match.status}</span>`;
+async function checkForDuplicates(){
+  const params=new URLSearchParams();
+  params.set('action','check-duplicate');
+  params.set('dato',fields.dato.value);
+  params.set('navn',fields.navn.value);
+  params.set('starttid',fields.start.value);
+  params.set('sted',fields.sted.value);
+  params.set('dansetype',fields.dans.value);
+  params.set('_',Date.now());
+  try{
+    const result=await jsonp(API+'?'+params.toString());
+    if(result.success&&result.matches&&result.matches.length>0){
+      const match=result.matches[0];
+      if(result.isDuplicate){
+        warnings.innerHTML=`⚠️ <strong>Mulig dublet fundet!</strong><br><br>📅 ${esc(match.dato)}<br>📌 ${esc(match.navn)}<br>🕗 ${esc(match.starttid)}<br>📍 ${esc(match.sted)}<br><span style="color:#7d8590">(${match.reasons.join(', ')})</span><br><br><span style="color:#f85149">Status: ${match.status}</span>`;
         warnings.classList.add('show');
-        
-        // Gør preview-kort rødt
-        $('previewCard').style.borderColor = '#f85149';
-        $('previewCard').querySelector('.preview-label').textContent = '⛔ Sandsynlig dublet';
-        
-      } else if (result.isLikelyDuplicate) {
-        // Medium sandsynlighed - advar men tillad
-        warnings.innerHTML = `⚠️ <strong>Lignende event findes:</strong><br><br>
-          📅 ${esc(match.dato)}<br>
-          📌 ${esc(match.navn)}<br>
-          📍 ${esc(match.sted)}<br>
-          <span style="color:#7d8590">(${match.reasons.join(', ')})</span><br><br>
-          <span style="color:#f0883e">Du kan stadig tilføje eventet hvis det er forskelligt.</span>`;
+        $('previewCard').style.borderColor='#f85149';
+        $('previewCard').querySelector('.preview-label').textContent='⛔ Sandsynlig dublet';
+      }else if(result.isLikelyDuplicate){
+        warnings.innerHTML=`⚠️ <strong>Lignende event findes:</strong><br><br>📅 ${esc(match.dato)}<br>📌 ${esc(match.navn)}<br>📍 ${esc(match.sted)}<br><span style="color:#7d8590">(${match.reasons.join(', ')})</span><br><br><span style="color:#f0883e">Du kan stadig tilføje eventet hvis det er forskelligt.</span>`;
         warnings.classList.add('show');
-        
-        // Gør preview-kort orange
-        $('previewCard').style.borderColor = '#f0883e';
-        $('previewCard').querySelector('.preview-label').textContent = '⚠️ Tjek for dublet';
+        $('previewCard').style.borderColor='#f0883e';
+        $('previewCard').querySelector('.preview-label').textContent='⚠️ Tjek for dublet';
       }
     }
-  } catch (err) {
-    console.log('Duplicate check failed:', err);
-    // Ignorer fejl - lad brugeren fortsætte
-  }
+  }catch(err){console.log('Duplicate check failed:',err);}
 }
 
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+function fileToBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});}
 
-// Upload knap
-$('uploadBtn').onclick = () => $('fileInput').click();
+$('uploadBtn').onclick=()=>$('fileInput').click();
+$('fileInput').onchange=e=>{const f=e.target.files[0];if(f?.type.startsWith('image/')){preview.src=URL.createObjectURL(f);preview.style.display='block';processImageWithClaude(f);}e.target.value='';};
+modal.onpaste=e=>{const items=e.clipboardData?.items||[];for(const item of items){if(item.type.startsWith('image/')){e.preventDefault();const f=item.getAsFile();preview.src=URL.createObjectURL(f);preview.style.display='block';processImageWithClaude(f);return;}}};
 
-// File input change
-$('fileInput').onchange = e => {
-  const f = e.target.files[0];
-  if (f?.type.startsWith('image/')) {
-    preview.src = URL.createObjectURL(f);
-    preview.style.display = 'block';
-    processImageWithClaude(f);
-  }
-  e.target.value = '';
-};
-
-// Paste handler - både billeder og tekst
-modal.onpaste = e => {
-  const items = e.clipboardData?.items || [];
-  
-  // Check for billede først
-  for (const item of items) {
-    if (item.type.startsWith('image/')) {
-      e.preventDefault();
-      const f = item.getAsFile();
-      preview.src = URL.createObjectURL(f);
-      preview.style.display = 'block';
-      processImageWithClaude(f);
-      return;
-    }
-  }
-  
-  // Hvis ingen billede, lad tekst-paste ske normalt
-};
-
-// ═══════════════════════════════════════════════════════════
-// ADMIN SUBMIT - SEPARATE PARAMS (NO-PARSE MODE)
-// ═══════════════════════════════════════════════════════════
-let isSubmitting = false;
-$('adminSubmitBtn').onclick = async () => {
-  if (isSubmitting) return;
-  const {errors} = validateFields();
-  if (errors.length) { warnings.innerHTML = errors.join('<br>'); warnings.classList.add('show'); status.style.display = 'block'; status.textContent = 'Udfyld alle felter'; status.className = 'submit-status error'; return; }
+// ADMIN SUBMIT
+let isSubmitting=false;
+$('adminSubmitBtn').onclick=async()=>{
+  if(isSubmitting)return;
+  const{errors}=validateFields();
+  if(errors.length){warnings.innerHTML=errors.join('<br>');warnings.classList.add('show');status.style.display='block';status.textContent='Udfyld alle felter';status.className='submit-status error';return;}
   warnings.classList.remove('show');
-
-  // BUILD URL WITH SEPARATE PARAMS - NO PAYLOAD PARSING
-  const params = new URLSearchParams();
-  params.set('action', 'admin-import');
-  params.set('dato', fields.dato.value);
-  params.set('navn', fields.navn.value);
-  params.set('starttid', fields.start.value);
-  params.set('sluttid', fields.slut.value);
-  params.set('dansetype', fields.dans.value);
-  params.set('sted', fields.sted.value);
-  params.set('adresse', fields.adresse.value);
-  params.set('by', fields.by.value);
-  params.set('pris', fields.pris.value);
-  params.set('recurring', recurring.checked);
-  params.set('_', Date.now());
-
-  const btn = $('adminSubmitBtn');
-  btn.disabled = true; btn.textContent = 'Sender...';
-  isSubmitting = true;
-  status.style.display = 'none';
-
-  try {
-    const data = await jsonp(API + '?' + params.toString());
-    status.style.display = 'block';
-    if (data.success) {
-      status.textContent = 'Event tilføjet (pending)';
-      status.className = 'submit-status success';
-      $('previewCard').style.borderColor = '#3fb950';
-      clearFields(); clearFormState();
-      step1.style.display = 'block'; step2.style.display = 'none';
-      payload.value = ''; preview.style.display = 'none'; recurring.checked = false;
-    } else if (data.error === 'DUPLICATE') {
-      status.textContent = '⚠️ Dublet fundet';
-      status.className = 'submit-status error';
-      $('previewCard').style.borderColor = '#f85149';
-    } else {
-      status.textContent = data.text || '❌ Fejl';
-      status.className = 'submit-status error';
-    }
-  } catch (e) {
-    status.style.display = 'block';
-    status.textContent = '❌ Teknisk fejl';
-    status.className = 'submit-status error';
-  }
-  btn.disabled = false; btn.textContent = 'Tilføj Event (pending)';
-  isSubmitting = false;
+  const params=new URLSearchParams();
+  params.set('action','admin-import');
+  params.set('dato',fields.dato.value);
+  params.set('navn',fields.navn.value);
+  params.set('starttid',fields.start.value);
+  params.set('sluttid',fields.slut.value);
+  params.set('dansetype',fields.dans.value);
+  params.set('sted',fields.sted.value);
+  params.set('adresse',fields.adresse.value);
+  params.set('by',fields.by.value);
+  params.set('pris',fields.pris.value);
+  params.set('recurring',recurring.checked);
+  params.set('_',Date.now());
+  const btn=$('adminSubmitBtn');
+  btn.disabled=true;btn.textContent='Sender...';
+  isSubmitting=true;
+  status.style.display='none';
+  try{
+    const data=await jsonp(API+'?'+params.toString());
+    status.style.display='block';
+    if(data.success){status.textContent='Event tilføjet (pending)';status.className='submit-status success';$('previewCard').style.borderColor='#3fb950';clearFields();clearFormState();step1.style.display='block';step2.style.display='none';payload.value='';preview.style.display='none';recurring.checked=false;}
+    else if(data.error==='DUPLICATE'){status.textContent='⚠️ Dublet fundet';status.className='submit-status error';$('previewCard').style.borderColor='#f85149';}
+    else{status.textContent=data.text||'❌ Fejl';status.className='submit-status error';}
+  }catch(e){status.style.display='block';status.textContent='❌ Teknisk fejl';status.className='submit-status error';}
+  btn.disabled=false;btn.textContent='Tilføj Event (pending)';
+  isSubmitting=false;
 };
 
-addMsg('Skriv fx: salsa eller bachata', false);
+addMsg('Skriv fx: salsa eller bachata',false);
 
-async function loadWeekCount() {
-  try { const d = await jsonp(API + '?action=weekcount&_=' + Date.now()); if (d.success && d.count > 0) $('weekCount').textContent = d.count + ' events denne uge'; }
-  catch (e) {}
-}
+async function loadWeekCount(){try{const d=await jsonp(API+'?action=weekcount&_='+Date.now());if(d.success&&d.count>0)$('weekCount').textContent=d.count+' events denne uge';}catch(e){}}
 loadWeekCount();
 
-// ═══════════════════════════════════════════════════════════
 // ADMIN TABS
-// ═══════════════════════════════════════════════════════════
-const tabAdd = $('tabAdd'), tabPending = $('tabPending');
-const adminAddView = $('adminAddView'), adminPendingView = $('adminPendingView');
-tabAdd.onclick = () => { tabAdd.classList.add('active'); tabPending.classList.remove('active'); adminAddView.style.display = 'block'; adminPendingView.style.display = 'none'; };
-tabPending.onclick = () => { tabPending.classList.add('active'); tabAdd.classList.remove('active'); adminAddView.style.display = 'none'; adminPendingView.style.display = 'block'; loadPendingList(); };
+const tabAdd=$('tabAdd'),tabPending=$('tabPending');
+const adminAddView=$('adminAddView'),adminPendingView=$('adminPendingView');
+tabAdd.onclick=()=>{tabAdd.classList.add('active');tabPending.classList.remove('active');adminAddView.style.display='block';adminPendingView.style.display='none';};
+tabPending.onclick=()=>{tabPending.classList.add('active');tabAdd.classList.remove('active');adminAddView.style.display='none';adminPendingView.style.display='block';loadPendingList();};
 
-async function loadPendingList() {
-  const list = $('pendingList'), empty = $('pendingEmpty');
-  list.innerHTML = '<div style="color:#7d8590;text-align:center;padding:20px;">Henter...</div>';
-  empty.style.display = 'none';
-  try {
-    const data = await jsonp(API + '?action=list-pending&_=' + Date.now());
-    if (!data.success || !data.events?.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
-    list.innerHTML = data.events.map(e => `
-      <div class="pending-item" data-row="${e.row}">
-        <div class="pending-item-header"><span class="pending-item-title">${esc(e.navn)}</span></div>
-        <div class="pending-item-details">
-          <div class="pending-item-row"><span>🗓</span><span>${esc(e.dato)}</span></div>
-          <div class="pending-item-row"><span>🕗</span><span>${esc(e.starttid)}–${esc(e.sluttid)}</span></div>
-          <div class="pending-item-row"><span>💃</span><span>${esc(e.dansetype)}</span></div>
-          <div class="pending-item-row"><span>📍</span><span>${esc(e.sted)}, ${esc(e.adresse)}, ${esc(e.by)}</span></div>
-          <div class="pending-item-row"><span>💰</span><span>${esc(e.pris)}</span></div>
-          ${e.insertedAt ? `<div class="pending-item-row" style="font-size:11px;color:#7d8590"><span>📥</span><span>Tilføjet: ${esc(e.insertedAt.substring(0,10))}</span></div>` : ''}
-        </div>
-        <div class="pending-actions">
-          <button class="pending-approve-btn" onclick="changeStatus(${e.row},'active')">Godkend ✓</button>
-          <button class="pending-reject-btn" onclick="deleteEvent(${e.row})" style="padding:10px 12px;background:#da3633;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;">Afvis ✕</button>
-        </div>
-      </div>
-    `).join('');
-    empty.style.display = 'none';
-  } catch (e) { list.innerHTML = '<div style="color:#f85149;text-align:center;padding:20px;">Fejl</div>'; }
+async function loadPendingList(){
+  const list=$('pendingList'),empty=$('pendingEmpty');
+  list.innerHTML='<div style="color:#7d8590;text-align:center;padding:20px;">Henter...</div>';
+  empty.style.display='none';
+  try{
+    const data=await jsonp(API+'?action=list-pending&_='+Date.now());
+    if(!data.success||!data.events?.length){list.innerHTML='';empty.style.display='block';return;}
+    list.innerHTML=data.events.map(e=>`<div class="pending-item" data-row="${e.row}"><div class="pending-item-header"><span class="pending-item-title">${esc(e.navn)}</span></div><div class="pending-item-details"><div class="pending-item-row"><span>🗓</span><span>${esc(e.dato)}</span></div><div class="pending-item-row"><span>🕗</span><span>${esc(e.starttid)}–${esc(e.sluttid)}</span></div><div class="pending-item-row"><span>💃</span><span>${esc(e.dansetype)}</span></div><div class="pending-item-row"><span>📍</span><span>${esc(e.sted)}, ${esc(e.adresse)}, ${esc(e.by)}</span></div><div class="pending-item-row"><span>💰</span><span>${esc(e.pris)}</span></div>${e.insertedAt?`<div class="pending-item-row" style="font-size:11px;color:#7d8590"><span>📥</span><span>Tilføjet: ${esc(e.insertedAt)}</span></div>`:''}</div><div class="pending-actions"><button class="pending-approve-btn" onclick="changeStatus(${e.row},'active')">Godkend ✓</button><button style="padding:10px 12px;background:#da3633;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;" onclick="deleteEvent(${e.row})">Afvis ✕</button></div></div>`).join('');
+    empty.style.display='none';
+  }catch(e){list.innerHTML='<div style="color:#f85149;text-align:center;padding:20px;">Fejl</div>';}
 }
 
-async function changeStatus(row, nextStatus) {
-  const item = document.querySelector(`.pending-item[data-row="${row}"]`);
-  const btn = item?.querySelector('.pending-approve-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Opdaterer...'; }
-  try {
-    const data = await jsonp(API + '?action=update-status&row=' + row + '&status=' + encodeURIComponent(nextStatus) + '&_=' + Date.now());
-    if (data?.success && nextStatus === 'active') {
-      if (item) { item.style.background = '#238636'; if (btn) btn.textContent = '✓ Godkendt'; setTimeout(() => item.remove(), 600); }
-      loadWeekCount();
-    } else { if (btn) { btn.disabled = false; btn.textContent = 'Fejl'; } }
-  } catch (e) { if (btn) { btn.disabled = false; btn.textContent = 'Fejl'; } }
+async function changeStatus(row,nextStatus){
+  const item=document.querySelector(`.pending-item[data-row="${row}"]`);
+  const btn=item?.querySelector('.pending-approve-btn');
+  if(btn){btn.disabled=true;btn.textContent='Opdaterer...';}
+  try{
+    const data=await jsonp(API+'?action=update-status&row='+row+'&status='+encodeURIComponent(nextStatus)+'&_='+Date.now());
+    if(data?.success&&nextStatus==='active'){if(item){item.style.background='#238636';if(btn)btn.textContent='✓ Godkendt';setTimeout(()=>item.remove(),600);}loadWeekCount();}
+    else{if(btn){btn.disabled=false;btn.textContent='Fejl';}}
+  }catch(e){if(btn){btn.disabled=false;btn.textContent='Fejl';}}
 }
 
-async function deleteEvent(row) {
-  if (!confirm('Er du sikker på du vil afvise dette event?')) return;
-  const item = document.querySelector(`.pending-item[data-row="${row}"]`);
-  const btn = item?.querySelector('.pending-reject-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Sletter...'; }
-  try {
-    const data = await jsonp(API + '?action=delete-row&row=' + row + '&_=' + Date.now());
-    if (data?.success) {
-      if (item) { item.style.background = '#da3633'; item.style.opacity = '0.5'; setTimeout(() => item.remove(), 400); }
-    } else { if (btn) { btn.disabled = false; btn.textContent = 'Fejl'; } }
-  } catch (e) { if (btn) { btn.disabled = false; btn.textContent = 'Fejl'; } }
+async function deleteEvent(row){
+  if(!confirm('Er du sikker på du vil afvise dette event?'))return;
+  const item=document.querySelector(`.pending-item[data-row="${row}"]`);
+  try{
+    const data=await jsonp(API+'?action=delete-row&row='+row+'&_='+Date.now());
+    if(data?.success){if(item){item.style.background='#da3633';item.style.opacity='0.5';setTimeout(()=>item.remove(),400);}}
+  }catch(e){}
 }
 
-$('refreshPending').onclick = loadPendingList;
+$('refreshPending').onclick=loadPendingList;
 
-// PWA
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
-let deferredPrompt = null;
-const installBanner = $('installBanner'), installGuide = $('installGuide');
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-if (!isStandalone) {
-  const dismissed = localStorage.getItem('installDismissed');
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; if (!dismissed) installBanner.classList.add('show'); });
-  if (isMobile && !dismissed) setTimeout(() => installBanner.classList.add('show'), 2000);
-  $('installBtn').onclick = async () => {
-    if (deferredPrompt) { deferredPrompt.prompt(); const r = await deferredPrompt.userChoice; if (r.outcome === 'accepted') installBanner.classList.remove('show'); deferredPrompt = null; }
-    else if (isIOS) { $('guideIOS').style.display = 'block'; $('guideAndroid').style.display = 'none'; installGuide.classList.add('show'); }
-    else { $('guideIOS').style.display = 'none'; $('guideAndroid').style.display = 'block'; installGuide.classList.add('show'); }
-  };
-  $('installClose').onclick = () => { installBanner.classList.remove('show'); localStorage.setItem('installDismissed', 'true'); };
-  $('guideClose').onclick = () => { installGuide.classList.remove('show'); installBanner.classList.remove('show'); localStorage.setItem('installDismissed', 'true'); };
-}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 </script>
 </body>
 </html>
