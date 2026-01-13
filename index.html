@@ -122,12 +122,21 @@
       <button class="admin-tab" id="tabPending">Godkend Events</button>
     </div>
     <div id="adminAddView">
+      <div id="adminWelcome" style="background:linear-gradient(135deg,#238636 0%,#2ea043 100%);border-radius:12px;padding:16px;margin-bottom:16px;display:none;">
+        <div style="font-size:15px;color:white;font-weight:500;" id="welcomeText"></div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.8);margin-top:4px;">Sammen får vi DanceMap til at vokse! 💃</div>
+      </div>
       <div id="adminStep1">
-        <p class="admin-intro">📸 Paste et skærmbillede (Ctrl+V) eller upload en event-flyer. Claude AI udfylder alle felter automatisk.</p>
-        <button type="button" class="upload-btn" id="uploadBtn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          Upload event-billede (Claude Vision AI)
-        </button>
+        <p class="admin-intro">📸 Klik på knappen for at indsætte fra udklipsholder, eller upload en fil.</p>
+        <div style="display:flex;gap:10px;margin-bottom:16px;">
+          <button type="button" class="upload-btn" id="pasteBtn" style="flex:1;margin-bottom:0;background:rgba(99,102,241,0.1);border-color:#6366f1;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+            📋 Indsæt fra udklipsholder
+          </button>
+          <button type="button" class="upload-btn" id="uploadBtn" style="flex:0 0 auto;width:50px;margin-bottom:0;padding:16px 12px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </button>
+        </div>
         <input type="file" id="fileInput" accept="image/*" style="display:none" />
         <img id="imagePreview" class="image-preview" />
         <div id="ocrStatus" class="ocr-status" style="display:none"></div>
@@ -184,8 +193,8 @@
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.0.4-2025-01-13';
-const FORM_VERSION = '6.0.4';
+const FRONTEND_VERSION = 'v6.0.5-2025-01-13';
+const FORM_VERSION = '6.0.5';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -224,12 +233,12 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.0.4':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.0.4':'⚠️ Version mismatch';frontEl.style.color=match?'#484f58':'#f85149';}
+      if(adminEl){adminEl.textContent=match?'Version 6.0.5':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.0.5':'⚠️ Version mismatch';frontEl.style.color=match?'#484f58':'#f85149';}
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.0.4 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.0.5 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
@@ -272,7 +281,7 @@ input.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();doSearch();}};
 let clicks=0,clickTimer;
 document.querySelector('.header').onclick=()=>{clicks++;if(clicks===3){clicks=0;clearTimeout(clickTimer);openAdmin();}else{clearTimeout(clickTimer);clickTimer=setTimeout(()=>clicks=0,500);}};
 
-function openAdmin(){modal.classList.add('open');status.style.display='none';preview.style.display='none';ocrStatus.style.display='none';warnings.classList.remove('show');restoreFormState();checkVersion();}
+function openAdmin(){modal.classList.add('open');status.style.display='none';preview.style.display='none';ocrStatus.style.display='none';warnings.classList.remove('show');restoreFormState();checkVersion();showWelcome();}
 
 function saveFormState(){localStorage.setItem('dancemap_admin_form',JSON.stringify({formVersion:FORM_VERSION,payload:payload.value,dato:fields.dato.value,navn:fields.navn.value,start:fields.start.value,slut:fields.slut.value,dans:fields.dans.value,sted:fields.sted.value,adresse:fields.adresse.value,by:fields.by.value,prisType:fields.prisType.value,prisOnline:fields.prisOnline.value,prisDropin:fields.prisDropin.value,recurring:recurring.checked,step:step2.style.display==='block'?2:1}));}
 
@@ -372,8 +381,54 @@ async function checkForDuplicates(){
 function fileToBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});}
 
 $('uploadBtn').onclick=()=>$('fileInput').click();
+
+// PASTE FRA UDKLIPSHOLDER KNAP
+$('pasteBtn').onclick=async()=>{
+  try{
+    const items=await navigator.clipboard.read();
+    for(const item of items){
+      const imageType=item.types.find(t=>t.startsWith('image/'));
+      if(imageType){
+        const blob=await item.getType(imageType);
+        const file=new File([blob],'pasted-image.png',{type:imageType});
+        preview.src=URL.createObjectURL(file);
+        preview.style.display='block';
+        processImageWithClaude(file);
+        return;
+      }
+    }
+    ocrStatus.style.display='block';
+    ocrStatus.innerHTML='📋 Ingen billede i udklipsholder';
+    ocrStatus.style.color='#f0883e';
+    setTimeout(()=>ocrStatus.style.display='none',2000);
+  }catch(err){
+    console.log('Clipboard access denied, trying paste event');
+    ocrStatus.style.display='block';
+    ocrStatus.innerHTML='💡 Brug Ctrl+V for at indsætte';
+    ocrStatus.style.color='#7d8590';
+    setTimeout(()=>ocrStatus.style.display='none',2000);
+  }
+};
+
+// ADMIN VELKOMMEN
+function showWelcome(){
+  const name=localStorage.getItem('dancemap_admin_name');
+  if(name){
+    $('adminWelcome').style.display='block';
+    $('welcomeText').textContent='Velkommen '+name+'! 🎉';
+  }else{
+    const entered=prompt('Hvad hedder du? (vises når du åbner admin)');
+    if(entered&&entered.trim()){
+      localStorage.setItem('dancemap_admin_name',entered.trim());
+      $('adminWelcome').style.display='block';
+      $('welcomeText').textContent='Velkommen '+entered.trim()+'! 🎉';
+    }
+  }
+}
+
 $('fileInput').onchange=e=>{const f=e.target.files[0];if(f?.type.startsWith('image/')){preview.src=URL.createObjectURL(f);preview.style.display='block';processImageWithClaude(f);}e.target.value='';};
 modal.onpaste=e=>{const items=e.clipboardData?.items||[];for(const item of items){if(item.type.startsWith('image/')){e.preventDefault();const f=item.getAsFile();preview.src=URL.createObjectURL(f);preview.style.display='block';processImageWithClaude(f);return;}}};
+
 
 // ADMIN SUBMIT
 let isSubmitting=false;
