@@ -709,7 +709,8 @@ $('parseBtn').onclick = () => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// CLAUDE VISION - Smart billede-parsing
+// CLAUDE VISION - Smart billede-parsing (VIA SIKKER PROXY)
+// API-nøgle er gemt sikkert i Vercel environment variables
 // ═══════════════════════════════════════════════════════════
 
 async function processImageWithClaude(file) {
@@ -718,96 +719,75 @@ async function processImageWithClaude(file) {
   
   try {
     // Konverter fil til base64
-    const base64 = await fileToBase64(file);
+    const base64Full = await fileToBase64(file);
     const mediaType = file.type || 'image/png';
     
-    // Send til backend
-    const response = await fetch(API, {
+    // Send til SIKKER Vercel proxy (API-nøgle er server-side)
+    const response = await fetch('/api/parse-image', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        action: 'parse-image',
-        image: base64,
+        image: base64Full,
         mediaType: mediaType
       })
     });
     
     const result = await response.json();
     
-    if (result.success && result.data) {
-      // Udfyld felter automatisk
-      const d = result.data;
-      
-      if (d.dato) fields.dato.value = d.dato;
-      if (d.navn) fields.navn.value = d.navn;
-      if (d.starttid) fields.start.value = d.starttid;
-      if (d.sluttid) fields.slut.value = d.sluttid;
-      if (d.dansetype) fields.dans.value = d.dansetype;
-      if (d.sted) fields.sted.value = d.sted;
-      if (d.adresse) fields.adresse.value = d.adresse;
-      if (d.by) fields.by.value = d.by;
-      if (d.pris) {
-        // Smart pris-håndtering
-        if (d.pris.toLowerCase() === 'gratis') {
-          fields.prisType.value = 'gratis';
-          $('prisFields').style.display = 'none';
-        } else {
-          fields.prisType.value = 'angiv';
-          $('prisFields').style.display = 'block';
-          // Prøv at parse priser
-          const prisMatch = d.pris.match(/(\d+)/g);
-          if (prisMatch) {
-            if (prisMatch.length >= 2) {
-              fields.prisOnline.value = prisMatch[0];
-              fields.prisDropin.value = prisMatch[1];
-            } else {
-              fields.prisDropin.value = prisMatch[0];
-            }
-          }
+    if (!result.success) {
+      ocrStatus.innerHTML = '❌ ' + (result.error || 'Fejl');
+      ocrStatus.style.color = '#f85149';
+      return;
+    }
+    
+    const d = result.data;
+    
+    // Udfyld felter
+    if (d.dato) fields.dato.value = d.dato;
+    if (d.navn) fields.navn.value = d.navn;
+    if (d.starttid) fields.start.value = d.starttid;
+    if (d.sluttid) fields.slut.value = d.sluttid;
+    if (d.dansetype) fields.dans.value = d.dansetype;
+    if (d.sted) fields.sted.value = d.sted;
+    if (d.adresse) fields.adresse.value = d.adresse;
+    if (d.by) fields.by.value = d.by;
+    if (d.pris) {
+      if (d.pris.toLowerCase() === 'gratis') {
+        fields.prisType.value = 'gratis';
+        $('prisFields').style.display = 'none';
+      } else {
+        fields.prisType.value = 'angiv';
+        $('prisFields').style.display = 'block';
+        const prisMatch = d.pris.match(/(\d+)/g);
+        if (prisMatch) {
+          if (prisMatch.length >= 2) { fields.prisOnline.value = prisMatch[0]; fields.prisDropin.value = prisMatch[1]; }
+          else { fields.prisDropin.value = prisMatch[0]; }
         }
       }
-      if (d.recurring) recurring.checked = d.recurring;
-      
-      updatePrisField();
-      updatePreview();
-      
-      const confidence = Math.round((result.confidence || 0.8) * 100);
-      ocrStatus.innerHTML = `✅ Parsed med ${confidence}% sikkerhed`;
-      ocrStatus.style.color = confidence > 80 ? '#3fb950' : '#f0883e';
-      
-      // Gå til step 2
-      step1.style.display = 'none';
-      step2.style.display = 'block';
-      
-      // Vis warnings hvis der mangler felter
-      const {errors} = validateFields();
-      if (errors.length) {
-        warnings.innerHTML = errors.join('<br>');
-        warnings.classList.add('show');
-      } else {
-        warnings.classList.remove('show');
-      }
-      
-      saveFormState();
-      
-      // SMART DUBLET-CHECK
-      await checkForDuplicates();
-      
-      setTimeout(() => {
-        ocrStatus.style.display = 'none';
-      }, 3000);
-      
-    } else if (result.needsSetup) {
-      ocrStatus.innerHTML = '⚠️ API-nøgle mangler. <a href="#" onclick="alert(\'Kør setupApiKey() i Apps Script\')">Se instruktioner</a>';
-      ocrStatus.style.color = '#f85149';
-    } else {
-      ocrStatus.innerHTML = '❌ ' + (result.text || 'Kunne ikke parse billede');
-      ocrStatus.style.color = '#f85149';
     }
+    
+    updatePrisField();
+    updatePreview();
+    
+    const confidence = Math.round((result.confidence || 0.8) * 100);
+    ocrStatus.innerHTML = `✅ Parsed med ${confidence}% sikkerhed`;
+    ocrStatus.style.color = confidence > 80 ? '#3fb950' : '#f0883e';
+    
+    step1.style.display = 'none';
+    step2.style.display = 'block';
+    
+    const {errors} = validateFields();
+    if (errors.length) { warnings.innerHTML = errors.join('<br>'); warnings.classList.add('show'); }
+    else { warnings.classList.remove('show'); }
+    
+    saveFormState();
+    await checkForDuplicates();
+    
+    setTimeout(() => ocrStatus.style.display = 'none', 3000);
     
   } catch (err) {
     console.error('Claude Vision error:', err);
-    ocrStatus.innerHTML = '❌ Netværksfejl - prøv igen';
+    ocrStatus.innerHTML = '❌ ' + (err.message || 'Netværksfejl');
     ocrStatus.style.color = '#f85149';
   }
 }
