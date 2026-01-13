@@ -23,6 +23,19 @@
     .logo::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(from var(--angle),#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);animation:rainbow-spin 3s linear infinite}
     @property --angle{syntax:'<angle>';initial-value:0deg;inherits:false}
     @keyframes rainbow-spin{to{--angle:360deg}}
+    .welcome-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;display:flex;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(8px)}
+    .welcome-popup{background:#0d1117;border-radius:24px 24px 0 0;padding:32px 24px 40px;width:100%;max-width:420px;text-align:center;position:relative;animation:slide-up 0.5s ease-out}
+    .welcome-popup::before{content:'';position:absolute;inset:-3px;border-radius:26px 26px 0 0;background:conic-gradient(from var(--angle),#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);animation:rainbow-spin 3s linear infinite;z-index:-1}
+    .welcome-popup::after{content:'';position:absolute;inset:0;border-radius:24px 24px 0 0;background:#0d1117;z-index:-1}
+    @keyframes slide-up{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+    .welcome-popup h2{font-size:28px;margin-bottom:8px;background:linear-gradient(135deg,#f472b6,#818cf8,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .welcome-popup .tagline{color:#7d8590;font-size:14px;margin-bottom:24px}
+    .welcome-features{text-align:left;margin-bottom:24px}
+    .welcome-feature{display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(99,102,241,0.08);border-radius:14px;margin-bottom:10px;border:1px solid rgba(99,102,241,0.15)}
+    .welcome-feature .icon{font-size:26px}
+    .welcome-feature .text{font-size:14px;color:#c9d1d9;line-height:1.4}
+    .welcome-btn{width:100%;padding:16px;background:linear-gradient(135deg,#ec4899,#8b5cf6,#06b6d4);color:white;border:none;border-radius:14px;font-size:16px;font-weight:600;cursor:pointer;transition:all 0.3s;box-shadow:0 4px 20px rgba(139,92,246,0.4)}
+    .welcome-btn:hover{transform:scale(1.02);box-shadow:0 6px 30px rgba(139,92,246,0.5)}
     .header-text h1{font-size:18px;font-weight:600;color:#e6edf3;margin-bottom:2px}.header-text .sub{font-size:13px;color:#7d8590}
     .header-text .week-count{font-size:12px;color:#6366f1;margin-top:4px}.header-text .version-display{font-size:10px;color:#484f58;margin-top:2px}
     .chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;min-height:200px;max-height:60vh}
@@ -92,6 +105,28 @@
   </style>
 </head>
 <body>
+
+<div id="welcomeOverlay" class="welcome-overlay" style="display:none">
+  <div class="welcome-popup">
+    <h2>Velkommen til DanceMap! 💃</h2>
+    <p class="tagline">Find danseevent i København & omegn</p>
+    <div class="welcome-features">
+      <div class="welcome-feature">
+        <span class="icon">🔍</span>
+        <span class="text">Søg efter salsa, bachata, kizomba og meget mere</span>
+      </div>
+      <div class="welcome-feature">
+        <span class="icon">📅</span>
+        <span class="text">Se kommende events med tid, sted og pris</span>
+      </div>
+      <div class="welcome-feature">
+        <span class="icon">🤖</span>
+        <span class="text">Skriv naturligt – fx "salsa i aften" eller "bachata weekend"</span>
+      </div>
+    </div>
+    <button class="welcome-btn" onclick="closeWelcome()">Kom i gang! 🕺</button>
+  </div>
+</div>
 
 <div class="card">
   <div class="header">
@@ -220,8 +255,8 @@
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.1.9-2025-01-13';
-const FORM_VERSION = '6.1.9';
+const FRONTEND_VERSION = 'v6.2.1-2025-01-13';
+const FORM_VERSION = '6.2.1';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -282,8 +317,8 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.1.9':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.1.9':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
+      if(adminEl){adminEl.textContent=match?'Version 6.2.1':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.2.1':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
       
       // Auto-refresh hvis version mismatch
       if(!match){
@@ -299,7 +334,7 @@ async function checkVersion(){
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.1.9 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.2.1 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
@@ -680,6 +715,15 @@ addMsg('Skriv fx: salsa eller bachata',false);
 
 async function loadWeekCount(){try{const d=await jsonp(API+'?action=weekcount&_='+Date.now());if(d.success&&d.count>0)$('weekCount').textContent=d.count+' kommende events';}catch(e){}}
 loadWeekCount();
+
+// WELCOME POPUP FOR FIRST-TIME USERS
+function closeWelcome(){
+  $('welcomeOverlay').style.display='none';
+  localStorage.setItem('dancemap_welcomed','true');
+}
+if(!localStorage.getItem('dancemap_welcomed')){
+  $('welcomeOverlay').style.display='flex';
+}
 
 // ADMIN TABS
 const tabAdd=$('tabAdd'),tabPending=$('tabPending');
