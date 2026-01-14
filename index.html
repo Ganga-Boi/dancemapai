@@ -80,6 +80,10 @@
     body.light-mode .event-actions{border-color:#d1d5da}
     body.light-mode .cal-btn{border-color:#d1d5da;color:#57606a}
     body.light-mode .cal-btn:hover{background:#e8ebef}
+    .ticket-link{color:#6366f1;text-decoration:none;font-weight:500}
+    .ticket-link:hover{text-decoration:underline;color:#818cf8}
+    body.light-mode .ticket-link{color:#4f46e5}
+    body.light-mode .ticket-link:hover{color:#6366f1}
     .event-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:14px;color:#c9d1d9}
     .event-row:last-child{margin-bottom:0}.event-row .icon{width:20px;text-align:center;flex-shrink:0}
     .event-row.title{font-weight:600;color:#e6edf3;font-size:15px}
@@ -282,6 +286,10 @@ if(localStorage.getItem('dancemap_welcomed')){
           </div>
         </div>
         <input type="hidden" id="fieldPris" />
+        <div class="field-row">
+          <label>🎫 Billetlink (valgfrit)</label>
+          <input type="url" id="fieldLink" placeholder="https://billetto.dk/..." />
+        </div>
         <div id="fieldWarnings" class="field-warnings"></div>
         <div id="previewCard" class="preview-card">
           <div class="preview-label">Forhåndsvisning</div>
@@ -305,8 +313,8 @@ if(localStorage.getItem('dancemap_welcomed')){
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.3.6-2025-01-14';
-const FORM_VERSION = '6.3.6';
+const FRONTEND_VERSION = 'v6.3.7-2025-01-14';
+const FORM_VERSION = '6.3.7';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -323,7 +331,7 @@ const step2=$('adminStep2'),warnings=$('fieldWarnings');
 
 let lastQ='',page=0,hasMore=false,loading=false,moreBtn=null;
 
-const fields={dato:$('fieldDato'),navn:$('fieldNavn'),start:$('fieldStart'),slut:$('fieldSlut'),dans:$('fieldDans'),sted:$('fieldSted'),adresse:$('fieldAdresse'),by:$('fieldBy'),pris:$('fieldPris'),prisType:$('fieldPrisType'),prisOnline:$('fieldPrisOnline'),prisDropin:$('fieldPrisDropin'),mobilepay:$('fieldMobilepay'),mobilepayPris:$('fieldMobilepayPris'),mobilepayInfo:$('fieldMobilepayInfo')};
+const fields={dato:$('fieldDato'),navn:$('fieldNavn'),start:$('fieldStart'),slut:$('fieldSlut'),dans:$('fieldDans'),sted:$('fieldSted'),adresse:$('fieldAdresse'),by:$('fieldBy'),pris:$('fieldPris'),prisType:$('fieldPrisType'),prisOnline:$('fieldPrisOnline'),prisDropin:$('fieldPrisDropin'),mobilepay:$('fieldMobilepay'),mobilepayPris:$('fieldMobilepayPris'),mobilepayInfo:$('fieldMobilepayInfo'),link:$('fieldLink')};
 
 // Dansetype checkboxes handler
 function getSelectedDanceTypes(){
@@ -367,8 +375,8 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.3.6':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.3.6':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
+      if(adminEl){adminEl.textContent=match?'Version 6.3.7':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.3.7':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
       
       // Auto-refresh hvis version mismatch
       if(!match){
@@ -384,7 +392,7 @@ async function checkVersion(){
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.3.6 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.3.7 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
@@ -451,7 +459,7 @@ function setSearchCache(query, data) {
   } catch(e) {}
 }
 
-function parseEvents(text){return String(text||'').split('\n\n').filter(e=>e.trim()).map(event=>{const p={};event.split('\n').forEach(l=>{if(l.startsWith('🗓'))p.dato=l.replace('🗓','').trim();else if(l.startsWith('📌'))p.navn=l.replace('📌','').trim();else if(l.startsWith('🕗'))p.tid=l.replace('🕗','').trim();else if(l.startsWith('💃'))p.type=l.replace('💃','').trim();else if(l.startsWith('📍'))p.sted=l.replace('📍','').trim();else if(l.startsWith('💰'))p.pris=l.replace('💰','').trim();});return p;}).filter(e=>e.dato);}
+function parseEvents(text){return String(text||'').split('\n\n').filter(e=>e.trim()).map(event=>{const p={};event.split('\n').forEach(l=>{if(l.startsWith('🗓'))p.dato=l.replace('🗓','').trim();else if(l.startsWith('📌'))p.navn=l.replace('📌','').trim();else if(l.startsWith('🕗'))p.tid=l.replace('🕗','').trim();else if(l.startsWith('💃'))p.type=l.replace('💃','').trim();else if(l.startsWith('📍'))p.sted=l.replace('📍','').trim();else if(l.startsWith('💰'))p.pris=l.replace('💰','').trim();else if(l.startsWith('🎫'))p.link=l.replace('🎫','').trim();});return p;}).filter(e=>e.dato);}
 
 // CALENDAR FUNCTIONS
 function createGoogleCalUrl(event){
@@ -539,6 +547,7 @@ function renderEvents(events){
     ${e.tid?`<div class="event-row"><span class="icon">🕐</span><span>${esc(e.tid)}</span></div>`:''}
     ${e.sted?`<div class="event-row"><span class="icon">📍</span><span>${esc(e.sted)}</span></div>`:''}
     ${e.pris?`<div class="event-row"><span class="icon">💰</span><span>${esc(e.pris)}</span></div>`:''}
+    ${e.link?`<div class="event-row"><span class="icon">🎫</span><a href="${esc(e.link)}" target="_blank" class="ticket-link">Køb billet</a></div>`:''}
     <div class="event-actions">
       <button class="cal-btn google" onclick="window.open(createGoogleCalUrl(currentEvents[${i}]),'_blank')">📅 Google</button>
       <button class="cal-btn apple" onclick="createIcsFile(currentEvents[${i}])">🍎 Apple</button>
@@ -644,7 +653,7 @@ function restoreFormState(){try{const saved=localStorage.getItem('dancemap_admin
 
 function clearFormState(){localStorage.removeItem('dancemap_admin_form');}
 
-function clearFields(){fields.dato.value='';fields.navn.value='';fields.start.value='';fields.slut.value='';document.querySelectorAll('input[name="dansetype"]').forEach(c=>c.checked=false);fields.dans.value='';fields.sted.value='';fields.adresse.value='';fields.by.value='København';fields.pris.value='';fields.prisType.value='angiv';fields.prisOnline.value='';fields.prisDropin.value='';fields.mobilepay.value='';fields.mobilepayPris.value='';fields.mobilepayInfo.value='';$('prisFields').style.display='block';$('mobilepayFields').style.display='none';warnings.classList.remove('show');$('previewContent').innerHTML='';$('previewCard').style.borderColor='';}
+function clearFields(){fields.dato.value='';fields.navn.value='';fields.start.value='';fields.slut.value='';document.querySelectorAll('input[name="dansetype"]').forEach(c=>c.checked=false);fields.dans.value='';fields.sted.value='';fields.adresse.value='';fields.by.value='København';fields.pris.value='';fields.prisType.value='angiv';fields.prisOnline.value='';fields.prisDropin.value='';fields.mobilepay.value='';fields.mobilepayPris.value='';fields.mobilepayInfo.value='';fields.link.value='';$('prisFields').style.display='block';$('mobilepayFields').style.display='none';warnings.classList.remove('show');$('previewContent').innerHTML='';$('previewCard').style.borderColor='';}
 
 $('closeAdmin').onclick=()=>{saveFormState();modal.classList.remove('open');};
 $('backBtn').onclick=()=>{step2.style.display='none';status.style.display='none';saveFormState();};
@@ -837,6 +846,7 @@ $('adminSubmitBtn').onclick=async()=>{
   params.set('adresse',fields.adresse.value);
   params.set('by',fields.by.value);
   params.set('pris',fields.pris.value);
+  params.set('link',fields.link.value||'');
   params.set('recurring',recurring.checked);
   params.set('kilde',localStorage.getItem('dancemap_admin_name')||'Admin');
   params.set('_',Date.now());
