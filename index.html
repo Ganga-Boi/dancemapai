@@ -305,8 +305,8 @@ if(localStorage.getItem('dancemap_welcomed')){
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.3.4-2025-01-13';
-const FORM_VERSION = '6.3.4';
+const FRONTEND_VERSION = 'v6.3.6-2025-01-14';
+const FORM_VERSION = '6.3.6';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -367,8 +367,8 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.3.4':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.3.4':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
+      if(adminEl){adminEl.textContent=match?'Version 6.3.6':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.3.6':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
       
       // Auto-refresh hvis version mismatch
       if(!match){
@@ -384,7 +384,7 @@ async function checkVersion(){
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.3.4 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.3.6 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
