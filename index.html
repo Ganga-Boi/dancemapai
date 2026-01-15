@@ -313,8 +313,8 @@ if(localStorage.getItem('dancemap_welcomed')){
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.3.8-2025-01-14';
-const FORM_VERSION = '6.3.8';
+const FRONTEND_VERSION = 'v6.3.9-2025-01-14';
+const FORM_VERSION = '6.3.9';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -375,8 +375,8 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.3.8':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.3.8':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
+      if(adminEl){adminEl.textContent=match?'Version 6.3.9':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.3.9':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
       
       // Auto-refresh hvis version mismatch
       if(!match){
@@ -392,7 +392,7 @@ async function checkVersion(){
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.3.8 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.3.9 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
@@ -698,6 +698,23 @@ if(p.prisType && fields.prisType.value==='angiv' && !fields.prisOnline.value && 
 updatePrisField();updatePreview();step2.style.display='block';saveFormState();};
 
 // CLAUDE VISION (via Vercel proxy)
+function simplifyPrice(pris){
+  if(!pris)return'';
+  const p=pris.toLowerCase();
+  if(p.includes('free')||p.includes('gratis'))return'Gratis';
+  // Find alle priser i teksten
+  const prices=pris.match(/\d+\s*(kr|dkk)?/gi)||[];
+  if(prices.length===0)return pris;
+  // Fjern "DKK", "kr" osv og få bare tal
+  const nums=prices.map(x=>parseInt(x.match(/\d+/)[0])).filter(n=>n>0);
+  if(nums.length===0)return pris;
+  // Find laveste og højeste pris
+  const min=Math.min(...nums);
+  const max=Math.max(...nums);
+  if(min===max)return min+' kr';
+  return min+'–'+max+' kr';
+}
+
 async function processImageWithClaude(file){
   ocrStatus.style.display='block';
   ocrStatus.innerHTML='🤖 <span class="loading-text">Claude analyserer billede...</span>';
@@ -720,7 +737,7 @@ async function processImageWithClaude(file){
     if(d.sted && !fields.sted.value)fields.sted.value=d.sted;
     if(d.adresse && !fields.adresse.value)fields.adresse.value=d.adresse;
     if(d.by && !fields.by.value)fields.by.value=d.by;
-    if(d.pris && fields.prisType.value==='angiv' && !fields.prisOnline.value && !fields.prisDropin.value){if(d.pris.toLowerCase()==='gratis'){fields.prisType.value='gratis';$('prisFields').style.display='none';}else{fields.prisType.value='angiv';$('prisFields').style.display='block';const prisMatch=d.pris.match(/(\d+)/g);if(prisMatch){if(prisMatch.length>=2){fields.prisOnline.value=prisMatch[0];fields.prisDropin.value=prisMatch[1];}else{fields.prisDropin.value=prisMatch[0];}}}}
+    if(d.pris && fields.prisType.value==='angiv' && !fields.prisOnline.value && !fields.prisDropin.value){const simplePris=simplifyPrice(d.pris);if(simplePris.toLowerCase()==='gratis'){fields.prisType.value='gratis';$('prisFields').style.display='none';}else{fields.prisType.value='angiv';$('prisFields').style.display='block';const prisMatch=simplePris.match(/(\d+)/g);if(prisMatch){if(prisMatch.length>=2){fields.prisOnline.value=prisMatch[0];fields.prisDropin.value=prisMatch[1];}else{fields.prisDropin.value=prisMatch[0];}}}}
     updatePrisField();updatePreview();
     const confidence=Math.round((result.confidence||0.8)*100);
     ocrStatus.innerHTML=`✅ Parsed med ${confidence}% sikkerhed`;
