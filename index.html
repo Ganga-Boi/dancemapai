@@ -23,15 +23,20 @@
     .logo::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(from var(--angle),#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);animation:rainbow-spin 3s linear infinite}
     @property --angle{syntax:'<angle>';initial-value:0deg;inherits:false}
     @keyframes rainbow-spin{to{--angle:360deg}}
-    .welcome-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:2000;display:flex;align-items:center;justify-content:flex-start}
-    .welcome-popup{background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border-radius:0 24px 24px 0;padding:32px 28px;max-width:260px;box-shadow:4px 0 30px rgba(0,0,0,0.3);animation:slide-in-left 0.4s ease-out;touch-action:pan-x}
-    @keyframes slide-in-left{from{transform:translateX(-100%);opacity:0}to{transform:translateX(0);opacity:1}}
-    .welcome-logo{width:56px;height:56px;margin:0 auto 20px;display:block;border-radius:14px;box-shadow:0 4px 15px rgba(99,102,241,0.3)}
-    .welcome-popup h2{font-size:20px;font-weight:600;color:#1a1a2e;text-align:center;margin-bottom:8px}
-    .welcome-popup .tagline{color:#4a5568;font-size:14px;text-align:center;margin-bottom:24px;line-height:1.5}
-    .welcome-popup .hint{color:#6366f1;font-size:13px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:500}
-    .welcome-popup .hint span{animation:swipe-hint 1.5s ease-in-out infinite}
-    @keyframes swipe-hint{0%,100%{transform:translateX(0);opacity:0.6}50%{transform:translateX(10px);opacity:1}}
+    .welcome-overlay{position:fixed;top:0;left:0;right:0;z-index:2000;animation:slideDown 0.4s ease-out}
+    @keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+    .welcome-popup{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);padding:20px;padding-right:50px;box-shadow:0 4px 20px rgba(0,0,0,0.3);position:relative}
+    .welcome-popup h3{margin:0 0 8px 0;font-size:18px;color:#e6edf3}
+    .welcome-popup p{margin:0;font-size:14px;color:#8b949e;line-height:1.5}
+    .welcome-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border:none;background:rgba(255,255,255,0.1);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
+    .welcome-close:hover{background:rgba(255,255,255,0.2)}
+    .welcome-close svg{width:16px;height:16px;stroke:#8b949e}
+    body.light-mode .welcome-popup{background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%)}
+    body.light-mode .welcome-popup h3{color:#1a1a2e}
+    body.light-mode .welcome-popup p{color:#57606a}
+    body.light-mode .welcome-close{background:rgba(0,0,0,0.05)}
+    body.light-mode .welcome-close:hover{background:rgba(0,0,0,0.1)}
+    body.light-mode .welcome-close svg{stroke:#57606a}
     
     /* LIGHT/DARK MODE TOGGLE - No thumb, highlight active */
     .theme-toggle{position:absolute;top:12px;right:12px;cursor:pointer;z-index:100;display:flex;flex-direction:column;align-items:center;gap:4px;animation:bounce-in 0.5s ease-out}
@@ -145,12 +150,15 @@
 </head>
 <body>
 
-<div id="welcomeOverlay" class="welcome-overlay" onclick="closeWelcome()">
-  <div class="welcome-popup" id="welcomePopup" onclick="event.stopPropagation()">
-    <img src="/dancemap-icon.svg" alt="DanceMap" class="welcome-logo" />
-    <h2>Velkommen til DanceMap</h2>
-    <p class="tagline">Søg efter Salsa eller Bachata</p>
-    <div class="hint"><span>→</span> Swipe for at starte</div>
+<div id="welcomeOverlay" class="welcome-overlay">
+  <div class="welcome-popup" id="welcomePopup">
+    <button class="welcome-close" onclick="closeWelcome()" aria-label="Luk">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+    <h3>🕺 Velkommen til DanceMap</h3>
+    <p>Find salsa, bachata og andre danseevents i Danmark. Søg fx "salsa i aften" eller "bachata København"</p>
   </div>
 </div>
 <script>
@@ -313,8 +321,8 @@ if(localStorage.getItem('dancemap_welcomed')){
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.4.3-2025-01-15';
-const FORM_VERSION = '6.4.3';
+const FRONTEND_VERSION = 'v6.4.5-2025-01-15';
+const FORM_VERSION = '6.4.5';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -375,8 +383,8 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.4.3':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.4.3':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
+      if(adminEl){adminEl.textContent=match?'Version 6.4.5':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.4.5':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
       
       // Auto-refresh hvis version mismatch
       if(!match){
@@ -392,7 +400,7 @@ async function checkVersion(){
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.4.3 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.4.5 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
@@ -666,7 +674,126 @@ const DANCE_ALIASES={'rueda de casino':'Salsa','rueda':'Salsa','cuban':'Salsa','
 const VENUES=['kaffesalonen','kedelhallen','copenhagen salsa academy','csa','kulturhuset','dgi-byen'];
 const VENUE_ADDRESSES={'kaffesalonen':{adresse:'Peblinge Dossering 7',by:'København'},'kedelhallen':{adresse:'Nyelandsvej 75A',by:'Frederiksberg'},'copenhagen salsa academy':{adresse:'Kastanie Allé 20',by:'Vanløse'},'csa':{adresse:'Kastanie Allé 20',by:'Vanløse'},'kulturhuset':{adresse:'Islands Brygge 18',by:'København'},'dgi-byen':{adresse:'Tietgensgade 65',by:'København'}};
 
-function parseTextToFields(txt){const t=txt.toLowerCase();const r={dato:'',navn:'',start:'',slut:'',dans:'Salsa',sted:'',adresse:'',by:'København',pris:'',prisType:'angiv',prisOnline:'',prisDropin:'',link:''};const isoMatch=txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);if(isoMatch)r.dato=isoMatch[0];else{const dm=txt.match(/\b(\d{1,2})\.?\s*(januar|februar|marts|april|maj|juni|juli|august|september|oktober|november|december|january|february|march|may|june|july|october|jan|feb|mar|apr|jun|jul|aug|sep|okt|oct|nov|dec)\.?\s*(20\d{2})?\b/i);if(dm)r.dato=`${dm[3]||new Date().getFullYear()}-${MONTHS[dm[2].toLowerCase()]}-${dm[1].padStart(2,'0')}`;else{const dm2=txt.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?\b/i);if(dm2)r.dato=`${new Date().getFullYear()}-${MONTHS[dm2[1].toLowerCase()]}-${dm2[2].padStart(2,'0')}`;}}const times=txt.match(/\b([01]?\d|2[0-3])[\.:,]([0-5]\d)\b/g);if(times?.length>0){const sorted=times.map(t=>t.replace(/[\.,]/g,':')).sort();r.start=sorted[0].replace(/^(\d):/,'0$1:');if(sorted.length>1)r.slut=sorted[sorted.length-1].replace(/^(\d):/,'0$1:');}for(const a of Object.keys(DANCE_ALIASES).sort((a,b)=>b.length-a.length)){if(t.includes(a)){r.dans=DANCE_ALIASES[a];break;}}for(const v of VENUES){if(t.includes(v)){r.sted=v.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');if(VENUE_ADDRESSES[v]){r.adresse=VENUE_ADDRESSES[v].adresse;r.by=VENUE_ADDRESSES[v].by;}break;}}const lines=txt.split('\n').map(s=>s.trim()).filter(Boolean);if(lines[1])r.navn=lines[1];if(/\bgratis\b/i.test(txt)||/\bfree\b/i.test(txt)){r.prisType='gratis';r.pris='Gratis';}else{const prisMatch=txt.match(/(\d+)[,.]?-?\s*(kr|dkk)/gi);if(prisMatch){const nums=prisMatch.map(p=>parseInt(p.match(/\d+/)[0])).filter(n=>n>0&&n<2000);if(nums.length>0){const min=Math.min(...nums);const max=Math.max(...nums);r.prisOnline=String(min);r.prisDropin=String(max);}}}const linkMatch=txt.match(/https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi);if(linkMatch){const ticketLink=linkMatch.find(l=>/billetto|ticketmaster|tikkio|eventbrite|place2book|bookwhen/i.test(l));r.link=ticketLink||linkMatch[0];}return r;}
+function parseTextToFields(txt){
+  const t=txt.toLowerCase();
+  const r={dato:'',navn:'',start:'',slut:'',dans:'Salsa',sted:'',adresse:'',by:'København',pris:'',prisType:'angiv',prisOnline:'',prisDropin:'',link:''};
+  
+  // === DATO ===
+  // Format: "January 17th", "17. januar", "2026-01-17"
+  const isoMatch=txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);
+  if(isoMatch){
+    r.dato=isoMatch[0];
+  }else{
+    // Engelsk: "January 17th" eller "Saturday January 17th"
+    const engMatch=txt.match(/(?:saturday|sunday|monday|tuesday|wednesday|thursday|friday)?\s*(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?(?:\s*,?\s*(20\d{2}))?/i);
+    if(engMatch){
+      const year=engMatch[3]||new Date().getFullYear();
+      r.dato=`${year}-${MONTHS[engMatch[1].toLowerCase()]}-${engMatch[2].padStart(2,'0')}`;
+    }else{
+      // Dansk: "17. januar" eller "17 januar 2026"
+      const dkMatch=txt.match(/\b(\d{1,2})\.?\s*(januar|februar|marts|april|maj|juni|juli|august|september|oktober|november|december|jan|feb|mar|apr|maj|jun|jul|aug|sep|okt|nov|dec)\.?\s*(20\d{2})?\b/i);
+      if(dkMatch){
+        const year=dkMatch[3]||new Date().getFullYear();
+        r.dato=`${year}-${MONTHS[dkMatch[2].toLowerCase()]}-${dkMatch[1].padStart(2,'0')}`;
+      }
+    }
+  }
+  
+  // === TIDER ===
+  // Find alle tider og sorter dem intelligent (00:30 er efter 23:00)
+  const allTimes=txt.match(/\b([0-2]?\d)[:\.]([0-5]\d)\b/g)||[];
+  if(allTimes.length>0){
+    const timeToMinutes=t=>{const[h,m]=t.replace('.',':').split(':').map(Number);return h<6?(h+24)*60+m:h*60+m;};
+    const sorted=[...new Set(allTimes)].map(t=>t.replace('.',':')).sort((a,b)=>timeToMinutes(a)-timeToMinutes(b));
+    r.start=sorted[0].replace(/^(\d):/,'0$1:');
+    if(sorted.length>1)r.slut=sorted[sorted.length-1].replace(/^(\d):/,'0$1:');
+  }
+  
+  // === DANSETYPE ===
+  // Check først for procent-angivelse (fx "70% Salsa")
+  const percentMatch=txt.match(/(\d+)\s*%\s*(salsa|bachata|kizomba|zouk|tango|swing)/gi);
+  if(percentMatch){
+    let maxPercent=0;let mainDance='Salsa';
+    percentMatch.forEach(m=>{
+      const[,pct,dance]=m.match(/(\d+)\s*%\s*(\w+)/i);
+      if(parseInt(pct)>maxPercent){maxPercent=parseInt(pct);mainDance=dance.charAt(0).toUpperCase()+dance.slice(1).toLowerCase();}
+    });
+    r.dans=mainDance;
+  }else{
+    for(const a of Object.keys(DANCE_ALIASES).sort((a,b)=>b.length-a.length)){
+      if(t.includes(a)){r.dans=DANCE_ALIASES[a];break;}
+    }
+  }
+  
+  // === STED & ADRESSE ===
+  // Søg efter "Address:" pattern først
+  const addressMatch=txt.match(/address[:\s]+([^,\n]+)/i);
+  if(addressMatch){
+    let fullAddr=addressMatch[1].trim();
+    // Fjern trailing punktum og info-tegn
+    fullAddr=fullAddr.replace(/[.ℹ︎]+.*$/,'').trim();
+    r.adresse=fullAddr;
+    r.sted=fullAddr.split('(')[0].trim();
+  }
+  // Find postnummer og by: "2720 Vanløse" (4 cifre efterfulgt af by)
+  const zipMatch=txt.match(/\b(\d{4})\s+([A-Za-zæøåÆØÅ][A-Za-zæøåÆØÅ]+)\b/);
+  if(zipMatch&&parseInt(zipMatch[1])>=1000&&parseInt(zipMatch[1])<=9999){
+    r.by=zipMatch[2].trim();
+  }
+  // Fallback til kendte venues
+  if(!r.sted){
+    for(const v of VENUES){
+      if(t.includes(v)){
+        r.sted=v.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+        if(VENUE_ADDRESSES[v]){r.adresse=VENUE_ADDRESSES[v].adresse;r.by=VENUE_ADDRESSES[v].by;}
+        break;
+      }
+    }
+  }
+  
+  // === PRISER ===
+  if(/\bgratis\b/i.test(txt)||/\bfree\b/i.test(txt)){
+    r.prisType='gratis';r.pris='Gratis';
+  }else{
+    const prisMatch=txt.match(/(\d+)[,.]?-?\s*(?:kr|dkk)/gi);
+    if(prisMatch){
+      const nums=prisMatch.map(p=>parseInt(p.match(/\d+/)[0])).filter(n=>n>0&&n<2000);
+      if(nums.length>0){
+        const min=Math.min(...nums);
+        const max=Math.max(...nums);
+        r.prisOnline=String(min);
+        r.prisDropin=String(max);
+      }
+    }
+  }
+  
+  // === LINK ===
+  const linkMatch=txt.match(/https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi);
+  if(linkMatch){
+    const ticketLink=linkMatch.find(l=>/billetto|ticketmaster|tikkio|eventbrite|place2book|bookwhen/i.test(l));
+    const foundLink=ticketLink||linkMatch[0];
+    // Bloker afkortede links
+    r.link=foundLink.includes('...')?'':foundLink;
+  }
+  
+  // === NAVN ===
+  // Prioritet: 1) ☆/★ titel, 2) "invites you to", 3) Første betydningsfulde linje
+  const starTitle=txt.match(/[☆★]\s*([^☆★\n]{10,}?)\s*[☆★]/);
+  if(starTitle&&!starTitle[1].includes('kr')&&!starTitle[1].includes('ENTRANCE')){
+    r.navn=starTitle[1].trim();
+  }else{
+    const inviteMatch=txt.match(/invites?\s+(?:you\s+)?(?:everyone\s+)?to\s+([^!.\n]+)/i);
+    if(inviteMatch){
+      r.navn=inviteMatch[1].trim();
+    }else{
+      // Brug organisationsnavn + event type
+      const orgMatch=txt.match(/^(?:Begivenhed af\s+)?([^\n]+)/i);
+      if(orgMatch&&orgMatch[1].length<60)r.navn=orgMatch[1].trim();
+    }
+  }
+  
+  return r;
+}
 
 function validateFields(){const e=[];if(!fields.dato.value)e.push('❌ Dato mangler');if(!fields.navn.value)e.push('❌ Navn mangler');if(!fields.start.value)e.push('❌ Starttid mangler');if(!fields.slut.value)e.push('❌ Sluttid mangler');if(getSelectedDanceTypes().length===0)e.push('❌ Vælg mindst én dansetype');if(!fields.sted.value)e.push('❌ Sted mangler');if(!fields.adresse.value)e.push('❌ Adresse mangler');if(!fields.by.value)e.push('❌ By mangler');if(fields.prisType.value==='angiv'&&!fields.prisOnline.value&&!fields.prisDropin.value)e.push('❌ Angiv mindst én pris');if(fields.prisType.value==='mobilepay'&&!fields.mobilepayPris.value)e.push('❌ Angiv MobilePay pris');return{errors:e};}
 
@@ -902,13 +1029,13 @@ addMsg('Skriv fx: salsa eller bachata',false);
 async function loadWeekCount(){try{const d=await jsonp(API+'?action=weekcount&_='+Date.now());if(d.success&&d.count>0)$('weekCount').textContent=d.count+' kommende events';}catch(e){}}
 loadWeekCount();
 
-// WELCOME POPUP FOR FIRST-TIME USERS
-let touchStartX=0,touchCurrentX=0;
+// WELCOME BANNER FOR FIRST-TIME USERS
 const welcomePopup=$('welcomePopup'),welcomeOverlay=$('welcomeOverlay');
 
 function closeWelcome(){
-  welcomePopup.style.transform='translateX(100vw)';
-  welcomePopup.style.transition='transform 0.3s ease-out';
+  if(!welcomeOverlay)return;
+  welcomeOverlay.style.transform='translateY(-100%)';
+  welcomeOverlay.style.transition='transform 0.3s ease-in';
   setTimeout(()=>{
     welcomeOverlay.style.display='none';
     localStorage.setItem('dancemap_welcomed','true');
@@ -916,25 +1043,11 @@ function closeWelcome(){
 }
 
 function showWelcome(){
+  if(!welcomeOverlay)return;
   localStorage.removeItem('dancemap_welcomed');
-  welcomePopup.style.transform='';
-  welcomePopup.style.transition='';
-  welcomeOverlay.style.display='flex';
-}
-
-if(welcomePopup){
-  welcomePopup.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX;},{passive:true});
-  welcomePopup.addEventListener('touchmove',e=>{
-    touchCurrentX=e.touches[0].clientX;
-    const diff=touchCurrentX-touchStartX;
-    if(diff>0)welcomePopup.style.transform=`translateX(${diff}px)`;
-  },{passive:true});
-  welcomePopup.addEventListener('touchend',()=>{
-    const diff=touchCurrentX-touchStartX;
-    if(diff>80){closeWelcome();}
-    else{welcomePopup.style.transform='';welcomePopup.style.transition='transform 0.2s ease-out';}
-    touchStartX=0;touchCurrentX=0;
-  });
+  welcomeOverlay.style.transform='';
+  welcomeOverlay.style.transition='';
+  welcomeOverlay.style.display='block';
 }
 
 // Console: showWelcome() to test again
