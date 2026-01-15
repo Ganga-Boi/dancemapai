@@ -313,8 +313,8 @@ if(localStorage.getItem('dancemap_welcomed')){
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.3.9-2025-01-14';
-const FORM_VERSION = '6.3.9';
+const FRONTEND_VERSION = 'v6.4.0-2025-01-14';
+const FORM_VERSION = '6.4.0';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -375,8 +375,8 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.3.9':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.3.9':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
+      if(adminEl){adminEl.textContent=match?'Version 6.4.0':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.4.0':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
       
       // Auto-refresh hvis version mismatch
       if(!match){
@@ -392,7 +392,7 @@ async function checkVersion(){
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.3.9 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.4.0 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
@@ -647,9 +647,9 @@ function openAdmin(){
   modal.classList.add('open');status.style.display='none';preview.style.display='none';ocrStatus.style.display='none';warnings.classList.remove('show');restoreFormState();checkVersion();showAdminWelcome();
 }
 
-function saveFormState(){localStorage.setItem('dancemap_admin_form',JSON.stringify({formVersion:FORM_VERSION,payload:payload.value,dato:fields.dato.value,navn:fields.navn.value,start:fields.start.value,slut:fields.slut.value,dansTypes:getSelectedDanceTypes(),sted:fields.sted.value,adresse:fields.adresse.value,by:fields.by.value,prisType:fields.prisType.value,prisOnline:fields.prisOnline.value,prisDropin:fields.prisDropin.value,mobilepay:fields.mobilepay.value,mobilepayPris:fields.mobilepayPris.value,mobilepayInfo:fields.mobilepayInfo.value,recurring:recurring.checked,step:step2.style.display==='block'?2:1}));}
+function saveFormState(){localStorage.setItem('dancemap_admin_form',JSON.stringify({formVersion:FORM_VERSION,payload:payload.value,dato:fields.dato.value,navn:fields.navn.value,start:fields.start.value,slut:fields.slut.value,dansTypes:getSelectedDanceTypes(),sted:fields.sted.value,adresse:fields.adresse.value,by:fields.by.value,prisType:fields.prisType.value,prisOnline:fields.prisOnline.value,prisDropin:fields.prisDropin.value,mobilepay:fields.mobilepay.value,mobilepayPris:fields.mobilepayPris.value,mobilepayInfo:fields.mobilepayInfo.value,link:fields.link.value,recurring:recurring.checked,step:step2.style.display==='block'?2:1}));}
 
-function restoreFormState(){try{const saved=localStorage.getItem('dancemap_admin_form');if(!saved){step2.style.display='none';payload.value='';clearFields();return;}const s=JSON.parse(saved);payload.value=s.payload||'';fields.dato.value=s.dato||'';fields.navn.value=s.navn||'';fields.start.value=s.start||'';fields.slut.value=s.slut||'';if(s.dansTypes)setSelectedDanceTypes(s.dansTypes);else if(s.dans)setSelectedDanceTypes([s.dans]);updateDansField();fields.sted.value=s.sted||'';fields.adresse.value=s.adresse||'';fields.by.value=s.by||'København';fields.prisType.value=s.prisType||'angiv';fields.prisOnline.value=s.prisOnline||'';fields.prisDropin.value=s.prisDropin||'';fields.mobilepay.value=s.mobilepay||'';fields.mobilepayPris.value=s.mobilepayPris||'';fields.mobilepayInfo.value=s.mobilepayInfo||'';recurring.checked=s.recurring||false;$('prisFields').style.display=s.prisType==='angiv'?'block':'none';$('mobilepayFields').style.display=s.prisType==='mobilepay'?'block':'none';if(s.step===2){step2.style.display='block';updatePrisField();updatePreview();}else{step2.style.display='none';}}catch(e){step2.style.display='none';}}
+function restoreFormState(){try{const saved=localStorage.getItem('dancemap_admin_form');if(!saved){step2.style.display='none';payload.value='';clearFields();return;}const s=JSON.parse(saved);payload.value=s.payload||'';fields.dato.value=s.dato||'';fields.navn.value=s.navn||'';fields.start.value=s.start||'';fields.slut.value=s.slut||'';if(s.dansTypes)setSelectedDanceTypes(s.dansTypes);else if(s.dans)setSelectedDanceTypes([s.dans]);updateDansField();fields.sted.value=s.sted||'';fields.adresse.value=s.adresse||'';fields.by.value=s.by||'København';fields.prisType.value=s.prisType||'angiv';fields.prisOnline.value=s.prisOnline||'';fields.prisDropin.value=s.prisDropin||'';fields.mobilepay.value=s.mobilepay||'';fields.mobilepayPris.value=s.mobilepayPris||'';fields.mobilepayInfo.value=s.mobilepayInfo||'';fields.link.value=s.link||'';recurring.checked=s.recurring||false;$('prisFields').style.display=s.prisType==='angiv'?'block':'none';$('mobilepayFields').style.display=s.prisType==='mobilepay'?'block':'none';if(s.step===2){step2.style.display='block';updatePrisField();updatePreview();}else{step2.style.display='none';}}catch(e){step2.style.display='none';}}
 
 function clearFormState(){localStorage.removeItem('dancemap_admin_form');}
 
@@ -666,7 +666,7 @@ const DANCE_ALIASES={'rueda de casino':'Salsa','rueda':'Salsa','cuban':'Salsa','
 const VENUES=['kaffesalonen','kedelhallen','copenhagen salsa academy','csa','kulturhuset','dgi-byen'];
 const VENUE_ADDRESSES={'kaffesalonen':{adresse:'Peblinge Dossering 7',by:'København'},'kedelhallen':{adresse:'Nyelandsvej 75A',by:'Frederiksberg'},'copenhagen salsa academy':{adresse:'Kastanie Allé 20',by:'Vanløse'},'csa':{adresse:'Kastanie Allé 20',by:'Vanløse'},'kulturhuset':{adresse:'Islands Brygge 18',by:'København'},'dgi-byen':{adresse:'Tietgensgade 65',by:'København'}};
 
-function parseTextToFields(txt){const t=txt.toLowerCase();const r={dato:'',navn:'',start:'',slut:'',dans:'Salsa',sted:'',adresse:'',by:'København',pris:'',prisType:'angiv',prisOnline:'',prisDropin:''};const isoMatch=txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);if(isoMatch)r.dato=isoMatch[0];else{const dm=txt.match(/\b(\d{1,2})\.?\s*(januar|februar|marts|april|maj|juni|juli|august|september|oktober|november|december|jan|feb|mar|apr|jun|jul|aug|sep|okt|nov|dec)\.?\s*(20\d{2})?\b/i);if(dm)r.dato=`${dm[3]||new Date().getFullYear()}-${MONTHS[dm[2].toLowerCase()]}-${dm[1].padStart(2,'0')}`;}const times=txt.match(/\b([01]?\d|2[0-3])[\.:,]([0-5]\d)\b/g);if(times?.length>0){r.start=times[0].replace(/[\.,]/g,':').replace(/^(\d):/,'0$1:');if(times.length>1)r.slut=times[times.length-1].replace(/[\.,]/g,':').replace(/^(\d):/,'0$1:');}for(const a of Object.keys(DANCE_ALIASES).sort((a,b)=>b.length-a.length)){if(t.includes(a)){r.dans=DANCE_ALIASES[a];break;}}for(const v of VENUES){if(t.includes(v)){r.sted=v.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');if(VENUE_ADDRESSES[v]){r.adresse=VENUE_ADDRESSES[v].adresse;r.by=VENUE_ADDRESSES[v].by;}break;}}const lines=txt.split('\n').map(s=>s.trim()).filter(Boolean);if(lines[1])r.navn=lines[1];if(/\bgratis\b/i.test(txt)){r.prisType='gratis';r.pris='Gratis';}return r;}
+function parseTextToFields(txt){const t=txt.toLowerCase();const r={dato:'',navn:'',start:'',slut:'',dans:'Salsa',sted:'',adresse:'',by:'København',pris:'',prisType:'angiv',prisOnline:'',prisDropin:'',link:''};const isoMatch=txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);if(isoMatch)r.dato=isoMatch[0];else{const dm=txt.match(/\b(\d{1,2})\.?\s*(januar|februar|marts|april|maj|juni|juli|august|september|oktober|november|december|jan|feb|mar|apr|jun|jul|aug|sep|okt|nov|dec)\.?\s*(20\d{2})?\b/i);if(dm)r.dato=`${dm[3]||new Date().getFullYear()}-${MONTHS[dm[2].toLowerCase()]}-${dm[1].padStart(2,'0')}`;}const times=txt.match(/\b([01]?\d|2[0-3])[\.:,]([0-5]\d)\b/g);if(times?.length>0){r.start=times[0].replace(/[\.,]/g,':').replace(/^(\d):/,'0$1:');if(times.length>1)r.slut=times[times.length-1].replace(/[\.,]/g,':').replace(/^(\d):/,'0$1:');}for(const a of Object.keys(DANCE_ALIASES).sort((a,b)=>b.length-a.length)){if(t.includes(a)){r.dans=DANCE_ALIASES[a];break;}}for(const v of VENUES){if(t.includes(v)){r.sted=v.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');if(VENUE_ADDRESSES[v]){r.adresse=VENUE_ADDRESSES[v].adresse;r.by=VENUE_ADDRESSES[v].by;}break;}}const lines=txt.split('\n').map(s=>s.trim()).filter(Boolean);if(lines[1])r.navn=lines[1];if(/\bgratis\b/i.test(txt)){r.prisType='gratis';r.pris='Gratis';}else{const prisMatch=txt.match(/(\d+)\s*(kr|dkk)/gi);if(prisMatch){const simplified=simplifyPrice(prisMatch.join(' '));const nums=simplified.match(/\d+/g);if(nums){r.prisDropin=nums[nums.length-1];if(nums.length>1)r.prisOnline=nums[0];}}}const linkMatch=txt.match(/https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi);if(linkMatch){const ticketLink=linkMatch.find(l=>/billetto|ticketmaster|tikkio|eventbrite|place2book/i.test(l));r.link=ticketLink||linkMatch[0];}return r;}
 
 function validateFields(){const e=[];if(!fields.dato.value)e.push('❌ Dato mangler');if(!fields.navn.value)e.push('❌ Navn mangler');if(!fields.start.value)e.push('❌ Starttid mangler');if(!fields.slut.value)e.push('❌ Sluttid mangler');if(getSelectedDanceTypes().length===0)e.push('❌ Vælg mindst én dansetype');if(!fields.sted.value)e.push('❌ Sted mangler');if(!fields.adresse.value)e.push('❌ Adresse mangler');if(!fields.by.value)e.push('❌ By mangler');if(fields.prisType.value==='angiv'&&!fields.prisOnline.value&&!fields.prisDropin.value)e.push('❌ Angiv mindst én pris');if(fields.prisType.value==='mobilepay'&&!fields.mobilepayPris.value)e.push('❌ Angiv MobilePay pris');return{errors:e};}
 
@@ -688,6 +688,7 @@ if(p.dans && getSelectedDanceTypes().length===0){setSelectedDanceTypes([p.dans])
 if(p.sted && !fields.sted.value)fields.sted.value=p.sted;
 if(p.adresse && !fields.adresse.value)fields.adresse.value=p.adresse;
 if(p.by && !fields.by.value)fields.by.value=p.by;
+if(p.link && !fields.link.value)fields.link.value=p.link;
 if(p.prisType && fields.prisType.value==='angiv' && !fields.prisOnline.value && !fields.prisDropin.value){
   fields.prisType.value=p.prisType;
   fields.prisOnline.value=p.prisOnline;
