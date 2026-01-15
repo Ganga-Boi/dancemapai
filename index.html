@@ -238,10 +238,8 @@ if(localStorage.getItem('dancemap_welcomed')){
       
       <!-- ALTID SYNLIG: Tekst paste område -->
       <div style="margin-bottom:12px;">
-        <div style="display:flex;gap:8px;">
-          <textarea id="adminPayload" placeholder="Eller paste tekst her..." style="flex:1;min-height:60px;padding:12px;border-radius:10px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:14px;font-family:inherit;resize:vertical;"></textarea>
-          <button type="button" id="parseBtn" style="flex:0 0 auto;padding:12px 16px;border-radius:10px;border:1px solid #6366f1;background:rgba(99,102,241,0.1);color:#6366f1;cursor:pointer;font-size:14px;">Parse →</button>
-        </div>
+        <textarea id="adminPayload" placeholder="📋 Paste FB tekst her - parser automatisk! (Dobbeltklik for at parse igen)" style="width:100%;min-height:60px;padding:12px;border-radius:10px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:14px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+        <div id="parseStatus" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:13px;"></div>
       </div>
       
       <input type="file" id="fileInput" accept="image/*" style="display:none" />
@@ -321,8 +319,8 @@ if(localStorage.getItem('dancemap_welcomed')){
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.4.5-2025-01-15';
-const FORM_VERSION = '6.4.5';
+const FRONTEND_VERSION = 'v6.5.0-2025-01-15';
+const FORM_VERSION = '6.5.0';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -383,8 +381,8 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.4.5':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.4.5':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
+      if(adminEl){adminEl.textContent=match?'Version 6.5.0':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.5.0':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
       
       // Auto-refresh hvis version mismatch
       if(!match){
@@ -400,7 +398,7 @@ async function checkVersion(){
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.4.5 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.5.0 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
@@ -806,38 +804,100 @@ if(fields.mobilepay)fields.mobilepay.addEventListener('input',()=>{updatePrisFie
 if(fields.mobilepayPris)fields.mobilepayPris.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
 if(fields.mobilepayInfo)fields.mobilepayInfo.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
 
-$('parseBtn').onclick=()=>{const txt=payload.value.trim();if(!txt)return;const p=parseTextToFields(txt);
-if(p.dato && !fields.dato.value)fields.dato.value=p.dato;
-if(p.navn && !fields.navn.value)fields.navn.value=p.navn;
-if(p.start && !fields.start.value)fields.start.value=p.start;
-if(p.slut && !fields.slut.value)fields.slut.value=p.slut;
-if(p.dans && getSelectedDanceTypes().length===0){setSelectedDanceTypes([p.dans]);updateDansField();}
-if(p.sted && !fields.sted.value)fields.sted.value=p.sted;
-if(p.adresse && !fields.adresse.value)fields.adresse.value=p.adresse;
-if(p.by && !fields.by.value)fields.by.value=p.by;
-if(p.link && !fields.link.value){
-  if(p.link.includes('...')){
-    // Facebook afkortet link - vis advarsel og bloker
-    fields.link.value='';
-    warnings.innerHTML=`⚠️ <strong>Billetlink afkortet af Facebook!</strong><br><br>
-      📋 Sådan får du det rigtige link:<br>
-      1. Gå til FB opslaget<br>
-      2. <strong>Højreklik</strong> på billetlinket<br>
-      3. Vælg "Kopiér linkadresse"<br>
-      4. Indsæt i feltet "Billetlink" nedenfor`;
-    warnings.classList.add('show');
-  }else{
-    fields.link.value=p.link;
+// AUTO-PARSE: Kører automatisk når tekst pastes
+function autoParse(){
+  const txt=payload.value.trim();
+  if(!txt)return;
+  
+  const p=parseTextToFields(txt);
+  const found=[];
+  const missing=[];
+  
+  // Udfyld kun tomme felter og track hvad der blev fundet
+  if(p.dato){
+    if(!fields.dato.value){fields.dato.value=p.dato;found.push('📅 Dato');}
+  }else{missing.push('Dato');}
+  
+  if(p.navn){
+    if(!fields.navn.value){fields.navn.value=p.navn;found.push('📌 Navn');}
+  }else{missing.push('Navn');}
+  
+  if(p.start){
+    if(!fields.start.value){fields.start.value=p.start;found.push('🕐 Start');}
+  }else{missing.push('Starttid');}
+  
+  if(p.slut){
+    if(!fields.slut.value){fields.slut.value=p.slut;found.push('🕐 Slut');}
+  }else{missing.push('Sluttid');}
+  
+  if(p.dans && getSelectedDanceTypes().length===0){
+    setSelectedDanceTypes([p.dans]);updateDansField();found.push('💃 '+p.dans);
   }
+  
+  if(p.sted){
+    if(!fields.sted.value){fields.sted.value=p.sted;found.push('📍 Sted');}
+  }else{missing.push('Sted');}
+  
+  if(p.adresse){
+    if(!fields.adresse.value){fields.adresse.value=p.adresse;}
+  }else{missing.push('Adresse');}
+  
+  if(p.by){
+    if(!fields.by.value){fields.by.value=p.by;}
+  }
+  
+  if(p.link){
+    if(p.link.includes('...')){
+      warnings.innerHTML=`⚠️ <strong>Billetlink afkortet!</strong> Højreklik på linket i FB → "Kopiér linkadresse"`;
+      warnings.classList.add('show');
+      missing.push('Billetlink (afkortet)');
+    }else if(!fields.link.value){
+      fields.link.value=p.link;
+      found.push('🎫 Billetlink');
+    }
+  }
+  
+  if(p.prisOnline || p.prisDropin){
+    if(!fields.prisOnline.value && !fields.prisDropin.value){
+      fields.prisOnline.value=p.prisOnline||'';
+      fields.prisDropin.value=p.prisDropin||'';
+      found.push('💰 Pris');
+    }
+  }else{missing.push('Pris');}
+  
+  // Vis parse status
+  const parseStatus=$('parseStatus');
+  if(found.length>0){
+    let html='<div style="color:#3fb950;margin-bottom:4px;">✅ Fundet: '+found.join(', ')+'</div>';
+    if(missing.length>0){
+      html+='<div style="color:#f0883e;">⚠️ Udfyld manuelt: '+missing.join(', ')+'</div>';
+    }
+    parseStatus.innerHTML=html;
+    parseStatus.style.display='block';
+    parseStatus.style.background='rgba(63,185,80,0.1)';
+    parseStatus.style.border='1px solid rgba(63,185,80,0.3)';
+  }else{
+    parseStatus.innerHTML='<div style="color:#f85149;">❌ Kunne ikke finde data i teksten</div>';
+    parseStatus.style.display='block';
+    parseStatus.style.background='rgba(248,81,73,0.1)';
+    parseStatus.style.border='1px solid rgba(248,81,73,0.3)';
+  }
+  
+  updatePrisField();updatePreview();step2.style.display='block';saveFormState();
 }
-if(p.prisType && fields.prisType.value==='angiv' && !fields.prisOnline.value && !fields.prisDropin.value){
-  fields.prisType.value=p.prisType;
-  fields.prisOnline.value=p.prisOnline;
-  fields.prisDropin.value=p.prisDropin;
-  $('prisFields').style.display=p.prisType==='angiv'?'block':'none';
-  $('mobilepayFields').style.display=p.prisType==='mobilepay'?'block':'none';
-}
-updatePrisField();updatePreview();step2.style.display='block';saveFormState();};
+
+// Lyt på paste event
+payload.addEventListener('paste',()=>{
+  setTimeout(autoParse,100); // Vent til tekst er indsat
+});
+
+// Skjul status når man redigerer
+payload.addEventListener('input',()=>{
+  saveFormState();
+});
+
+// Double-click for at re-parse
+payload.addEventListener('dblclick',autoParse);
 
 // CLAUDE VISION (via Vercel proxy)
 function simplifyPrice(pris){
