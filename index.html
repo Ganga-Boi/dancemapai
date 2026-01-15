@@ -313,8 +313,8 @@ if(localStorage.getItem('dancemap_welcomed')){
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.4.1-2025-01-14';
-const FORM_VERSION = '6.4.1';
+const FRONTEND_VERSION = 'v6.4.2-2025-01-14';
+const FORM_VERSION = '6.4.2';
 
 // ═══════════════════════════════════════════════════════════
 // ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
@@ -375,8 +375,8 @@ async function checkVersion(){
     const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
     if(data.version){
       const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.4.1':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.4.1':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
+      if(adminEl){adminEl.textContent=match?'Version 6.4.2':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.4.2':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
       
       // Auto-refresh hvis version mismatch
       if(!match){
@@ -392,7 +392,7 @@ async function checkVersion(){
     }
   }catch(e){
     const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.4.1 (offline)';frontEl.style.color='#f85149';}
+    if(frontEl){frontEl.textContent='Version 6.4.2 (offline)';frontEl.style.color='#f85149';}
   }
 }
 checkVersion();
@@ -661,12 +661,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.con
 payload.addEventListener('input',saveFormState);
 
 // PARSE TEXT
-const MONTHS={'januar':'01','februar':'02','marts':'03','april':'04','maj':'05','juni':'06','juli':'07','august':'08','september':'09','oktober':'10','november':'11','december':'12','jan':'01','feb':'02','mar':'03','apr':'04','jun':'06','jul':'07','aug':'08','sep':'09','okt':'10','nov':'11','dec':'12'};
+const MONTHS={'januar':'01','february':'02','februar':'02','marts':'03','march':'03','april':'04','maj':'05','may':'05','juni':'06','june':'06','juli':'07','july':'07','august':'08','september':'09','oktober':'10','october':'10','november':'11','december':'12','jan':'01','feb':'02','mar':'03','apr':'04','jun':'06','jul':'07','aug':'08','sep':'09','okt':'10','oct':'10','nov':'11','dec':'12','january':'01'};
 const DANCE_ALIASES={'rueda de casino':'Salsa','rueda':'Salsa','cuban':'Salsa','cubansk':'Salsa','bachata':'Bachata','salsa':'Salsa','kizomba':'Kizomba','tango':'Tango','zouk':'Zouk','swing':'Swing','latin':'Latin'};
 const VENUES=['kaffesalonen','kedelhallen','copenhagen salsa academy','csa','kulturhuset','dgi-byen'];
 const VENUE_ADDRESSES={'kaffesalonen':{adresse:'Peblinge Dossering 7',by:'København'},'kedelhallen':{adresse:'Nyelandsvej 75A',by:'Frederiksberg'},'copenhagen salsa academy':{adresse:'Kastanie Allé 20',by:'Vanløse'},'csa':{adresse:'Kastanie Allé 20',by:'Vanløse'},'kulturhuset':{adresse:'Islands Brygge 18',by:'København'},'dgi-byen':{adresse:'Tietgensgade 65',by:'København'}};
 
-function parseTextToFields(txt){const t=txt.toLowerCase();const r={dato:'',navn:'',start:'',slut:'',dans:'Salsa',sted:'',adresse:'',by:'København',pris:'',prisType:'angiv',prisOnline:'',prisDropin:'',link:''};const isoMatch=txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);if(isoMatch)r.dato=isoMatch[0];else{const dm=txt.match(/\b(\d{1,2})\.?\s*(januar|februar|marts|april|maj|juni|juli|august|september|oktober|november|december|jan|feb|mar|apr|jun|jul|aug|sep|okt|nov|dec)\.?\s*(20\d{2})?\b/i);if(dm)r.dato=`${dm[3]||new Date().getFullYear()}-${MONTHS[dm[2].toLowerCase()]}-${dm[1].padStart(2,'0')}`;}const times=txt.match(/\b([01]?\d|2[0-3])[\.:,]([0-5]\d)\b/g);if(times?.length>0){r.start=times[0].replace(/[\.,]/g,':').replace(/^(\d):/,'0$1:');if(times.length>1)r.slut=times[times.length-1].replace(/[\.,]/g,':').replace(/^(\d):/,'0$1:');}for(const a of Object.keys(DANCE_ALIASES).sort((a,b)=>b.length-a.length)){if(t.includes(a)){r.dans=DANCE_ALIASES[a];break;}}for(const v of VENUES){if(t.includes(v)){r.sted=v.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');if(VENUE_ADDRESSES[v]){r.adresse=VENUE_ADDRESSES[v].adresse;r.by=VENUE_ADDRESSES[v].by;}break;}}const lines=txt.split('\n').map(s=>s.trim()).filter(Boolean);if(lines[1])r.navn=lines[1];if(/\bgratis\b/i.test(txt)){r.prisType='gratis';r.pris='Gratis';}else{const prisMatch=txt.match(/(\d+)\s*(kr|dkk)/gi);if(prisMatch){const simplified=simplifyPrice(prisMatch.join(' '));const nums=simplified.match(/\d+/g);if(nums){r.prisDropin=nums[nums.length-1];if(nums.length>1)r.prisOnline=nums[0];}}}const linkMatch=txt.match(/https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi);if(linkMatch){const ticketLink=linkMatch.find(l=>/billetto|ticketmaster|tikkio|eventbrite|place2book/i.test(l));r.link=ticketLink||linkMatch[0];}return r;}
+function parseTextToFields(txt){const t=txt.toLowerCase();const r={dato:'',navn:'',start:'',slut:'',dans:'Salsa',sted:'',adresse:'',by:'København',pris:'',prisType:'angiv',prisOnline:'',prisDropin:'',link:''};const isoMatch=txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);if(isoMatch)r.dato=isoMatch[0];else{const dm=txt.match(/\b(\d{1,2})\.?\s*(januar|februar|marts|april|maj|juni|juli|august|september|oktober|november|december|january|february|march|may|june|july|october|jan|feb|mar|apr|jun|jul|aug|sep|okt|oct|nov|dec)\.?\s*(20\d{2})?\b/i);if(dm)r.dato=`${dm[3]||new Date().getFullYear()}-${MONTHS[dm[2].toLowerCase()]}-${dm[1].padStart(2,'0')}`;else{const dm2=txt.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?\b/i);if(dm2)r.dato=`${new Date().getFullYear()}-${MONTHS[dm2[1].toLowerCase()]}-${dm2[2].padStart(2,'0')}`;}}const times=txt.match(/\b([01]?\d|2[0-3])[\.:,]([0-5]\d)\b/g);if(times?.length>0){const sorted=times.map(t=>t.replace(/[\.,]/g,':')).sort();r.start=sorted[0].replace(/^(\d):/,'0$1:');if(sorted.length>1)r.slut=sorted[sorted.length-1].replace(/^(\d):/,'0$1:');}for(const a of Object.keys(DANCE_ALIASES).sort((a,b)=>b.length-a.length)){if(t.includes(a)){r.dans=DANCE_ALIASES[a];break;}}for(const v of VENUES){if(t.includes(v)){r.sted=v.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');if(VENUE_ADDRESSES[v]){r.adresse=VENUE_ADDRESSES[v].adresse;r.by=VENUE_ADDRESSES[v].by;}break;}}const lines=txt.split('\n').map(s=>s.trim()).filter(Boolean);if(lines[1])r.navn=lines[1];if(/\bgratis\b/i.test(txt)||/\bfree\b/i.test(txt)){r.prisType='gratis';r.pris='Gratis';}else{const prisMatch=txt.match(/(\d+)[,.]?-?\s*(kr|dkk)/gi);if(prisMatch){const nums=prisMatch.map(p=>parseInt(p.match(/\d+/)[0])).filter(n=>n>0&&n<2000);if(nums.length>0){const min=Math.min(...nums);const max=Math.max(...nums);r.prisOnline=String(min);r.prisDropin=String(max);}}}const linkMatch=txt.match(/https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi);if(linkMatch){const ticketLink=linkMatch.find(l=>/billetto|ticketmaster|tikkio|eventbrite|place2book|bookwhen/i.test(l));r.link=ticketLink||linkMatch[0];}return r;}
 
 function validateFields(){const e=[];if(!fields.dato.value)e.push('❌ Dato mangler');if(!fields.navn.value)e.push('❌ Navn mangler');if(!fields.start.value)e.push('❌ Starttid mangler');if(!fields.slut.value)e.push('❌ Sluttid mangler');if(getSelectedDanceTypes().length===0)e.push('❌ Vælg mindst én dansetype');if(!fields.sted.value)e.push('❌ Sted mangler');if(!fields.adresse.value)e.push('❌ Adresse mangler');if(!fields.by.value)e.push('❌ By mangler');if(fields.prisType.value==='angiv'&&!fields.prisOnline.value&&!fields.prisDropin.value)e.push('❌ Angiv mindst én pris');if(fields.prisType.value==='mobilepay'&&!fields.mobilepayPris.value)e.push('❌ Angiv MobilePay pris');return{errors:e};}
 
