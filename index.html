@@ -605,13 +605,16 @@ sendBtn.onclick=doSearch;
 input.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();doSearch();}};
 
 // FILTER SEARCH - for Salsa/Bachata buttons with music
-const salsaSound = new Audio('https://www.soundjay.com/misc/sounds/small-bell-ring-01a.mp3');
-const bachataSound = new Audio('https://www.soundjay.com/misc/sounds/small-bell-ring-02a.mp3');
+const salsaSound = new Audio('/salsa.mp3');
+const bachataSound = new Audio('/bachata.mp3');
 salsaSound.volume = 0.3;
 bachataSound.volume = 0.3;
 
 function filterSearch(type){
-  // Play sound
+  // Stop any playing sound and play new one
+  salsaSound.pause();
+  bachataSound.pause();
+  
   if(type === 'salsa'){
     salsaSound.currentTime = 0;
     salsaSound.play().catch(()=>{});
