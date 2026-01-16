@@ -17,7 +17,7 @@
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}html,body{height:100%}
     button{font-family:inherit}
-    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#0d1117;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
     .card{background:#161b22;border-radius:20px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;flex-direction:column;max-height:90vh}
     .header{padding:20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #21262d;cursor:pointer}
     .logo{width:52px;height:52px;position:relative;border-radius:50%}.logo img{width:44px;height:44px;object-fit:cover;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;border-radius:12px}
@@ -58,13 +58,13 @@
     
     /* SLIDE-IN-ELLIPTIC FOR HEADER TEXT */
     .header-text{flex:1;perspective:1000px}
-    .header-text h1{animation:slide-in-elliptic 0.7s cubic-bezier(0.25,0.46,0.45,0.94) both}
-    .header-text .sub{animation:slide-in-elliptic 0.7s cubic-bezier(0.25,0.46,0.45,0.94) 0.15s both}
-    @keyframes slide-in-elliptic{0%{transform:translateX(-100px) rotateY(90deg) scale(0);transform-origin:-100% 50%;opacity:0}100%{transform:translateX(0) rotateY(0) scale(1);transform-origin:0% 50%;opacity:1}}
+    .header-text h1{font-size:18px;font-weight:600;color:#e6edf3 !important;margin-bottom:2px;animation:slide-in-elliptic 0.7s cubic-bezier(0.25,0.46,0.45,0.94) both}
+    .header-text .sub{font-size:13px;color:#7d8590 !important;animation:slide-in-elliptic 0.7s cubic-bezier(0.25,0.46,0.45,0.94) 0.15s both}
+    @keyframes slide-in-elliptic{0%{transform:translateX(-100px) rotateY(90deg) scale(0);transform-origin:-100% 50%;opacity:0}100%{transform:translateX(0) rotateY(0) scale(1);transform-origin:0% 50%;opacity:1;color:inherit}}
     
     /* FILTER BUTTONS WITH GLITCH EFFECT */
     .filter-buttons{display:flex;gap:12px;padding:0 20px 16px}
-    .filter-btn{flex:1;padding:14px 20px;border-radius:12px;border:1px solid #30363d;background:#21262d;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.3s;color:#e6edf3 !important;-webkit-text-fill-color:#e6edf3 !important}
+    .filter-btn{flex:1;padding:14px 20px;border-radius:12px;border:1px solid #30363d;background:#21262d;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.3s;color:#fff !important;-webkit-text-fill-color:#fff !important;-moz-text-fill-color:#fff !important}
     .filter-btn.salsa{animation:glitch-salsa 4s ease-in-out infinite}
     .filter-btn.bachata{animation:glitch-bachata 4s ease-in-out infinite;animation-delay:2s}
     @keyframes glitch-salsa{0%,100%{transform:translate(0);text-shadow:none;border-color:#30363d;color:#e6edf3}2%{transform:translate(-2px,1px);text-shadow:2px 0 #ef4444,-2px 0 #22d3d1;border-color:#ef4444;color:#e6edf3}4%{transform:translate(2px,-1px);text-shadow:-2px 0 #ef4444,2px 0 #22d3d1;color:#e6edf3}6%{transform:translate(0);text-shadow:none;border-color:#30363d;color:#e6edf3}45%,47%{opacity:1}46%{opacity:0.8;text-shadow:0 0 8px #ef4444}85%{transform:translate(0);text-shadow:none}86%{transform:translate(1px,0);text-shadow:-1px 0 #ef4444,1px 0 #22d3d1;border-color:#ef4444}87%{transform:translate(-1px,0);text-shadow:1px 0 #ef4444,-1px 0 #22d3d1}88%{transform:translate(0);text-shadow:none;border-color:#30363d}}
@@ -215,15 +215,15 @@ if(localStorage.getItem('dancemap_welcomed')){
       </div>
     </div>
     <div class="header-text">
-      <h1>DanceMap</h1>
-      <div class="sub">Salsa og Bachata events i København</div>
+      <h1 style="color:#e6edf3 !important;">DanceMap</h1>
+      <div class="sub" style="color:#7d8590 !important;">Salsa og Bachata events i København</div>
       <div class="week-count" id="weekCount"></div>
       <div class="version-display" id="versionDisplay"></div>
     </div>
   </div>
   <div class="filter-buttons">
-    <button class="filter-btn salsa" onclick="filterSearch('salsa')">Salsa</button>
-    <button class="filter-btn bachata" onclick="filterSearch('bachata')">Bachata</button>
+    <button class="filter-btn salsa" onclick="filterSearch('salsa')"><span style="color:#fff;">Salsa</span></button>
+    <button class="filter-btn bachata" onclick="filterSearch('bachata')"><span style="color:#fff;">Bachata</span></button>
   </div>
   <div id="chat" class="chat"></div>
   <div class="input-area">
