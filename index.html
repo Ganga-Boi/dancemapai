@@ -1,498 +1,1248 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="da">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DanceMap - Night Club Edition v2</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>DanceMap</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#6366f1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="DanceMap" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WYGJJJV2E6"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-WYGJJJV2E6');</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}html,body{height:100%}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#0d1117;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+    .card{background:#161b22;border-radius:20px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;flex-direction:column;max-height:90vh}
+    .header{padding:20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #21262d;cursor:pointer}
+    .logo{width:52px;height:52px;position:relative;border-radius:50%}.logo img{width:44px;height:44px;object-fit:cover;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;border-radius:12px}
+    .logo::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(from var(--angle),#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);animation:rainbow-spin 3s linear infinite}
+    @property --angle{syntax:'<angle>';initial-value:0deg;inherits:false}
+    @keyframes rainbow-spin{to{--angle:360deg}}
+    .welcome-overlay{position:fixed;top:0;left:0;right:0;z-index:2000;animation:slideDown 0.4s ease-out}
+    @keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+    .welcome-popup{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);padding:20px;padding-right:50px;box-shadow:0 4px 20px rgba(0,0,0,0.3);position:relative}
+    .welcome-popup h3{margin:0 0 8px 0;font-size:18px;color:#e6edf3}
+    .welcome-popup p{margin:0;font-size:14px;color:#8b949e;line-height:1.5}
+    .welcome-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border:none;background:rgba(255,255,255,0.1);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
+    .welcome-close:hover{background:rgba(255,255,255,0.2)}
+    .welcome-close svg{width:16px;height:16px;stroke:#8b949e}
+    body.light-mode .welcome-popup{background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%)}
+    body.light-mode .welcome-popup h3{color:#1a1a2e}
+    body.light-mode .welcome-popup p{color:#57606a}
+    body.light-mode .welcome-close{background:rgba(0,0,0,0.05)}
+    body.light-mode .welcome-close:hover{background:rgba(0,0,0,0.1)}
+    body.light-mode .welcome-close svg{stroke:#57606a}
     
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #0d1117;
-      color: #e6edf3;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    .container {
-      max-width: 420px;
-      margin: 0 auto;
-      padding: 20px;
-      min-height: 100vh;
-    }
-
-    /* ===== HEADER - Icon left, text right ===== */
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 20px 0 30px;
-    }
-
-    .icon-wrapper {
-      position: relative;
-      width: 60px;
-      height: 60px;
-      flex-shrink: 0;
-      animation: bounce-in 0.6s ease-out;
-    }
-
-    /* Bubbles from icon */
-    .icon-bubbles {
-      position: absolute;
-      inset: -20px;
-      pointer-events: none;
-    }
-    .bubble {
-      position: absolute;
-      border-radius: 50%;
-      animation: bubble-float 3s ease-in-out infinite;
-    }
-    .bubble:nth-child(1) { left: 0%; top: 50%; animation-delay: 0s; width: 6px; height: 6px; background: radial-gradient(circle, rgba(239, 68, 68, 0.7) 0%, transparent 70%); }
-    .bubble:nth-child(2) { left: 90%; top: 20%; animation-delay: 0.5s; width: 10px; height: 10px; background: radial-gradient(circle, rgba(139, 92, 246, 0.7) 0%, transparent 70%); }
-    .bubble:nth-child(3) { left: 100%; top: 60%; animation-delay: 1s; width: 5px; height: 5px; background: radial-gradient(circle, rgba(236, 72, 153, 0.7) 0%, transparent 70%); }
-    .bubble:nth-child(4) { left: 20%; top: 0%; animation-delay: 1.5s; width: 7px; height: 7px; background: radial-gradient(circle, rgba(34, 211, 238, 0.7) 0%, transparent 70%); }
-    .bubble:nth-child(5) { left: 80%; top: 90%; animation-delay: 2s; width: 8px; height: 8px; background: radial-gradient(circle, rgba(139, 92, 246, 0.7) 0%, transparent 70%); }
-    .bubble:nth-child(6) { left: -10%; top: 30%; animation-delay: 2.5s; width: 6px; height: 6px; background: radial-gradient(circle, rgba(239, 68, 68, 0.7) 0%, transparent 70%); }
-
-    @keyframes bubble-float {
-      0% {
-        transform: translate(0, 0) scale(0);
-        opacity: 0;
-      }
-      15% {
-        transform: translate(3px, -5px) scale(1);
-        opacity: 0.9;
-      }
-      70% {
-        transform: translate(12px, -35px) scale(0.7);
-        opacity: 0.5;
-      }
-      100% {
-        transform: translate(18px, -55px) scale(0);
-        opacity: 0;
-      }
-    }
-
-    .icon-glow {
-      position: absolute;
-      inset: -10px;
-      background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
-      animation: glow-pulse 2.5s ease-in-out infinite;
-      border-radius: 50%;
-    }
-    @keyframes glow-pulse {
-      0%, 100% { transform: scale(1); opacity: 0.5; }
-      50% { transform: scale(1.3); opacity: 0.8; }
-    }
-
-    .icon {
-      position: relative;
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(135deg, #21262d 0%, #30363d 100%);
-      border: 1px solid #484f58;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-    }
-
-    .header-text {
-      flex: 1;
-      perspective: 1000px;
-    }
-
-    .title {
-      font-size: 22px;
-      font-weight: 700;
-      color: #e6edf3;
-      margin-bottom: 4px;
-      animation: slide-in-elliptic 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
-    }
-
-    .subtitle {
-      color: #484f58;
-      font-size: 13px;
-      animation: slide-in-elliptic 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.2s both;
-    }
-
-    /* Slide-in-elliptic effect */
-    @keyframes slide-in-elliptic {
-      0% {
-        transform: translateX(-100px) rotateY(90deg) scale(0);
-        transform-origin: -100% 50%;
-        opacity: 0;
-      }
-      100% {
-        transform: translateX(0) rotateY(0) scale(1);
-        transform-origin: 0% 50%;
-        opacity: 1;
-      }
-    }
-
-    /* Bounce-in for icon */
-    @keyframes bounce-in {
-      0% {
-        opacity: 0;
-        transform: scale(0.3);
-      }
-      50% {
-        opacity: 1;
-        transform: scale(1.1);
-      }
-      70% {
-        transform: scale(0.9);
-      }
-      100% {
-        transform: scale(1);
-      }
-    }
-
-    /* ===== MAIN CARD ===== */
-    .main-card {
-      background: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 20px;
-      animation: fade-up 0.5s ease-out 0.3s backwards;
-    }
-
-    @keyframes fade-up {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* ===== FILTER BUTTONS with Focus-Blur Effect ===== */
-    .filters {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .filter-btn {
-      flex: 1;
-      padding: 14px 20px;
-      border-radius: 12px;
-      border: 1px solid #30363d;
-      background: #21262d;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .filter-btn.salsa {
-      color: #e6edf3;
-      animation: glitch-salsa 4s ease-in-out infinite;
-    }
-
-    .filter-btn.bachata {
-      color: #e6edf3;
-      animation: glitch-bachata 4s ease-in-out infinite;
-      animation-delay: 2s;
-    }
-
-    /* Glitch/Flicker effect for Salsa */
-    @keyframes glitch-salsa {
-      0%, 100% {
-        transform: translate(0);
-        text-shadow: none;
-        border-color: #30363d;
-      }
-      2% {
-        transform: translate(-2px, 1px);
-        text-shadow: 2px 0 #ef4444, -2px 0 #22d3d1;
-        border-color: #ef4444;
-      }
-      4% {
-        transform: translate(2px, -1px);
-        text-shadow: -2px 0 #ef4444, 2px 0 #22d3d1;
-      }
-      6% {
-        transform: translate(0);
-        text-shadow: none;
-        border-color: #30363d;
-      }
-      45%, 47% {
-        opacity: 1;
-      }
-      46% {
-        opacity: 0.8;
-        text-shadow: 0 0 8px #ef4444;
-      }
-      85% {
-        transform: translate(0);
-        text-shadow: none;
-      }
-      86% {
-        transform: translate(1px, 0);
-        text-shadow: -1px 0 #ef4444, 1px 0 #22d3d1;
-        border-color: #ef4444;
-      }
-      87% {
-        transform: translate(-1px, 0);
-        text-shadow: 1px 0 #ef4444, -1px 0 #22d3d1;
-      }
-      88% {
-        transform: translate(0);
-        text-shadow: none;
-        border-color: #30363d;
-      }
-    }
-
-    /* Glitch/Flicker effect for Bachata */
-    @keyframes glitch-bachata {
-      0%, 100% {
-        transform: translate(0);
-        text-shadow: none;
-        border-color: #30363d;
-      }
-      2% {
-        transform: translate(-2px, 1px);
-        text-shadow: 2px 0 #8b5cf6, -2px 0 #ec4899;
-        border-color: #8b5cf6;
-      }
-      4% {
-        transform: translate(2px, -1px);
-        text-shadow: -2px 0 #8b5cf6, 2px 0 #ec4899;
-      }
-      6% {
-        transform: translate(0);
-        text-shadow: none;
-        border-color: #30363d;
-      }
-      45%, 47% {
-        opacity: 1;
-      }
-      46% {
-        opacity: 0.8;
-        text-shadow: 0 0 8px #8b5cf6;
-      }
-      85% {
-        transform: translate(0);
-        text-shadow: none;
-      }
-      86% {
-        transform: translate(1px, 0);
-        text-shadow: -1px 0 #8b5cf6, 1px 0 #ec4899;
-        border-color: #8b5cf6;
-      }
-      87% {
-        transform: translate(-1px, 0);
-        text-shadow: 1px 0 #8b5cf6, -1px 0 #ec4899;
-      }
-      88% {
-        transform: translate(0);
-        text-shadow: none;
-        border-color: #30363d;
-      }
-    }
-
-    .filter-btn:hover {
-      transform: scale(1.02);
-      animation: none;
-    }
-
-    .filter-btn.salsa:hover {
-      text-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444;
-      border-color: #ef4444;
-      background: linear-gradient(135deg, #21262d, rgba(239, 68, 68, 0.15));
-    }
-
-    .filter-btn.bachata:hover {
-      text-shadow: 0 0 10px #8b5cf6, 0 0 20px #8b5cf6;
-      border-color: #8b5cf6;
-      background: linear-gradient(135deg, #21262d, rgba(139, 92, 246, 0.15));
-    }
-
-    /* ===== CHAT AREA ===== */
-    .chat-area {
-      min-height: 200px;
-    }
-
-    .chat-bubble {
-      padding: 14px 18px;
-      border-radius: 18px;
-      margin-bottom: 12px;
-      font-size: 14px;
-      line-height: 1.5;
-      animation: bubble-in 0.3s ease-out;
-    }
-    @keyframes bubble-in {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .chat-user {
-      background: #21262d;
-      border: 1px solid #30363d;
-      color: #e6edf3;
-      margin-left: 60px;
-      border-bottom-right-radius: 4px;
-    }
-
-    .chat-bot {
-      background: #161b22;
-      border: 1px solid #30363d;
-      color: #e6edf3;
-      margin-right: 60px;
-      border-bottom-left-radius: 4px;
-    }
-
-    /* ===== EVENT CARDS ===== */
-    .event-card {
-      background: #21262d;
-      border: 1px solid #30363d;
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 12px;
-      border-left: 4px solid;
-      transition: all 0.3s;
-      cursor: pointer;
-    }
-
-    .event-card:hover {
-      transform: translateX(5px);
-      border-color: #484f58;
-    }
-
-    .event-card.salsa {
-      border-left-color: #484f58;
-    }
-
-    .event-card.bachata {
-      border-left-color: #484f58;
-    }
-
-    .event-meta {
-      display: flex;
-      gap: 15px;
-      font-size: 13px;
-      color: #484f58;
-      margin-bottom: 8px;
-    }
-
-    .event-title {
-      font-weight: 600;
-      font-size: 15px;
-      margin-bottom: 4px;
-      color: #e6edf3;
-    }
-
-    .event-venue {
-      font-size: 13px;
-      color: #484f58;
-    }
-
-    .event-tag {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      margin-top: 8px;
-      background: #30363d;
-      color: #e6edf3;
-    }
-
-    /* ===== WEEK COUNT ===== */
-    .week-count {
-      text-align: center;
-      padding: 15px;
-      background: #21262d;
-      border: 1px solid #30363d;
-      border-radius: 12px;
-      margin-top: 20px;
-      font-size: 14px;
-      color: #484f58;
-    }
-
-    /* ===== FOOTER ===== */
-    .footer {
-      text-align: center;
-      padding: 20px;
-      color: #30363d;
-      font-size: 12px;
-    }
+    /* LIGHT/DARK MODE TOGGLE - No thumb, highlight active */
+    .theme-toggle{position:absolute;top:12px;right:12px;cursor:pointer;z-index:100;display:flex;flex-direction:column;align-items:center;gap:4px;animation:bounce-in 0.5s ease-out}
+    @keyframes bounce-in{0%{opacity:0;transform:scale(0.3)}50%{transform:scale(1.1)}70%{transform:scale(0.9)}100%{opacity:1;transform:scale(1)}}
+    
+    /* BUBBLES FROM ICON */
+    .logo{width:52px;height:52px;position:relative;border-radius:50%}.logo img{width:44px;height:44px;object-fit:cover;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;border-radius:12px}
+    .logo::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(from var(--angle),#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);animation:rainbow-spin 3s linear infinite}
+    .icon-bubbles{position:absolute;inset:-20px;pointer-events:none;z-index:1}
+    .icon-bubble{position:absolute;border-radius:50%;animation:bubble-float 3s ease-in-out infinite}
+    .icon-bubble:nth-child(1){left:0%;top:50%;animation-delay:0s;width:6px;height:6px;background:radial-gradient(circle,rgba(239,68,68,0.7) 0%,transparent 70%)}
+    .icon-bubble:nth-child(2){left:90%;top:20%;animation-delay:0.5s;width:10px;height:10px;background:radial-gradient(circle,rgba(139,92,246,0.7) 0%,transparent 70%)}
+    .icon-bubble:nth-child(3){left:100%;top:60%;animation-delay:1s;width:5px;height:5px;background:radial-gradient(circle,rgba(236,72,153,0.7) 0%,transparent 70%)}
+    .icon-bubble:nth-child(4){left:20%;top:0%;animation-delay:1.5s;width:7px;height:7px;background:radial-gradient(circle,rgba(34,211,238,0.7) 0%,transparent 70%)}
+    .icon-bubble:nth-child(5){left:80%;top:90%;animation-delay:2s;width:8px;height:8px;background:radial-gradient(circle,rgba(139,92,246,0.7) 0%,transparent 70%)}
+    .icon-bubble:nth-child(6){left:-10%;top:30%;animation-delay:2.5s;width:6px;height:6px;background:radial-gradient(circle,rgba(239,68,68,0.7) 0%,transparent 70%)}
+    @keyframes bubble-float{0%{transform:translate(0,0) scale(0);opacity:0}15%{transform:translate(3px,-5px) scale(1);opacity:0.9}70%{transform:translate(12px,-35px) scale(0.7);opacity:0.5}100%{transform:translate(18px,-55px) scale(0);opacity:0}}
+    
+    /* SLIDE-IN-ELLIPTIC FOR HEADER TEXT */
+    .header-text{flex:1;perspective:1000px}
+    .header-text h1{animation:slide-in-elliptic 0.7s cubic-bezier(0.25,0.46,0.45,0.94) both}
+    .header-text .sub{animation:slide-in-elliptic 0.7s cubic-bezier(0.25,0.46,0.45,0.94) 0.15s both}
+    @keyframes slide-in-elliptic{0%{transform:translateX(-100px) rotateY(90deg) scale(0);transform-origin:-100% 50%;opacity:0}100%{transform:translateX(0) rotateY(0) scale(1);transform-origin:0% 50%;opacity:1}}
+    
+    /* FILTER BUTTONS WITH GLITCH EFFECT */
+    .filter-buttons{display:flex;gap:12px;padding:0 20px 16px}
+    .filter-btn{flex:1;padding:14px 20px;border-radius:12px;border:1px solid #30363d;background:#21262d;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.3s;color:#e6edf3}
+    .filter-btn.salsa{animation:glitch-salsa 4s ease-in-out infinite}
+    .filter-btn.bachata{animation:glitch-bachata 4s ease-in-out infinite;animation-delay:2s}
+    @keyframes glitch-salsa{0%,100%{transform:translate(0);text-shadow:none;border-color:#30363d}2%{transform:translate(-2px,1px);text-shadow:2px 0 #ef4444,-2px 0 #22d3d1;border-color:#ef4444}4%{transform:translate(2px,-1px);text-shadow:-2px 0 #ef4444,2px 0 #22d3d1}6%{transform:translate(0);text-shadow:none;border-color:#30363d}45%,47%{opacity:1}46%{opacity:0.8;text-shadow:0 0 8px #ef4444}85%{transform:translate(0);text-shadow:none}86%{transform:translate(1px,0);text-shadow:-1px 0 #ef4444,1px 0 #22d3d1;border-color:#ef4444}87%{transform:translate(-1px,0);text-shadow:1px 0 #ef4444,-1px 0 #22d3d1}88%{transform:translate(0);text-shadow:none;border-color:#30363d}}
+    @keyframes glitch-bachata{0%,100%{transform:translate(0);text-shadow:none;border-color:#30363d}2%{transform:translate(-2px,1px);text-shadow:2px 0 #8b5cf6,-2px 0 #ec4899;border-color:#8b5cf6}4%{transform:translate(2px,-1px);text-shadow:-2px 0 #8b5cf6,2px 0 #ec4899}6%{transform:translate(0);text-shadow:none;border-color:#30363d}45%,47%{opacity:1}46%{opacity:0.8;text-shadow:0 0 8px #8b5cf6}85%{transform:translate(0);text-shadow:none}86%{transform:translate(1px,0);text-shadow:-1px 0 #8b5cf6,1px 0 #ec4899;border-color:#8b5cf6}87%{transform:translate(-1px,0);text-shadow:1px 0 #8b5cf6,-1px 0 #ec4899}88%{transform:translate(0);text-shadow:none;border-color:#30363d}}
+    .filter-btn:hover{transform:scale(1.02);animation:none}
+    .filter-btn.salsa:hover{text-shadow:0 0 10px #ef4444,0 0 20px #ef4444;border-color:#ef4444;background:linear-gradient(135deg,#21262d,rgba(239,68,68,0.15))}
+    .filter-btn.bachata:hover{text-shadow:0 0 10px #8b5cf6,0 0 20px #8b5cf6;border-color:#8b5cf6;background:linear-gradient(135deg,#21262d,rgba(139,92,246,0.15))}
+    body.light-mode .filter-btn{background:#ffffff;border-color:#d1d5da;color:#1a1a2e}
+    body.light-mode .filter-btn:hover{background:#f6f8fa}
+    body.light-mode .theme-label{color:#57606a}
+    body.light-mode .toggle-track{fill:#e8ebef;stroke:#d1d5da}
+    body.light-mode .toggle-sun circle{fill:none;stroke:#c4d82e}
+    body.light-mode .toggle-sun line{stroke:#c4d82e}
+    body.light-mode .toggle-moon path{fill:#9ca3af}
+    .header-text .week-count{font-size:12px;color:#6366f1;margin-top:4px}.header-text .version-display{font-size:10px;color:#484f58;margin-top:2px}
+    .chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;min-height:200px;max-height:60vh}
+    .msg{display:flex;flex-direction:column}.msg.user{align-items:flex-end}.msg.bot{align-items:flex-start}
+    .bubble{padding:12px 16px;border-radius:16px;font-size:15px;line-height:1.5;max-width:90%}
+    .msg.user .bubble{background:#2d333b;color:#e6edf3;border-bottom-right-radius:4px}
+    .msg.bot .bubble{background:#21262d;color:#c9d1d9;border-bottom-left-radius:4px}
+    .events{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .event-card{background:#2d333b;border-radius:12px;padding:14px 16px}
+    .event-actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #444c56}
+    .cal-btn{flex:1;padding:8px 12px;border-radius:8px;border:1px solid #444c56;background:transparent;color:#8b949e;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s}
+    .cal-btn:hover{background:#444c56;color:#e6edf3}
+    .cal-btn.google{border-color:#4285f4;color:#4285f4}.cal-btn.google:hover{background:rgba(66,133,244,0.15)}
+    .cal-btn.apple{border-color:#a2aaad;color:#a2aaad}.cal-btn.apple:hover{background:rgba(162,170,173,0.15)}
+    body.light-mode .event-card{background:#f6f8fa}
+    body.light-mode .event-actions{border-color:#d1d5da}
+    body.light-mode .cal-btn{border-color:#d1d5da;color:#57606a}
+    body.light-mode .cal-btn:hover{background:#e8ebef}
+    .ticket-link{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;text-decoration:none;font-weight:500;border-radius:8px;font-size:13px;transition:all 0.2s}
+    .ticket-link:hover{transform:scale(1.02);box-shadow:0 4px 15px rgba(99,102,241,0.4);color:white}
+    body.light-mode .ticket-link{background:linear-gradient(135deg,#4f46e5,#7c3aed)}
+    body.light-mode .ticket-link:hover{color:white}
+    .event-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:14px;color:#c9d1d9}
+    .event-row:last-child{margin-bottom:0}.event-row .icon{width:20px;text-align:center;flex-shrink:0}
+    .event-row.title{font-weight:600;color:#e6edf3;font-size:15px}
+    .more-btn{margin-top:12px;padding:10px 16px;border-radius:10px;border:1px solid #30363d;background:transparent;color:#7d8590;font-size:14px;cursor:pointer}
+    .more-btn:hover{background:#21262d;color:#c9d1d9}
+    .input-area{display:none;padding:16px 20px;border-top:1px solid #21262d;gap:12px;position:sticky;bottom:0;background:#0d1117;z-index:10}
+    .input-area input{flex:1;padding:14px 18px;border-radius:12px;border:1px solid #30363d;background:#0d1117;font-size:15px;font-family:inherit;color:#e6edf3;outline:none}
+    .input-area input:focus{border-color:#6366f1}.input-area input::placeholder{color:#7d8590}
+    .send-btn{width:48px;height:48px;border-radius:12px;border:none;background:#6366f1;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .send-btn:active{transform:scale(0.95)}.send-btn:disabled{opacity:0.5}.send-btn svg{width:20px;height:20px}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100;align-items:center;justify-content:center;padding:16px}
+    .modal-overlay.open{display:flex}.modal{background:#161b22;border-radius:20px;width:100%;max-width:400px;padding:24px;max-height:90vh;overflow-y:auto}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .modal-header h2{font-size:18px;font-weight:600;color:#e6edf3}.modal-close{background:none;border:none;color:#7d8590;font-size:28px;cursor:pointer}
+    .upload-btn{width:100%;padding:16px;border-radius:12px;border:2px dashed #30363d;background:transparent;color:#7d8590;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
+    .upload-btn:hover{border-color:#6366f1;color:#c9d1d9}
+    .image-preview{max-width:100%;max-height:150px;border-radius:12px;margin-bottom:12px;display:none}
+    .ocr-status{font-size:14px;color:#7d8590;text-align:center;padding:12px}
+    .form-group{margin-bottom:16px}.form-group label{display:block;font-size:13px;margin-bottom:8px;color:#7d8590}
+    .form-group textarea{width:100%;min-height:150px;padding:14px;border-radius:12px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:14px;font-family:inherit;outline:none;resize:vertical}
+    .form-group textarea:focus{border-color:#6366f1}
+    .checkbox-group{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:14px;background:#0d1117;border-radius:10px}
+    .checkbox-group input[type="checkbox"]{width:20px;height:20px;accent-color:#6366f1}
+    .checkbox-group label{font-size:14px;color:#c9d1d9;cursor:pointer}
+    .submit-btn{width:100%;padding:16px;border-radius:12px;border:none;background:#6366f1;color:white;font-size:15px;font-weight:500;cursor:pointer}
+    .submit-btn:disabled{opacity:0.5}
+    .submit-status{text-align:center;padding:12px;font-size:14px;margin-top:12px;border-radius:10px}
+    .submit-status.success{color:#3fb950;background:rgba(63,185,80,0.1)}
+    .submit-status.error{color:#f85149;background:rgba(248,81,73,0.1)}
+    .back-btn{background:none;border:none;color:#7d8590;font-size:14px;cursor:pointer;margin-bottom:16px;padding:0}.back-btn:hover{color:#c9d1d9}
+    .field-row{margin-bottom:14px}.field-row label{display:block;font-size:12px;margin-bottom:6px;color:#7d8590}
+    .field-row input,.field-row select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:14px;font-family:inherit;outline:none}
+    .field-row input:focus,.field-row select:focus{border-color:#6366f1}
+    .field-row.two-col{display:flex;gap:12px}.field-row.two-col>div{flex:1}
+    .field-warnings{margin-bottom:14px;padding:12px;background:rgba(248,81,73,0.1);border-radius:10px;font-size:13px;color:#f85149;display:none}
+    .field-warnings.show{display:block}
+    .admin-intro{font-size:13px;color:#7d8590;margin-bottom:16px;line-height:1.5}
+    .preview-card{background:#21262d;border-radius:12px;padding:14px 16px;margin-bottom:16px}
+    .preview-label{font-size:11px;color:#7d8590;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px}
+    .preview-content{font-size:14px;color:#c9d1d9;line-height:1.6}
+    .preview-content .line{display:flex;gap:8px;margin-bottom:4px}.preview-content .line:last-child{margin-bottom:0}
+    .preview-content .icon{width:20px;text-align:center}
+    .version-info{font-size:10px;color:#484f58;text-align:center;margin-top:8px}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}.loading-text{animation:pulse 1.5s ease-in-out infinite}
+    .admin-tabs{display:flex;gap:8px;margin-bottom:16px}
+    .admin-tab{flex:1;padding:10px;border:1px solid #30363d;background:transparent;color:#7d8590;border-radius:8px;cursor:pointer;font-size:14px}
+    .admin-tab.active{background:#6366f1;color:white;border-color:#6366f1}
+    .pending-list{display:flex;flex-direction:column;gap:12px;max-height:420px;overflow-y:auto;margin-bottom:16px}
+    .pending-item{background:#21262d;border-radius:10px;padding:14px}
+    .pending-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .pending-item-title{font-weight:600;color:#e6edf3}
+    .pending-item-details{font-size:13px;color:#c9d1d9;line-height:1.5}
+    .pending-item-row{display:flex;gap:8px;margin-bottom:4px}.pending-item-row span:first-child{width:20px}
+    .pending-actions{display:flex;gap:10px;margin-top:10px}
+    .pending-approve-btn{padding:10px 12px;background:#238636;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px}
+    .pending-approve-btn:disabled{opacity:0.5}
+    .pending-empty{text-align:center;color:#7d8590;padding:40px 20px}
   </style>
 </head>
 <body>
 
-<div class="container">
-  <!-- Header: Icon left, text right -->
+<div id="welcomeOverlay" class="welcome-overlay">
+  <div class="welcome-popup" id="welcomePopup">
+    <button class="welcome-close" onclick="closeWelcome()" aria-label="Luk">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+    <h3>🕺 Velkommen til DanceMap</h3>
+    <p>Find salsa og bachata events i København – vælg Salsa eller Bachata ovenfor</p>
+  </div>
+</div>
+<script>
+if(localStorage.getItem('dancemap_welcomed')){
+  document.getElementById('welcomeOverlay').style.display='none';
+}
+</script>
+
+<div class="card">
+  <div class="theme-toggle" onclick="toggleTheme()" title="Skift tema">
+    <span class="theme-label" id="themeLabel">dark</span>
+    <svg viewBox="0 0 32 56">
+      <!-- Track -->
+      <rect class="toggle-track" x="2" y="2" width="28" height="52" rx="14"/>
+      <!-- Sun icon (TOP) -->
+      <g class="toggle-sun" transform="translate(16,16)">
+        <circle cx="0" cy="0" r="3.5"/>
+        <line x1="0" y1="-7" x2="0" y2="-5.5"/>
+        <line x1="0" y1="5.5" x2="0" y2="7"/>
+        <line x1="-7" y1="0" x2="-5.5" y2="0"/>
+        <line x1="5.5" y1="0" x2="7" y2="0"/>
+        <line x1="-5" y1="-5" x2="-3.5" y2="-3.5"/>
+        <line x1="3.5" y1="3.5" x2="5" y2="5"/>
+        <line x1="-5" y1="5" x2="-3.5" y2="3.5"/>
+        <line x1="3.5" y1="-3.5" x2="5" y2="-5"/>
+      </g>
+      <!-- Moon icon (BOTTOM) - simple crescent -->
+      <g class="toggle-moon" transform="translate(16,40)">
+        <path d="M2.5,-5 A5,5 0 1,1 2.5,5 A4,4 0 0,0 2.5,-5" fill="#c4d82e"/>
+      </g>
+    </svg>
+  </div>
   <div class="header">
-    <div class="icon-wrapper">
-      <div class="icon-glow"></div>
-      <div class="icon">🕺</div>
+    <div class="logo">
+      <img src="/dancemap-icon.svg" alt="DanceMap" />
       <div class="icon-bubbles">
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
+        <div class="icon-bubble"></div>
+        <div class="icon-bubble"></div>
+        <div class="icon-bubble"></div>
+        <div class="icon-bubble"></div>
+        <div class="icon-bubble"></div>
+        <div class="icon-bubble"></div>
       </div>
     </div>
     <div class="header-text">
-      <h1 class="title">DanceMap</h1>
-      <p class="subtitle">Salsa og Bachata events i København</p>
+      <h1>DanceMap</h1>
+      <div class="sub">Salsa og Bachata events i København</div>
+      <div class="week-count" id="weekCount"></div>
+      <div class="version-display" id="versionDisplay"></div>
     </div>
   </div>
-
-  <!-- Main Card -->
-  <div class="main-card">
-    <!-- Filter Buttons - No icons, with focus-blur effect -->
-    <div class="filters">
-      <button class="filter-btn salsa">Salsa</button>
-      <button class="filter-btn bachata">Bachata</button>
-    </div>
-
-    <!-- Chat Area -->
-    <div class="chat-area">
-      <!-- Event Cards -->
-      <div class="event-card salsa">
-        <div class="event-meta">
-          <span>I aften</span>
-          <span>21:00 - 02:00</span>
-        </div>
-        <div class="event-title">Salsa Social Night</div>
-        <div class="event-venue">Latin Dance Studio, København</div>
-        <span class="event-tag">Salsa</span>
-      </div>
-
-      <div class="event-card salsa">
-        <div class="event-meta">
-          <span>I aften</span>
-          <span>20:00 - 00:30</span>
-        </div>
-        <div class="event-title">Havana Nights - Live Band</div>
-        <div class="event-venue">Club Mambo, Vesterbro</div>
-        <span class="event-tag">Salsa</span>
-        <span class="event-tag">Gratis</span>
-      </div>
-    </div>
-
-    <div class="week-count">
-      47 events denne uge
-    </div>
+  <div class="filter-buttons">
+    <button class="filter-btn salsa" onclick="filterSearch('salsa')">Salsa</button>
+    <button class="filter-btn bachata" onclick="filterSearch('bachata')">Bachata</button>
   </div>
-
-  <div class="footer">
-    DanceMap Night Club v2
+  <div id="chat" class="chat"></div>
+  <div class="input-area">
+    <input id="q" type="text" placeholder="Skriv fx: salsa eller bachata" autocomplete="off" enterkeyhint="search" />
+    <button id="sendBtn" class="send-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+    </button>
   </div>
 </div>
 
+<div class="modal-overlay" id="adminModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Admin</h2>
+      <button class="modal-close" id="closeAdmin">&times;</button>
+    </div>
+    <div class="admin-tabs">
+      <button class="admin-tab active" id="tabAdd">Tilføj Event</button>
+      <button class="admin-tab" id="tabPending">Godkend Events</button>
+    </div>
+    <div id="adminAddView">
+      <div id="adminWelcome" style="background:linear-gradient(135deg,#238636 0%,#2ea043 100%);border-radius:12px;padding:16px;margin-bottom:16px;display:none;">
+        <div style="font-size:15px;color:white;font-weight:500;" id="welcomeText"></div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.8);margin-top:4px;">Sammen får vi DanceMap til at vokse! 💃</div>
+      </div>
+      
+      <!-- ALTID SYNLIG: Paste, upload og ryd knapper -->
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button type="button" class="upload-btn" id="pasteBtn" style="flex:1;margin-bottom:0;background:rgba(99,102,241,0.1);border-color:#6366f1;">
+          📋 Indsæt billede
+        </button>
+        <button type="button" class="upload-btn" id="uploadBtn" style="flex:0 0 auto;width:48px;margin-bottom:0;padding:14px;" title="Upload fil">📁</button>
+        <button type="button" class="upload-btn" id="clearAllBtn" style="flex:0 0 auto;width:48px;margin-bottom:0;padding:14px;border-color:#da3633;color:#da3633;" title="Ryd alt">🗑️</button>
+      </div>
+      
+      <!-- ALTID SYNLIG: Tekst paste område -->
+      <div style="margin-bottom:12px;">
+        <textarea id="adminPayload" placeholder="📋 Paste FB tekst her - parser automatisk! (Dobbeltklik for at parse igen)" style="width:100%;min-height:60px;padding:12px;border-radius:10px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:14px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+        <div id="parseStatus" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:13px;"></div>
+      </div>
+      
+      <input type="file" id="fileInput" accept="image/*" style="display:none" />
+      <img id="imagePreview" class="image-preview" />
+      <div id="ocrStatus" class="ocr-status" style="display:none"></div>
+      
+      <div id="adminStep1" style="display:none;">
+        <!-- Tom - alt er flyttet op -->
+      </div>
+      
+      <div id="adminStep2" style="display:none">
+        <button type="button" class="back-btn" id="backBtn">← Skjul felter</button>
+        <div class="field-row"><label>Dato *</label><input type="date" id="fieldDato" required /></div>
+        <div class="field-row"><label>Event navn *</label><input type="text" id="fieldNavn" placeholder="Fx Salsa Social" /></div>
+        <div class="field-row two-col">
+          <div><label>Start *</label><input type="time" id="fieldStart" required /></div>
+          <div><label>Slut *</label><input type="time" id="fieldSlut" /></div>
+        </div>
+        <div class="field-row"><label>Dansetype * (vælg én eller flere)</label>
+          <div id="danceTypeGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Salsa" style="accent-color:#6366f1;"> Salsa</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Bachata" style="accent-color:#6366f1;"> Bachata</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Kizomba" style="accent-color:#6366f1;"> Kizomba</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Zouk" style="accent-color:#6366f1;"> Zouk</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Tango" style="accent-color:#6366f1;"> Tango</label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Swing" style="accent-color:#6366f1;"> Swing</label>
+          </div>
+          <input type="hidden" id="fieldDans" />
+        </div>
+        <div class="field-row"><label>Sted *</label><input type="text" id="fieldSted" placeholder="Fx Kedelhallen" required /></div>
+        <div class="field-row"><label>Adresse *</label><input type="text" id="fieldAdresse" placeholder="Fx Nyelandsvej 75A" /></div>
+        <div class="field-row"><label>By *</label><input type="text" id="fieldBy" value="København" /></div>
+        <div class="field-row"><label>Pristype</label>
+          <select id="fieldPrisType"><option value="angiv">Angiv priser</option><option value="gratis">Gratis</option><option value="mobilepay">MobilePay</option><option value="kontakt">Kontakt arrangør</option></select>
+        </div>
+        <div id="prisFields">
+          <div class="field-row two-col">
+            <div><label>Online (kr)</label><input type="text" id="fieldPrisOnline" placeholder="50" /></div>
+            <div><label>Drop-in (kr)</label><input type="text" id="fieldPrisDropin" placeholder="70" /></div>
+          </div>
+        </div>
+        <div id="mobilepayFields" style="display:none;">
+          <div class="field-row two-col">
+            <div><label>Pris (kr) *</label><input type="text" id="fieldMobilepayPris" placeholder="50" /></div>
+            <div><label>MobilePay nr/boks</label><input type="text" id="fieldMobilepay" placeholder="12345" /></div>
+          </div>
+          <div class="field-row">
+            <label>Betalingsinfo (vises til brugere)</label>
+            <input type="text" id="fieldMobilepayInfo" placeholder="Fx: Skriv dit navn i beskeden" />
+          </div>
+        </div>
+        <input type="hidden" id="fieldPris" />
+        <div class="field-row">
+          <label>🎫 Billetlink (valgfrit)</label>
+          <input type="url" id="fieldLink" placeholder="https://billetto.dk/..." />
+        </div>
+        <div id="fieldWarnings" class="field-warnings"></div>
+        <div id="previewCard" class="preview-card">
+          <div class="preview-label">Forhåndsvisning</div>
+          <div id="previewContent" class="preview-content"></div>
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="recurringCheck" />
+          <label for="recurringCheck">Gentager ugentligt</label>
+        </div>
+        <button type="button" class="submit-btn" id="adminSubmitBtn">Tilføj Event (pending)</button>
+      </div>
+      <div id="adminStatus" class="submit-status" style="display:none"></div>
+      <div id="backendVersion" class="version-info"></div>
+    </div>
+    <div id="adminPendingView" style="display:none">
+      <div id="pendingList" class="pending-list"></div>
+      <div id="pendingEmpty" class="pending-empty">Ingen events afventer godkendelse</div>
+      <button type="button" class="submit-btn" id="refreshPending">Opdater liste</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const FRONTEND_VERSION = 'v6.5.0-2025-01-15';
+const FORM_VERSION = '6.5.0';
+
+// ═══════════════════════════════════════════════════════════
+// ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
+// ═══════════════════════════════════════════════════════════
+const API = 'https://script.google.com/macros/s/AKfycbyNGuntMdNwytrMako2GD5QHDcwQ8JPP_YsgDy6sgLLo3dNIaZ1-gif68Af--kHS_y0/exec';
+
+(function(){try{const s=localStorage.getItem('dancemap_admin_form');if(s){const d=JSON.parse(s);if(d.formVersion!==FORM_VERSION)localStorage.removeItem('dancemap_admin_form');}}catch(e){localStorage.removeItem('dancemap_admin_form');}})();
+
+const $=id=>document.getElementById(id);
+const chat=$('chat'),input=$('q'),sendBtn=$('sendBtn');
+const modal=$('adminModal'),payload=$('adminPayload'),status=$('adminStatus');
+const recurring=$('recurringCheck'),preview=$('imagePreview'),ocrStatus=$('ocrStatus');
+const step2=$('adminStep2'),warnings=$('fieldWarnings');
+
+let lastQ='',page=0,hasMore=false,loading=false,moreBtn=null;
+
+const fields={dato:$('fieldDato'),navn:$('fieldNavn'),start:$('fieldStart'),slut:$('fieldSlut'),dans:$('fieldDans'),sted:$('fieldSted'),adresse:$('fieldAdresse'),by:$('fieldBy'),pris:$('fieldPris'),prisType:$('fieldPrisType'),prisOnline:$('fieldPrisOnline'),prisDropin:$('fieldPrisDropin'),mobilepay:$('fieldMobilepay'),mobilepayPris:$('fieldMobilepayPris'),mobilepayInfo:$('fieldMobilepayInfo'),link:$('fieldLink')};
+
+// Dansetype checkboxes handler
+function getSelectedDanceTypes(){
+  const checked=document.querySelectorAll('input[name="dansetype"]:checked');
+  return Array.from(checked).map(c=>c.value);
+}
+function setSelectedDanceTypes(types){
+  document.querySelectorAll('input[name="dansetype"]').forEach(c=>c.checked=false);
+  if(!types)return;
+  const arr=Array.isArray(types)?types:types.split(/\s*[&,]\s*/);
+  arr.forEach(t=>{
+    const cb=document.querySelector(`input[name="dansetype"][value="${t.trim()}"]`);
+    if(cb)cb.checked=true;
+  });
+}
+function updateDansField(){
+  const types=getSelectedDanceTypes();
+  fields.dans.value=types.join(' & ');
+}
+document.querySelectorAll('input[name="dansetype"]').forEach(cb=>{
+  cb.addEventListener('change',()=>{updateDansField();updatePreview();saveFormState();});
+});
+
+function esc(t){return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+function jsonp(url){
+  return new Promise((resolve,reject)=>{
+    const cb='cb_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+    window[cb]=data=>{delete window[cb];script.remove();resolve(data);};
+    const script=document.createElement('script');
+    script.src=url+(url.includes('?')?'&':'?')+'callback='+cb;
+    script.onerror=()=>{delete window[cb];script.remove();reject(new Error('JSONP failed'));};
+    document.body.appendChild(script);
+  });
+}
+
+// VERSION CHECK - Auto-refresh ved mismatch
+async function checkVersion(){
+  try{
+    const data=await jsonp(API+'?action=ping&_='+Date.now());
+    const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
+    if(data.version){
+      const match=data.version===FRONTEND_VERSION;
+      if(adminEl){adminEl.textContent=match?'Version 6.5.0':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
+      if(frontEl){frontEl.textContent=match?'Version 6.5.0':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
+      
+      // Auto-refresh hvis version mismatch
+      if(!match){
+        console.log('Version mismatch - refreshing...');
+        // Ryd service worker cache
+        if('caches' in window){
+          const names=await caches.keys();
+          await Promise.all(names.map(name=>caches.delete(name)));
+        }
+        // Refresh efter kort delay
+        setTimeout(()=>location.reload(true),1500);
+      }
+    }
+  }catch(e){
+    const frontEl=$('versionDisplay');
+    if(frontEl){frontEl.textContent='Version 6.5.0 (offline)';frontEl.style.color='#f85149';}
+  }
+}
+checkVersion();
+
+// PRIS
+$('fieldPrisType').onchange=function(){
+  $('prisFields').style.display=this.value==='angiv'?'block':'none';
+  $('mobilepayFields').style.display=this.value==='mobilepay'?'block':'none';
+  if(this.value!=='angiv'){fields.prisOnline.value='';fields.prisDropin.value='';}
+  if(this.value!=='mobilepay'){fields.mobilepay.value='';fields.mobilepayPris.value='';}
+  updatePrisField();updatePreview();
+};
+
+function updatePrisField(){
+  const pt=fields.prisType.value;
+  if(pt==='gratis')fields.pris.value='Gratis';
+  else if(pt==='kontakt')fields.pris.value='Kontakt arrangør';
+  else if(pt==='mobilepay'){
+    const pris=fields.mobilepayPris.value.trim();
+    const mp=fields.mobilepay.value.trim();
+    const info=fields.mobilepayInfo.value.trim();
+    let val='';
+    if(pris)val=pris+' kr';
+    if(mp)val+=(val?' via ':'')+' MobilePay: '+mp;
+    else if(pris)val+=' (MobilePay)';
+    if(info)val+=(val?' – ':'')+info;
+    fields.pris.value=val||'MobilePay';
+  }
+  else{
+    const o=fields.prisOnline.value.trim(),d=fields.prisDropin.value.trim();
+    if(o&&d)fields.pris.value=o+' kr (online) / '+d+' kr (drop-in)';
+    else if(o)fields.pris.value=o+' kr (online)';
+    else if(d)fields.pris.value=d+' kr (drop-in)';
+    else fields.pris.value='';
+  }
+}
+
+// SEARCH med CACHING for hurtigere resultater
+const SEARCH_CACHE_KEY = 'dancemap_search_cache';
+const CACHE_MAX_AGE = 5 * 60 * 1000; // 5 minutter
+
+function getSearchCache(query) {
+  try {
+    const cache = JSON.parse(localStorage.getItem(SEARCH_CACHE_KEY) || '{}');
+    const entry = cache[query.toLowerCase()];
+    if (entry && (Date.now() - entry.timestamp) < CACHE_MAX_AGE) {
+      return entry.data;
+    }
+  } catch(e) {}
+  return null;
+}
+
+function setSearchCache(query, data) {
+  try {
+    const cache = JSON.parse(localStorage.getItem(SEARCH_CACHE_KEY) || '{}');
+    // Behold kun de 20 nyeste søgninger
+    const keys = Object.keys(cache);
+    if (keys.length > 20) {
+      const oldest = keys.sort((a,b) => cache[a].timestamp - cache[b].timestamp)[0];
+      delete cache[oldest];
+    }
+    cache[query.toLowerCase()] = { data, timestamp: Date.now() };
+    localStorage.setItem(SEARCH_CACHE_KEY, JSON.stringify(cache));
+  } catch(e) {}
+}
+
+function parseEvents(text){return String(text||'').split('\n\n').filter(e=>e.trim()).map(event=>{const p={};event.split('\n').forEach(l=>{if(l.startsWith('🗓'))p.dato=l.replace('🗓','').trim();else if(l.startsWith('📌'))p.navn=l.replace('📌','').trim();else if(l.startsWith('🕗'))p.tid=l.replace('🕗','').trim();else if(l.startsWith('💃'))p.type=l.replace('💃','').trim();else if(l.startsWith('📍'))p.sted=l.replace('📍','').trim();else if(l.startsWith('💰'))p.pris=l.replace('💰','').trim();else if(l.startsWith('🎫'))p.link=l.replace('🎫','').trim();});return p;}).filter(e=>e.dato);}
+
+// CALENDAR FUNCTIONS
+function createGoogleCalUrl(event){
+  const title = encodeURIComponent(event.navn || 'Dance Event');
+  const location = encodeURIComponent(event.sted || '');
+  const details = encodeURIComponent(`${event.type || ''}\n${event.pris || ''}`);
+  
+  // Parse date and time
+  const dateMatch = event.dato && event.dato.match(/(\d{1,2})\.?\s*(\w+)/i);
+  const timeMatch = event.tid && event.tid.match(/(\d{1,2})[:\.]?(\d{2})?/);
+  
+  if(!dateMatch) return null;
+  
+  const months = {'jan':0,'feb':1,'mar':2,'apr':3,'maj':4,'jun':5,'jul':6,'aug':7,'sep':8,'okt':9,'nov':10,'dec':11};
+  const day = parseInt(dateMatch[1]);
+  const monthStr = dateMatch[2].toLowerCase().substring(0,3);
+  const month = months[monthStr] ?? new Date().getMonth();
+  const year = new Date().getFullYear();
+  
+  let startHour = 19, startMin = 0;
+  if(timeMatch){
+    startHour = parseInt(timeMatch[1]);
+    startMin = parseInt(timeMatch[2] || 0);
+  }
+  
+  const start = new Date(year, month, day, startHour, startMin);
+  const end = new Date(start.getTime() + 3*60*60*1000); // 3 hours later
+  
+  const formatDate = d => d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+  
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${formatDate(start)}/${formatDate(end)}&details=${details}&location=${location}`;
+}
+
+function createIcsFile(event){
+  const dateMatch = event.dato && event.dato.match(/(\d{1,2})\.?\s*(\w+)/i);
+  const timeMatch = event.tid && event.tid.match(/(\d{1,2})[:\.]?(\d{2})?/);
+  
+  if(!dateMatch) return;
+  
+  const months = {'jan':0,'feb':1,'mar':2,'apr':3,'maj':4,'jun':5,'jul':6,'aug':7,'sep':8,'okt':9,'nov':10,'dec':11};
+  const day = parseInt(dateMatch[1]);
+  const monthStr = dateMatch[2].toLowerCase().substring(0,3);
+  const month = months[monthStr] ?? new Date().getMonth();
+  const year = new Date().getFullYear();
+  
+  let startHour = 19, startMin = 0;
+  if(timeMatch){
+    startHour = parseInt(timeMatch[1]);
+    startMin = parseInt(timeMatch[2] || 0);
+  }
+  
+  const start = new Date(year, month, day, startHour, startMin);
+  const end = new Date(start.getTime() + 3*60*60*1000);
+  
+  const formatDate = d => d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+  
+  const ics = `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+DTSTART:${formatDate(start)}
+DTEND:${formatDate(end)}
+SUMMARY:${event.navn || 'Dance Event'}
+LOCATION:${event.sted || ''}
+DESCRIPTION:${event.type || ''} - ${event.pris || ''}
+END:VEVENT
+END:VCALENDAR`;
+  
+  const blob = new Blob([ics], {type: 'text/calendar'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${(event.navn || 'event').replace(/\s+/g, '_')}.ics`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Store events for calendar access
+let currentEvents = [];
+
+function renderEvents(events){
+  currentEvents = events;
+  return events.map((e,i)=>`<div class="event-card">
+    <div class="event-row title"><span class="icon">📅</span><span>${esc(e.dato)}</span></div>
+    ${e.navn?`<div class="event-row title"><span class="icon">📌</span><span>${esc(e.navn)}</span></div>`:''}
+    ${e.tid?`<div class="event-row"><span class="icon">🕐</span><span>${esc(e.tid)}</span></div>`:''}
+    ${e.sted?`<div class="event-row"><span class="icon">📍</span><span>${esc(e.sted)}</span></div>`:''}
+    ${e.pris?`<div class="event-row"><span class="icon">💰</span><span>${esc(e.pris)}</span></div>`:''}
+    ${e.link?`<div class="event-row" style="margin-top:8px"><a href="${esc(e.link)}" target="_blank" class="ticket-link">🎫 Køb billet her</a></div>`:''}
+    <div class="event-actions">
+      <button class="cal-btn google" onclick="window.open(createGoogleCalUrl(currentEvents[${i}]),'_blank')">📅 Google</button>
+      <button class="cal-btn apple" onclick="createIcsFile(currentEvents[${i}])">🍎 Apple</button>
+    </div>
+  </div>`).join('');
+}
+
+function addMsg(text,isUser,showMore=false){if(moreBtn){moreBtn.remove();moreBtn=null;}const loadingMsg=chat.querySelector('.loading-msg');if(loadingMsg)loadingMsg.remove();const msg=document.createElement('div');msg.className='msg '+(isUser?'user':'bot');if(isUser){msg.innerHTML=`<div class="bubble">${esc(text)}</div>`;}else{const events=parseEvents(text);msg.innerHTML=events.length>0?`<div class="bubble">Her er events:<div class="events">${renderEvents(events)}</div></div>`:`<div class="bubble">${esc(text)}</div>`;}chat.appendChild(msg);if(showMore){moreBtn=document.createElement('button');moreBtn.className='more-btn';moreBtn.textContent='Vis flere';moreBtn.onclick=loadMore;chat.appendChild(moreBtn);}chat.scrollTop=chat.scrollHeight;}
+
+function showLoading(){const msg=document.createElement('div');msg.className='msg bot loading-msg';msg.innerHTML=`<div class="bubble loading-text">Søger events...</div>`;chat.appendChild(msg);chat.scrollTop=chat.scrollHeight;}
+
+async function search(q,p){return await jsonp(API+'?query='+encodeURIComponent(q)+'&page='+p+'&_='+Date.now());}
+
+async function doSearch(){
+  const q=input.value.trim();
+  if(!q||loading)return;
+  addMsg(q,true);
+  input.value='';
+  lastQ=q;page=0;hasMore=false;loading=true;
+  sendBtn.disabled=true;
+  
+  // Check cache først (instant resultat!)
+  const cached = getSearchCache(q + '_0');
+  if(cached){
+    hasMore=!!cached.hasMore;
+    addMsg(cached.text||'Ingen resultater.',false,hasMore);
+    loading=false;sendBtn.disabled=false;
+    // Opdater cache i baggrunden
+    search(q,0).then(data=>{setSearchCache(q+'_0',data);}).catch(()=>{});
+    return;
+  }
+  
+  showLoading();
+  try{
+    const data=await search(q,0);
+    hasMore=!!data.hasMore;
+    setSearchCache(q+'_0',data);
+    addMsg(data.text||'Ingen resultater.',false,hasMore);
+  }catch(e){addMsg('Fejl. Prøv igen.',false);}
+  finally{loading=false;sendBtn.disabled=false;}
+}
+
+async function loadMore(){
+  if(loading||!hasMore)return;
+  page++;loading=true;
+  if(moreBtn)moreBtn.disabled=true;
+  
+  // Check cache
+  const cached = getSearchCache(lastQ+'_'+page);
+  if(cached){
+    hasMore=!!cached.hasMore;
+    addMsg(cached.text,false,hasMore);
+    loading=false;if(moreBtn)moreBtn.disabled=false;
+    search(lastQ,page).then(data=>{setSearchCache(lastQ+'_'+page,data);}).catch(()=>{});
+    return;
+  }
+  
+  showLoading();
+  try{
+    const data=await search(lastQ,page);
+    hasMore=!!data.hasMore;
+    setSearchCache(lastQ+'_'+page,data);
+    addMsg(data.text,false,hasMore);
+  }catch(e){addMsg('Fejl.',false);hasMore=false;}
+  finally{loading=false;if(moreBtn)moreBtn.disabled=false;}
+}
+
+sendBtn.onclick=doSearch;
+input.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();doSearch();}};
+
+// FILTER SEARCH - for Salsa/Bachata buttons
+function filterSearch(type){
+  input.value=type;
+  doSearch();
+}
+
+// HEADER CLICK: 1x = reset chat, 3x = admin
+let clicks=0,clickTimer;
+document.querySelector('.header').onclick=()=>{
+  clicks++;
+  clearTimeout(clickTimer);
+  
+  if(clicks===3){
+    // 3x klik = åbn admin
+    clicks=0;
+    openAdmin();
+  } else {
+    clickTimer=setTimeout(()=>{
+      if(clicks===1){
+        // 1x klik = reset chat
+        chat.innerHTML='';
+        addMsg('Vælg Salsa eller Bachata ovenfor',false);
+        input.value='';
+        lastQ='';page=0;hasMore=false;
+      }
+      clicks=0;
+    },400);
+  }
+};
+
+function openAdmin(){
+  if(welcomeOverlay && welcomeOverlay.style.display !== 'none') closeWelcome();
+  modal.classList.add('open');status.style.display='none';preview.style.display='none';ocrStatus.style.display='none';warnings.classList.remove('show');restoreFormState();checkVersion();showAdminWelcome();
+}
+
+function saveFormState(){localStorage.setItem('dancemap_admin_form',JSON.stringify({formVersion:FORM_VERSION,payload:payload.value,dato:fields.dato.value,navn:fields.navn.value,start:fields.start.value,slut:fields.slut.value,dansTypes:getSelectedDanceTypes(),sted:fields.sted.value,adresse:fields.adresse.value,by:fields.by.value,prisType:fields.prisType.value,prisOnline:fields.prisOnline.value,prisDropin:fields.prisDropin.value,mobilepay:fields.mobilepay.value,mobilepayPris:fields.mobilepayPris.value,mobilepayInfo:fields.mobilepayInfo.value,link:fields.link.value,recurring:recurring.checked,step:step2.style.display==='block'?2:1}));}
+
+function restoreFormState(){try{const saved=localStorage.getItem('dancemap_admin_form');if(!saved){step2.style.display='none';payload.value='';clearFields();return;}const s=JSON.parse(saved);payload.value=s.payload||'';fields.dato.value=s.dato||'';fields.navn.value=s.navn||'';fields.start.value=s.start||'';fields.slut.value=s.slut||'';if(s.dansTypes)setSelectedDanceTypes(s.dansTypes);else if(s.dans)setSelectedDanceTypes([s.dans]);updateDansField();fields.sted.value=s.sted||'';fields.adresse.value=s.adresse||'';fields.by.value=s.by||'København';fields.prisType.value=s.prisType||'angiv';fields.prisOnline.value=s.prisOnline||'';fields.prisDropin.value=s.prisDropin||'';fields.mobilepay.value=s.mobilepay||'';fields.mobilepayPris.value=s.mobilepayPris||'';fields.mobilepayInfo.value=s.mobilepayInfo||'';fields.link.value=s.link||'';recurring.checked=s.recurring||false;$('prisFields').style.display=s.prisType==='angiv'?'block':'none';$('mobilepayFields').style.display=s.prisType==='mobilepay'?'block':'none';if(s.step===2){step2.style.display='block';updatePrisField();updatePreview();}else{step2.style.display='none';}}catch(e){step2.style.display='none';}}
+
+function clearFormState(){localStorage.removeItem('dancemap_admin_form');}
+
+function clearFields(){fields.dato.value='';fields.navn.value='';fields.start.value='';fields.slut.value='';document.querySelectorAll('input[name="dansetype"]').forEach(c=>c.checked=false);fields.dans.value='';fields.sted.value='';fields.adresse.value='';fields.by.value='København';fields.pris.value='';fields.prisType.value='angiv';fields.prisOnline.value='';fields.prisDropin.value='';fields.mobilepay.value='';fields.mobilepayPris.value='';fields.mobilepayInfo.value='';fields.link.value='';$('prisFields').style.display='block';$('mobilepayFields').style.display='none';warnings.classList.remove('show');$('previewContent').innerHTML='';$('previewCard').style.borderColor='';}
+
+$('closeAdmin').onclick=()=>{saveFormState();modal.classList.remove('open');};
+$('backBtn').onclick=()=>{step2.style.display='none';status.style.display='none';saveFormState();};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('open')){saveFormState();modal.classList.remove('open');}});
+payload.addEventListener('input',saveFormState);
+
+// PARSE TEXT
+const MONTHS={'januar':'01','february':'02','februar':'02','marts':'03','march':'03','april':'04','maj':'05','may':'05','juni':'06','june':'06','juli':'07','july':'07','august':'08','september':'09','oktober':'10','october':'10','november':'11','december':'12','jan':'01','feb':'02','mar':'03','apr':'04','jun':'06','jul':'07','aug':'08','sep':'09','okt':'10','oct':'10','nov':'11','dec':'12','january':'01'};
+const DANCE_ALIASES={'rueda de casino':'Salsa','rueda':'Salsa','cuban':'Salsa','cubansk':'Salsa','bachata':'Bachata','salsa':'Salsa','kizomba':'Kizomba','tango':'Tango','zouk':'Zouk','swing':'Swing','latin':'Latin'};
+const VENUES=['kaffesalonen','kedelhallen','copenhagen salsa academy','csa','kulturhuset','dgi-byen'];
+const VENUE_ADDRESSES={'kaffesalonen':{adresse:'Peblinge Dossering 7',by:'København'},'kedelhallen':{adresse:'Nyelandsvej 75A',by:'Frederiksberg'},'copenhagen salsa academy':{adresse:'Kastanie Allé 20',by:'Vanløse'},'csa':{adresse:'Kastanie Allé 20',by:'Vanløse'},'kulturhuset':{adresse:'Islands Brygge 18',by:'København'},'dgi-byen':{adresse:'Tietgensgade 65',by:'København'}};
+
+function parseTextToFields(txt){
+  const t=txt.toLowerCase();
+  const r={dato:'',navn:'',start:'',slut:'',dans:'Salsa',sted:'',adresse:'',by:'København',pris:'',prisType:'angiv',prisOnline:'',prisDropin:'',link:''};
+  
+  // === DATO ===
+  // Format: "January 17th", "17. januar", "2026-01-17"
+  const isoMatch=txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);
+  if(isoMatch){
+    r.dato=isoMatch[0];
+  }else{
+    // Engelsk: "January 17th" eller "Saturday January 17th"
+    const engMatch=txt.match(/(?:saturday|sunday|monday|tuesday|wednesday|thursday|friday)?\s*(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?(?:\s*,?\s*(20\d{2}))?/i);
+    if(engMatch){
+      const year=engMatch[3]||new Date().getFullYear();
+      r.dato=`${year}-${MONTHS[engMatch[1].toLowerCase()]}-${engMatch[2].padStart(2,'0')}`;
+    }else{
+      // Dansk: "17. januar" eller "17 januar 2026"
+      const dkMatch=txt.match(/\b(\d{1,2})\.?\s*(januar|februar|marts|april|maj|juni|juli|august|september|oktober|november|december|jan|feb|mar|apr|maj|jun|jul|aug|sep|okt|nov|dec)\.?\s*(20\d{2})?\b/i);
+      if(dkMatch){
+        const year=dkMatch[3]||new Date().getFullYear();
+        r.dato=`${year}-${MONTHS[dkMatch[2].toLowerCase()]}-${dkMatch[1].padStart(2,'0')}`;
+      }
+    }
+  }
+  
+  // === TIDER ===
+  // Find alle tider og sorter dem intelligent (00:30 er efter 23:00)
+  const allTimes=txt.match(/\b([0-2]?\d)[:\.]([0-5]\d)\b/g)||[];
+  if(allTimes.length>0){
+    const timeToMinutes=t=>{const[h,m]=t.replace('.',':').split(':').map(Number);return h<6?(h+24)*60+m:h*60+m;};
+    const sorted=[...new Set(allTimes)].map(t=>t.replace('.',':')).sort((a,b)=>timeToMinutes(a)-timeToMinutes(b));
+    r.start=sorted[0].replace(/^(\d):/,'0$1:');
+    if(sorted.length>1)r.slut=sorted[sorted.length-1].replace(/^(\d):/,'0$1:');
+  }
+  
+  // === DANSETYPE ===
+  // Check først for procent-angivelse (fx "70% Salsa")
+  const percentMatch=txt.match(/(\d+)\s*%\s*(salsa|bachata|kizomba|zouk|tango|swing)/gi);
+  if(percentMatch){
+    let maxPercent=0;let mainDance='Salsa';
+    percentMatch.forEach(m=>{
+      const[,pct,dance]=m.match(/(\d+)\s*%\s*(\w+)/i);
+      if(parseInt(pct)>maxPercent){maxPercent=parseInt(pct);mainDance=dance.charAt(0).toUpperCase()+dance.slice(1).toLowerCase();}
+    });
+    r.dans=mainDance;
+  }else{
+    for(const a of Object.keys(DANCE_ALIASES).sort((a,b)=>b.length-a.length)){
+      if(t.includes(a)){r.dans=DANCE_ALIASES[a];break;}
+    }
+  }
+  
+  // === STED & ADRESSE ===
+  // Søg efter "Address:" pattern først
+  const addressMatch=txt.match(/address[:\s]+([^,\n]+)/i);
+  if(addressMatch){
+    let fullAddr=addressMatch[1].trim();
+    // Fjern trailing punktum og info-tegn
+    fullAddr=fullAddr.replace(/[.ℹ︎]+.*$/,'').trim();
+    r.adresse=fullAddr;
+    r.sted=fullAddr.split('(')[0].trim();
+  }
+  // Find postnummer og by: "2720 Vanløse" (4 cifre efterfulgt af by)
+  const zipMatch=txt.match(/\b(\d{4})\s+([A-Za-zæøåÆØÅ][A-Za-zæøåÆØÅ]+)\b/);
+  if(zipMatch&&parseInt(zipMatch[1])>=1000&&parseInt(zipMatch[1])<=9999){
+    r.by=zipMatch[2].trim();
+  }
+  // Fallback til kendte venues
+  if(!r.sted){
+    for(const v of VENUES){
+      if(t.includes(v)){
+        r.sted=v.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+        if(VENUE_ADDRESSES[v]){r.adresse=VENUE_ADDRESSES[v].adresse;r.by=VENUE_ADDRESSES[v].by;}
+        break;
+      }
+    }
+  }
+  
+  // === PRISER ===
+  if(/\bgratis\b/i.test(txt)||/\bfree\b/i.test(txt)){
+    r.prisType='gratis';r.pris='Gratis';
+  }else{
+    const prisMatch=txt.match(/(\d+)[,.]?-?\s*(?:kr|dkk)/gi);
+    if(prisMatch){
+      const nums=prisMatch.map(p=>parseInt(p.match(/\d+/)[0])).filter(n=>n>0&&n<2000);
+      if(nums.length>0){
+        const min=Math.min(...nums);
+        const max=Math.max(...nums);
+        r.prisOnline=String(min);
+        r.prisDropin=String(max);
+      }
+    }
+  }
+  
+  // === LINK ===
+  const linkMatch=txt.match(/https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi);
+  if(linkMatch){
+    const ticketLink=linkMatch.find(l=>/billetto|ticketmaster|tikkio|eventbrite|place2book|bookwhen/i.test(l));
+    const foundLink=ticketLink||linkMatch[0];
+    // Bloker afkortede links
+    r.link=foundLink.includes('...')?'':foundLink;
+  }
+  
+  // === NAVN ===
+  // Prioritet: 1) ☆/★ titel, 2) "invites you to", 3) Første betydningsfulde linje
+  const starTitle=txt.match(/[☆★]\s*([^☆★\n]{10,}?)\s*[☆★]/);
+  if(starTitle&&!starTitle[1].includes('kr')&&!starTitle[1].includes('ENTRANCE')){
+    r.navn=starTitle[1].trim();
+  }else{
+    const inviteMatch=txt.match(/invites?\s+(?:you\s+)?(?:everyone\s+)?to\s+([^!.\n]+)/i);
+    if(inviteMatch){
+      r.navn=inviteMatch[1].trim();
+    }else{
+      // Brug organisationsnavn + event type
+      const orgMatch=txt.match(/^(?:Begivenhed af\s+)?([^\n]+)/i);
+      if(orgMatch&&orgMatch[1].length<60)r.navn=orgMatch[1].trim();
+    }
+  }
+  
+  return r;
+}
+
+function validateFields(){const e=[];if(!fields.dato.value)e.push('❌ Dato mangler');if(!fields.navn.value)e.push('❌ Navn mangler');if(!fields.start.value)e.push('❌ Starttid mangler');if(!fields.slut.value)e.push('❌ Sluttid mangler');if(getSelectedDanceTypes().length===0)e.push('❌ Vælg mindst én dansetype');if(!fields.sted.value)e.push('❌ Sted mangler');if(!fields.adresse.value)e.push('❌ Adresse mangler');if(!fields.by.value)e.push('❌ By mangler');if(fields.prisType.value==='angiv'&&!fields.prisOnline.value&&!fields.prisDropin.value)e.push('❌ Angiv mindst én pris');if(fields.prisType.value==='mobilepay'&&!fields.mobilepayPris.value)e.push('❌ Angiv MobilePay pris');return{errors:e};}
+
+function updatePreview(){updateDansField();updatePrisField();const dage=['Søn','Man','Tir','Ons','Tor','Fre','Lør'];const mdr=['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];let datoStr='—';if(fields.dato.value){const d=new Date(fields.dato.value);if(!isNaN(d.getTime())){datoStr=dage[d.getDay()]+' '+d.getDate()+'. '+mdr[d.getMonth()];if(recurring.checked)datoStr+=' 🔁';}}let tidStr=fields.start.value||'—';if(fields.slut.value)tidStr+='–'+fields.slut.value;let stedStr=fields.sted.value||'—';if(fields.adresse.value)stedStr+=', '+fields.adresse.value;if(fields.by.value)stedStr+=', '+fields.by.value;const dansStr=fields.dans.value||'—';const previewEl=$('previewContent');previewEl.innerHTML=`<div class="line"><span class="icon">🗓</span><span>${esc(datoStr)}</span></div><div class="line"><span class="icon">📌</span><span>${esc(fields.navn.value||'—')}</span></div><div class="line"><span class="icon">🕗</span><span>${esc(tidStr)}</span></div><div class="line"><span class="icon">💃</span><span>${esc(dansStr)}</span></div><div class="line"><span class="icon">📍</span><span>${esc(stedStr)}</span></div><div class="line"><span class="icon">💰</span><span>${esc(fields.pris.value||'—')}</span></div>`;const{errors}=validateFields();const pc=$('previewCard');if(errors.length===0){pc.querySelector('.preview-label').textContent='✅ Klar til indsendelse';pc.style.borderColor='#3fb950';warnings.classList.remove('show');}else{pc.querySelector('.preview-label').textContent='Forhåndsvisning';pc.style.borderColor='';}}
+
+Object.values(fields).forEach(f=>{if(f?.addEventListener){f.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});f.addEventListener('change',()=>{updatePrisField();updatePreview();saveFormState();});}});
+recurring.addEventListener('change',()=>{updatePreview();saveFormState();});
+// Also listen to mobilepay fields specifically
+if(fields.mobilepay)fields.mobilepay.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
+if(fields.mobilepayPris)fields.mobilepayPris.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
+if(fields.mobilepayInfo)fields.mobilepayInfo.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
+
+// AUTO-PARSE: Kører automatisk når tekst pastes
+function autoParse(){
+  const txt=payload.value.trim();
+  if(!txt)return;
+  
+  const p=parseTextToFields(txt);
+  const found=[];
+  const missing=[];
+  
+  // Udfyld kun tomme felter og track hvad der blev fundet
+  if(p.dato){
+    if(!fields.dato.value){fields.dato.value=p.dato;found.push('📅 Dato');}
+  }else{missing.push('Dato');}
+  
+  if(p.navn){
+    if(!fields.navn.value){fields.navn.value=p.navn;found.push('📌 Navn');}
+  }else{missing.push('Navn');}
+  
+  if(p.start){
+    if(!fields.start.value){fields.start.value=p.start;found.push('🕐 Start');}
+  }else{missing.push('Starttid');}
+  
+  if(p.slut){
+    if(!fields.slut.value){fields.slut.value=p.slut;found.push('🕐 Slut');}
+  }else{missing.push('Sluttid');}
+  
+  if(p.dans && getSelectedDanceTypes().length===0){
+    setSelectedDanceTypes([p.dans]);updateDansField();found.push('💃 '+p.dans);
+  }
+  
+  if(p.sted){
+    if(!fields.sted.value){fields.sted.value=p.sted;found.push('📍 Sted');}
+  }else{missing.push('Sted');}
+  
+  if(p.adresse){
+    if(!fields.adresse.value){fields.adresse.value=p.adresse;}
+  }else{missing.push('Adresse');}
+  
+  if(p.by){
+    if(!fields.by.value){fields.by.value=p.by;}
+  }
+  
+  if(p.link){
+    if(p.link.includes('...')){
+      warnings.innerHTML=`⚠️ <strong>Billetlink afkortet!</strong> Højreklik på linket i FB → "Kopiér linkadresse"`;
+      warnings.classList.add('show');
+      missing.push('Billetlink (afkortet)');
+    }else if(!fields.link.value){
+      fields.link.value=p.link;
+      found.push('🎫 Billetlink');
+    }
+  }
+  
+  if(p.prisOnline || p.prisDropin){
+    if(!fields.prisOnline.value && !fields.prisDropin.value){
+      fields.prisOnline.value=p.prisOnline||'';
+      fields.prisDropin.value=p.prisDropin||'';
+      found.push('💰 Pris');
+    }
+  }else{missing.push('Pris');}
+  
+  // Vis parse status
+  const parseStatus=$('parseStatus');
+  if(found.length>0){
+    let html='<div style="color:#3fb950;margin-bottom:4px;">✅ Fundet: '+found.join(', ')+'</div>';
+    if(missing.length>0){
+      html+='<div style="color:#f0883e;">⚠️ Udfyld manuelt: '+missing.join(', ')+'</div>';
+    }
+    parseStatus.innerHTML=html;
+    parseStatus.style.display='block';
+    parseStatus.style.background='rgba(63,185,80,0.1)';
+    parseStatus.style.border='1px solid rgba(63,185,80,0.3)';
+  }else{
+    parseStatus.innerHTML='<div style="color:#f85149;">❌ Kunne ikke finde data i teksten</div>';
+    parseStatus.style.display='block';
+    parseStatus.style.background='rgba(248,81,73,0.1)';
+    parseStatus.style.border='1px solid rgba(248,81,73,0.3)';
+  }
+  
+  updatePrisField();updatePreview();step2.style.display='block';saveFormState();
+}
+
+// Lyt på paste event
+payload.addEventListener('paste',()=>{
+  setTimeout(autoParse,100); // Vent til tekst er indsat
+});
+
+// Skjul status når man redigerer
+payload.addEventListener('input',()=>{
+  saveFormState();
+});
+
+// Double-click for at re-parse
+payload.addEventListener('dblclick',autoParse);
+
+// CLAUDE VISION (via Vercel proxy)
+function simplifyPrice(pris){
+  if(!pris)return'';
+  const p=pris.toLowerCase();
+  if(p.includes('free')||p.includes('gratis'))return'Gratis';
+  // Find alle priser i teksten
+  const prices=pris.match(/\d+\s*(kr|dkk)?/gi)||[];
+  if(prices.length===0)return pris;
+  // Fjern "DKK", "kr" osv og få bare tal
+  const nums=prices.map(x=>parseInt(x.match(/\d+/)[0])).filter(n=>n>0);
+  if(nums.length===0)return pris;
+  // Find laveste og højeste pris
+  const min=Math.min(...nums);
+  const max=Math.max(...nums);
+  if(min===max)return min+' kr';
+  return min+'–'+max+' kr';
+}
+
+async function processImageWithClaude(file){
+  ocrStatus.style.display='block';
+  ocrStatus.innerHTML='🤖 <span class="loading-text">Claude analyserer billede...</span>';
+  try{
+    const base64=await fileToBase64(file);
+    const mediaType=file.type||'image/png';
+    const response=await fetch('/api/parse-image',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({image:base64,mediaType:mediaType})
+    });
+    const result=await response.json();
+    if(!result.success){ocrStatus.innerHTML='❌ '+(result.error||'Fejl');ocrStatus.style.color='#f85149';return;}
+    const d=result.data;
+    if(d.dato && !fields.dato.value)fields.dato.value=d.dato;
+    if(d.navn && !fields.navn.value)fields.navn.value=d.navn;
+    if(d.starttid && !fields.start.value)fields.start.value=d.starttid;
+    if(d.sluttid && !fields.slut.value)fields.slut.value=d.sluttid;
+    if(d.dansetype && getSelectedDanceTypes().length===0){setSelectedDanceTypes(d.dansetype.split(/\s*[&,\/]\s*/));updateDansField();}
+    if(d.sted && !fields.sted.value)fields.sted.value=d.sted;
+    if(d.adresse && !fields.adresse.value)fields.adresse.value=d.adresse;
+    if(d.by && !fields.by.value)fields.by.value=d.by;
+    if(d.pris && fields.prisType.value==='angiv' && !fields.prisOnline.value && !fields.prisDropin.value){const simplePris=simplifyPrice(d.pris);if(simplePris.toLowerCase()==='gratis'){fields.prisType.value='gratis';$('prisFields').style.display='none';}else{fields.prisType.value='angiv';$('prisFields').style.display='block';const prisMatch=simplePris.match(/(\d+)/g);if(prisMatch){if(prisMatch.length>=2){fields.prisOnline.value=prisMatch[0];fields.prisDropin.value=prisMatch[1];}else{fields.prisDropin.value=prisMatch[0];}}}}
+    updatePrisField();updatePreview();
+    const confidence=Math.round((result.confidence||0.8)*100);
+    ocrStatus.innerHTML=`✅ Parsed med ${confidence}% sikkerhed`;
+    ocrStatus.style.color=confidence>80?'#3fb950':'#f0883e';
+    step2.style.display='block';
+    const{errors}=validateFields();
+    if(errors.length){warnings.innerHTML=errors.join('<br>');warnings.classList.add('show');}
+    saveFormState();
+    await checkForDuplicates();
+    setTimeout(()=>ocrStatus.style.display='none',3000);
+  }catch(err){console.error('Claude Vision error:',err);ocrStatus.innerHTML='❌ '+(err.message||'Netværksfejl');ocrStatus.style.color='#f85149';}
+}
+
+async function checkForDuplicates(){
+  const params=new URLSearchParams();
+  params.set('action','check-duplicate');
+  params.set('dato',fields.dato.value);
+  params.set('navn',fields.navn.value);
+  params.set('starttid',fields.start.value);
+  params.set('sted',fields.sted.value);
+  params.set('dansetype',fields.dans.value);
+  params.set('_',Date.now());
+  try{
+    const result=await jsonp(API+'?'+params.toString());
+    if(result.success&&result.matches&&result.matches.length>0){
+      const match=result.matches[0];
+      if(result.isDuplicate){
+        warnings.innerHTML=`⚠️ <strong>Mulig dublet fundet!</strong><br><br>📅 ${esc(match.dato)}<br>📌 ${esc(match.navn)}<br>🕗 ${esc(match.starttid)}<br>📍 ${esc(match.sted)}<br><span style="color:#7d8590">(${match.reasons.join(', ')})</span><br><br><span style="color:#f85149">Status: ${match.status}</span>`;
+        warnings.classList.add('show');
+        $('previewCard').style.borderColor='#f85149';
+        $('previewCard').querySelector('.preview-label').textContent='⛔ Sandsynlig dublet';
+      }else if(result.isLikelyDuplicate){
+        warnings.innerHTML=`⚠️ <strong>Lignende event findes:</strong><br><br>📅 ${esc(match.dato)}<br>📌 ${esc(match.navn)}<br>📍 ${esc(match.sted)}<br><span style="color:#7d8590">(${match.reasons.join(', ')})</span><br><br><span style="color:#f0883e">Du kan stadig tilføje eventet hvis det er forskelligt.</span>`;
+        warnings.classList.add('show');
+        $('previewCard').style.borderColor='#f0883e';
+        $('previewCard').querySelector('.preview-label').textContent='⚠️ Tjek for dublet';
+      }
+    }
+  }catch(err){console.log('Duplicate check failed:',err);}
+}
+
+function fileToBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});}
+
+$('uploadBtn').onclick=()=>$('fileInput').click();
+
+// RYD ALT KNAP
+$('clearAllBtn').onclick=()=>{
+  if(confirm('Ryd alle felter og start forfra?')){
+    clearFields();
+    clearFormState();
+    payload.value='';
+    preview.style.display='none';
+    ocrStatus.style.display='none';
+    step2.style.display='none';
+    status.style.display='none';
+    warnings.classList.remove('show');
+  }
+};
+
+// PASTE FRA UDKLIPSHOLDER KNAP
+$('pasteBtn').onclick=async()=>{
+  try{
+    const items=await navigator.clipboard.read();
+    for(const item of items){
+      const imageType=item.types.find(t=>t.startsWith('image/'));
+      if(imageType){
+        const blob=await item.getType(imageType);
+        const file=new File([blob],'pasted-image.png',{type:imageType});
+        preview.src=URL.createObjectURL(file);
+        preview.style.display='block';
+        processImageWithClaude(file);
+        return;
+      }
+    }
+    ocrStatus.style.display='block';
+    ocrStatus.innerHTML='📋 Ingen billede i udklipsholder';
+    ocrStatus.style.color='#f0883e';
+    setTimeout(()=>ocrStatus.style.display='none',2000);
+  }catch(err){
+    console.log('Clipboard access denied, trying paste event');
+    ocrStatus.style.display='block';
+    ocrStatus.innerHTML='💡 Brug Ctrl+V for at indsætte';
+    ocrStatus.style.color='#7d8590';
+    setTimeout(()=>ocrStatus.style.display='none',2000);
+  }
+};
+
+// ADMIN VELKOMMEN
+function showAdminWelcome(){
+  const name=localStorage.getItem('dancemap_admin_name');
+  if(name){
+    $('adminWelcome').style.display='block';
+    $('welcomeText').textContent='Velkommen '+name+'! 🎉';
+  }else{
+    const entered=prompt('Hvad hedder du? (vises når du åbner admin)');
+    if(entered&&entered.trim()){
+      localStorage.setItem('dancemap_admin_name',entered.trim());
+      $('adminWelcome').style.display='block';
+      $('welcomeText').textContent='Velkommen '+entered.trim()+'! 🎉';
+    }
+  }
+}
+
+$('fileInput').onchange=e=>{const f=e.target.files[0];if(f?.type.startsWith('image/')){preview.src=URL.createObjectURL(f);preview.style.display='block';processImageWithClaude(f);}e.target.value='';};
+modal.onpaste=e=>{const items=e.clipboardData?.items||[];for(const item of items){if(item.type.startsWith('image/')){e.preventDefault();const f=item.getAsFile();preview.src=URL.createObjectURL(f);preview.style.display='block';processImageWithClaude(f);return;}}};
+
+
+// ADMIN SUBMIT
+let isSubmitting=false;
+$('adminSubmitBtn').onclick=async()=>{
+  if(isSubmitting)return;
+  const{errors}=validateFields();
+  if(errors.length){warnings.innerHTML=errors.join('<br>');warnings.classList.add('show');status.style.display='block';status.textContent='Udfyld alle felter';status.className='submit-status error';return;}
+  warnings.classList.remove('show');
+  const params=new URLSearchParams();
+  params.set('action','admin-import');
+  params.set('dato',fields.dato.value);
+  params.set('navn',fields.navn.value);
+  params.set('starttid',fields.start.value);
+  params.set('sluttid',fields.slut.value);
+  params.set('dansetype',fields.dans.value);
+  params.set('sted',fields.sted.value);
+  params.set('adresse',fields.adresse.value);
+  params.set('by',fields.by.value);
+  params.set('pris',fields.pris.value);
+  params.set('link',fields.link.value||'');
+  params.set('recurring',recurring.checked);
+  params.set('kilde',localStorage.getItem('dancemap_admin_name')||'Admin');
+  params.set('_',Date.now());
+  const btn=$('adminSubmitBtn');
+  btn.disabled=true;btn.textContent='Sender...';
+  isSubmitting=true;
+  status.style.display='none';
+  try{
+    const data=await jsonp(API+'?'+params.toString());
+    status.style.display='block';
+    if(data.success){status.textContent='✅ Event tilføjet (pending)';status.className='submit-status success';$('previewCard').style.borderColor='#3fb950';clearFields();clearFormState();step2.style.display='none';payload.value='';preview.style.display='none';recurring.checked=false;}
+    else if(data.error==='DUPLICATE'){status.textContent='⚠️ Dublet fundet';status.className='submit-status error';$('previewCard').style.borderColor='#f85149';}
+    else{status.textContent=data.text||'❌ Fejl';status.className='submit-status error';}
+  }catch(e){status.style.display='block';status.textContent='❌ Teknisk fejl';status.className='submit-status error';}
+  btn.disabled=false;btn.textContent='Tilføj Event (pending)';
+  isSubmitting=false;
+};
+
+addMsg('Vælg Salsa eller Bachata ovenfor',false);
+
+async function loadWeekCount(){try{const d=await jsonp(API+'?action=weekcount&_='+Date.now());if(d.success&&d.count>0)$('weekCount').textContent=d.count+' kommende events';}catch(e){}}
+loadWeekCount();
+
+// WELCOME BANNER FOR FIRST-TIME USERS
+const welcomePopup=$('welcomePopup'),welcomeOverlay=$('welcomeOverlay');
+
+function closeWelcome(){
+  if(!welcomeOverlay)return;
+  welcomeOverlay.style.transform='translateY(-100%)';
+  welcomeOverlay.style.transition='transform 0.3s ease-in';
+  setTimeout(()=>{
+    welcomeOverlay.style.display='none';
+    localStorage.setItem('dancemap_welcomed','true');
+  },300);
+}
+
+function showWelcome(){
+  if(!welcomeOverlay)return;
+  localStorage.removeItem('dancemap_welcomed');
+  welcomeOverlay.style.transform='';
+  welcomeOverlay.style.transition='';
+  welcomeOverlay.style.display='block';
+}
+
+// Console: showWelcome() to test again
+
+// THEME TOGGLE (DARK/LIGHT/AUTO MODE)
+const themes = ['dark', 'light', 'auto'];
+let currentThemeIndex = 0;
+
+// MOBILE KEYBOARD FIX - scroll input into view
+const chatInput = $('q');
+if(chatInput){
+  chatInput.addEventListener('focus', () => {
+    setTimeout(() => {
+      chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  });
+}
+
+// Visual viewport resize handler for mobile keyboards
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', () => {
+    if(document.activeElement === chatInput){
+      setTimeout(() => chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+    }
+  });
+}
+
+function applyTheme(theme) {
+  const label = $('themeLabel');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  
+  let isLight = false;
+  if (theme === 'auto') {
+    isLight = !prefersDark;
+    if(label) label.textContent = 'auto';
+  } else if (theme === 'light') {
+    isLight = true;
+    if(label) label.textContent = 'light';
+  } else {
+    isLight = false;
+    if(label) label.textContent = 'dark';
+  }
+  
+  document.body.classList.toggle('light-mode', isLight);
+}
+
+function toggleTheme() {
+  currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+  const theme = themes[currentThemeIndex];
+  localStorage.setItem('dancemap_theme', theme);
+  applyTheme(theme);
+}
+
+// Restore saved theme
+const savedTheme = localStorage.getItem('dancemap_theme') || 'dark';
+currentThemeIndex = themes.indexOf(savedTheme);
+if (currentThemeIndex === -1) currentThemeIndex = 0;
+applyTheme(themes[currentThemeIndex]);
+
+// Listen for system theme changes when in auto mode
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (themes[currentThemeIndex] === 'auto') applyTheme('auto');
+});
+
+// ADMIN TABS
+const tabAdd=$('tabAdd'),tabPending=$('tabPending');
+const adminAddView=$('adminAddView'),adminPendingView=$('adminPendingView');
+tabAdd.onclick=()=>{tabAdd.classList.add('active');tabPending.classList.remove('active');adminAddView.style.display='block';adminPendingView.style.display='none';};
+tabPending.onclick=()=>{tabPending.classList.add('active');tabAdd.classList.remove('active');adminAddView.style.display='none';adminPendingView.style.display='block';loadPendingList();};
+
+async function loadPendingList(){
+  const list=$('pendingList'),empty=$('pendingEmpty');
+  list.innerHTML='<div style="color:#7d8590;text-align:center;padding:20px;">Henter...</div>';
+  empty.style.display='none';
+  try{
+    const data=await jsonp(API+'?action=list-pending&_='+Date.now());
+    if(!data.success||!data.events?.length){list.innerHTML='';empty.style.display='block';return;}
+    list.innerHTML=data.events.map(e=>`<div class="pending-item" data-row="${e.row}"><div class="pending-item-header"><span class="pending-item-title">${esc(e.navn)}</span></div><div class="pending-item-details"><div class="pending-item-row"><span>🗓</span><span>${esc(e.dato)}</span></div><div class="pending-item-row"><span>🕗</span><span>${esc(e.starttid)}–${esc(e.sluttid)}</span></div><div class="pending-item-row"><span>💃</span><span>${esc(e.dansetype)}</span></div><div class="pending-item-row"><span>📍</span><span>${esc(e.sted)}, ${esc(e.adresse)}, ${esc(e.by)}</span></div><div class="pending-item-row"><span>💰</span><span>${esc(e.pris)}</span></div>${e.insertedAt?`<div class="pending-item-row" style="font-size:11px;color:#7d8590"><span>📥</span><span>Tilføjet: ${esc(e.insertedAt)}</span></div>`:''}</div><div class="pending-actions"><button class="pending-approve-btn" onclick="changeStatus(${e.row},'active')">Godkend ✓</button><button style="padding:10px 12px;background:#da3633;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;" onclick="deleteEvent(${e.row})">Afvis ✕</button></div></div>`).join('');
+    empty.style.display='none';
+  }catch(e){list.innerHTML='<div style="color:#f85149;text-align:center;padding:20px;">Fejl</div>';}
+}
+
+async function changeStatus(row,nextStatus){
+  const item=document.querySelector(`.pending-item[data-row="${row}"]`);
+  const btn=item?.querySelector('.pending-approve-btn');
+  if(btn){btn.disabled=true;btn.textContent='Opdaterer...';}
+  try{
+    const data=await jsonp(API+'?action=update-status&row='+row+'&status='+encodeURIComponent(nextStatus)+'&_='+Date.now());
+    if(data?.success&&nextStatus==='active'){if(item){item.style.background='#238636';if(btn)btn.textContent='✓ Godkendt';setTimeout(()=>item.remove(),600);}loadWeekCount();}
+    else{if(btn){btn.disabled=false;btn.textContent='Fejl';}}
+  }catch(e){if(btn){btn.disabled=false;btn.textContent='Fejl';}}
+}
+
+async function deleteEvent(row){
+  if(!confirm('Er du sikker på du vil afvise dette event?'))return;
+  const item=document.querySelector(`.pending-item[data-row="${row}"]`);
+  try{
+    const data=await jsonp(API+'?action=delete-row&row='+row+'&_='+Date.now());
+    if(data?.success){if(item){item.style.background='#da3633';item.style.opacity='0.5';setTimeout(()=>item.remove(),400);}}
+  }catch(e){}
+}
+
+$('refreshPending').onclick=loadPendingList;
+
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+</script>
 </body>
 </html>
