@@ -23,15 +23,16 @@
     .card::before{content:'';position:absolute;inset:-2px;border-radius:22px;background:linear-gradient(90deg,#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);background-size:400% 100%;animation:gradient-shift 8s linear infinite;z-index:-1}
     @keyframes gradient-shift{0%{background-position:0% 50%}100%{background-position:400% 50%}}
     .logo{width:52px;height:52px;position:relative}.logo img{width:52px;height:52px;object-fit:cover;border-radius:12px}
-    .welcome-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s ease-out}
+    .welcome-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s ease-out}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    .welcome-modal{background:#161b22;border-radius:20px;padding:40px 30px;max-width:360px;width:100%;text-align:center;position:relative;animation:scaleIn 0.3s ease-out}
+    .welcome-modal{background:rgba(22,27,34,0.95);border-radius:20px;padding:40px 30px;max-width:360px;width:100%;text-align:center;position:relative;animation:scaleIn 0.3s ease-out}
     .welcome-modal::before{content:'';position:absolute;inset:-2px;border-radius:22px;background:linear-gradient(90deg,#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);background-size:400% 100%;animation:gradient-shift 8s linear infinite;z-index:-1}
     @keyframes scaleIn{from{transform:scale(0.9);opacity:0}to{transform:scale(1);opacity:1}}
     .welcome-close{position:absolute;top:16px;right:16px;width:40px;height:40px;border:none;background:rgba(255,255,255,0.1);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
     .welcome-close:hover{background:rgba(255,255,255,0.2)}
     .welcome-close svg{width:20px;height:20px;stroke:#8b949e}
-    .welcome-icon{font-size:48px;margin-bottom:16px}
+    .welcome-icon{width:80px;height:80px;margin:0 auto 20px}
+    .welcome-icon img{width:100%;height:100%;border-radius:16px}
     .welcome-modal h2{font-size:22px;font-weight:600;color:#e6edf3;margin-bottom:16px}
     .welcome-modal p{font-size:14px;color:#8b949e;line-height:1.6;margin-bottom:12px}
     .welcome-note{font-size:12px;color:#6366f1;font-style:italic;margin:20px 0}
@@ -148,7 +149,7 @@
         <path d="M18 6L6 18M6 6l12 12"/>
       </svg>
     </button>
-    <div class="welcome-icon">🕺</div>
+    <div class="welcome-icon"><img src="/dancemap-icon.svg" alt="DanceMap" /></div>
     <h2>Velkommen til DanceMap</h2>
     <p>Slip for at søge gennem Facebook events og opslag for at finde salsa og bachata i København.</p>
     <p>Vi samler det hele ét sted, så du altid ved hvad der sker.</p>
