@@ -17,68 +17,46 @@
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}html,body{height:100%}
     button{font-family:inherit}
-    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
-    .card{background:#161b22;border-radius:20px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;flex-direction:column;max-height:90vh}
-    .header{padding:20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #21262d;cursor:pointer}
-    .logo{width:52px;height:52px;position:relative;border-radius:50%}.logo img{width:44px;height:44px;object-fit:cover;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;border-radius:12px}
-    .logo::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(from var(--angle),#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);animation:rainbow-spin 3s linear infinite}
-    @property --angle{syntax:'<angle>';initial-value:0deg;inherits:false}
-    @keyframes rainbow-spin{to{--angle:360deg}}
-    .welcome-overlay{position:fixed;top:0;left:0;right:0;z-index:2000;animation:slideDown 0.4s ease-out}
-    @keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
-    .welcome-popup{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);padding:20px;padding-right:50px;box-shadow:0 4px 20px rgba(0,0,0,0.3);position:relative}
-    .welcome-popup h3{margin:0 0 8px 0;font-size:18px;color:#e6edf3}
-    .welcome-popup p{margin:0;font-size:14px;color:#8b949e;line-height:1.5}
-    .welcome-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border:none;background:rgba(255,255,255,0.1);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+    .header-outside{display:flex;align-items:center;gap:14px;margin-bottom:16px;width:100%;max-width:400px;cursor:pointer}
+    .card{background:#161b22;border-radius:20px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;flex-direction:column;max-height:70vh;position:relative}
+    .card::before{content:'';position:absolute;inset:-2px;border-radius:22px;background:linear-gradient(90deg,#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);background-size:400% 100%;animation:gradient-shift 8s linear infinite;z-index:-1}
+    @keyframes gradient-shift{0%{background-position:0% 50%}100%{background-position:400% 50%}}
+    .logo{width:52px;height:52px;position:relative}.logo img{width:52px;height:52px;object-fit:cover;border-radius:12px}
+    .welcome-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s ease-out}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .welcome-modal{background:#161b22;border-radius:20px;padding:40px 30px;max-width:360px;width:100%;text-align:center;position:relative;animation:scaleIn 0.3s ease-out}
+    .welcome-modal::before{content:'';position:absolute;inset:-2px;border-radius:22px;background:linear-gradient(90deg,#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);background-size:400% 100%;animation:gradient-shift 8s linear infinite;z-index:-1}
+    @keyframes scaleIn{from{transform:scale(0.9);opacity:0}to{transform:scale(1);opacity:1}}
+    .welcome-close{position:absolute;top:16px;right:16px;width:40px;height:40px;border:none;background:rgba(255,255,255,0.1);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
     .welcome-close:hover{background:rgba(255,255,255,0.2)}
-    .welcome-close svg{width:16px;height:16px;stroke:#8b949e}
-    body.light-mode .welcome-popup{background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%)}
-    body.light-mode .welcome-popup h3{color:#1a1a2e}
-    body.light-mode .welcome-popup p{color:#57606a}
-    body.light-mode .welcome-close{background:rgba(0,0,0,0.05)}
-    body.light-mode .welcome-close:hover{background:rgba(0,0,0,0.1)}
-    body.light-mode .welcome-close svg{stroke:#57606a}
+    .welcome-close svg{width:20px;height:20px;stroke:#8b949e}
+    .welcome-icon{font-size:48px;margin-bottom:16px}
+    .welcome-modal h2{font-size:22px;font-weight:600;color:#e6edf3;margin-bottom:16px}
+    .welcome-modal p{font-size:14px;color:#8b949e;line-height:1.6;margin-bottom:12px}
+    .welcome-note{font-size:12px;color:#6366f1;font-style:italic;margin:20px 0}
+    .welcome-start{width:100%;padding:14px;border-radius:12px;border:none;background:#6366f1;color:white;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;position:relative;z-index:1}
+    .welcome-start::before{content:'';position:absolute;inset:-2px;border-radius:14px;background:linear-gradient(90deg,#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);background-size:400% 100%;animation:gradient-shift 8s linear infinite;z-index:-1}
+    .welcome-start::after{content:'';position:absolute;inset:0;border-radius:12px;background:#6366f1;z-index:-1;transition:background 0.2s}
+    .welcome-start:hover{transform:scale(1.02)}
+    .welcome-start:hover::after{background:#5558e3}
     
-    /* LIGHT/DARK MODE TOGGLE - No thumb, highlight active */
-    .theme-toggle{position:absolute;top:12px;right:12px;cursor:pointer;z-index:100;display:flex;flex-direction:column;align-items:center;gap:4px;animation:bounce-in 0.5s ease-out}
-    @keyframes bounce-in{0%{opacity:0;transform:scale(0.3)}50%{transform:scale(1.1)}70%{transform:scale(0.9)}100%{opacity:1;transform:scale(1)}}
-    
-    /* BUBBLES FROM ICON */
+    /* LOGO - clean */
     .logo{width:52px;height:52px;position:relative;border-radius:50%}.logo img{width:44px;height:44px;object-fit:cover;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;border-radius:12px}
-    .logo::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(from var(--angle),#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);animation:rainbow-spin 3s linear infinite}
-    .icon-bubbles{position:absolute;inset:-20px;pointer-events:none;z-index:1}
-    .icon-bubble{position:absolute;border-radius:50%;animation:bubble-float 3s ease-in-out infinite}
-    .icon-bubble:nth-child(1){left:0%;top:50%;animation-delay:0s;width:6px;height:6px;background:radial-gradient(circle,rgba(239,68,68,0.7) 0%,transparent 70%)}
-    .icon-bubble:nth-child(2){left:90%;top:20%;animation-delay:0.5s;width:10px;height:10px;background:radial-gradient(circle,rgba(139,92,246,0.7) 0%,transparent 70%)}
-    .icon-bubble:nth-child(3){left:100%;top:60%;animation-delay:1s;width:5px;height:5px;background:radial-gradient(circle,rgba(236,72,153,0.7) 0%,transparent 70%)}
-    .icon-bubble:nth-child(4){left:20%;top:0%;animation-delay:1.5s;width:7px;height:7px;background:radial-gradient(circle,rgba(34,211,238,0.7) 0%,transparent 70%)}
-    .icon-bubble:nth-child(5){left:80%;top:90%;animation-delay:2s;width:8px;height:8px;background:radial-gradient(circle,rgba(139,92,246,0.7) 0%,transparent 70%)}
-    .icon-bubble:nth-child(6){left:-10%;top:30%;animation-delay:2.5s;width:6px;height:6px;background:radial-gradient(circle,rgba(239,68,68,0.7) 0%,transparent 70%)}
-    @keyframes bubble-float{0%{transform:translate(0,0) scale(0);opacity:0}15%{transform:translate(3px,-5px) scale(1);opacity:0.9}70%{transform:translate(12px,-35px) scale(0.7);opacity:0.5}100%{transform:translate(18px,-55px) scale(0);opacity:0}}
     
-    /* SLIDE-IN-ELLIPTIC FOR HEADER TEXT */
-    .header-text{flex:1;perspective:1000px}
-    .header-text h1{font-size:18px;font-weight:600;color:#e6edf3 !important;margin-bottom:2px;animation:slide-in-elliptic 0.7s cubic-bezier(0.25,0.46,0.45,0.94) both}
-    .header-text .sub{font-size:13px;color:#7d8590 !important;animation:slide-in-elliptic 0.7s cubic-bezier(0.25,0.46,0.45,0.94) 0.15s both}
-    @keyframes slide-in-elliptic{0%{transform:translateX(-100px) rotateY(90deg) scale(0);transform-origin:-100% 50%;opacity:0}100%{transform:translateX(0) rotateY(0) scale(1);transform-origin:0% 50%;opacity:1;color:inherit}}
+    /* HEADER TEXT */
+    .header-text{flex:1}
+    .header-text h1{font-size:18px;font-weight:600;color:#e6edf3;margin-bottom:2px}
+    .header-text .sub{font-size:13px;color:#7d8590}
     
-    /* FILTER BUTTONS WITH GLITCH EFFECT */
-    .filter-buttons{display:flex;gap:12px;padding:0 20px 16px}
-    .filter-btn{flex:1;padding:14px 20px;border-radius:12px;border:1px solid #30363d;background:#21262d;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.3s;color:#fff !important;-webkit-text-fill-color:#fff !important;-moz-text-fill-color:#fff !important}
-    .filter-btn.salsa{animation:glitch-salsa 4s ease-in-out infinite}
-    .filter-btn.bachata{animation:glitch-bachata 4s ease-in-out infinite;animation-delay:2s}
-    @keyframes glitch-salsa{0%,100%{transform:translate(0);text-shadow:none;border-color:#30363d;color:#e6edf3}2%{transform:translate(-2px,1px);text-shadow:2px 0 #ef4444,-2px 0 #22d3d1;border-color:#ef4444;color:#e6edf3}4%{transform:translate(2px,-1px);text-shadow:-2px 0 #ef4444,2px 0 #22d3d1;color:#e6edf3}6%{transform:translate(0);text-shadow:none;border-color:#30363d;color:#e6edf3}45%,47%{opacity:1}46%{opacity:0.8;text-shadow:0 0 8px #ef4444}85%{transform:translate(0);text-shadow:none}86%{transform:translate(1px,0);text-shadow:-1px 0 #ef4444,1px 0 #22d3d1;border-color:#ef4444}87%{transform:translate(-1px,0);text-shadow:1px 0 #ef4444,-1px 0 #22d3d1}88%{transform:translate(0);text-shadow:none;border-color:#30363d}}
-    @keyframes glitch-bachata{0%,100%{transform:translate(0);text-shadow:none;border-color:#30363d;color:#e6edf3}2%{transform:translate(-2px,1px);text-shadow:2px 0 #8b5cf6,-2px 0 #ec4899;border-color:#8b5cf6;color:#e6edf3}4%{transform:translate(2px,-1px);text-shadow:-2px 0 #8b5cf6,2px 0 #ec4899;color:#e6edf3}6%{transform:translate(0);text-shadow:none;border-color:#30363d;color:#e6edf3}45%,47%{opacity:1}46%{opacity:0.8;text-shadow:0 0 8px #8b5cf6}85%{transform:translate(0);text-shadow:none}86%{transform:translate(1px,0);text-shadow:-1px 0 #8b5cf6,1px 0 #ec4899;border-color:#8b5cf6}87%{transform:translate(-1px,0);text-shadow:1px 0 #8b5cf6,-1px 0 #ec4899}88%{transform:translate(0);text-shadow:none;border-color:#30363d}}
-    .filter-btn:hover{transform:scale(1.02);animation:none}
-    .filter-btn.salsa:hover{text-shadow:0 0 10px #ef4444,0 0 20px #ef4444;border-color:#ef4444;background:linear-gradient(135deg,#21262d,rgba(239,68,68,0.15))}
-    .filter-btn.bachata:hover{text-shadow:0 0 10px #8b5cf6,0 0 20px #8b5cf6;border-color:#8b5cf6;background:linear-gradient(135deg,#21262d,rgba(139,92,246,0.15))}
-    body.light-mode .filter-btn{background:#ffffff;border-color:#d1d5da;color:#1a1a2e}
-    body.light-mode .filter-btn:hover{background:#f6f8fa}
-    body.light-mode .theme-label{color:#57606a}
-    body.light-mode .toggle-track{fill:#e8ebef;stroke:#d1d5da}
-    body.light-mode .toggle-sun circle{fill:none;stroke:#c4d82e}
-    body.light-mode .toggle-sun line{stroke:#c4d82e}
-    body.light-mode .toggle-moon path{fill:#9ca3af}
+    /* FILTER BUTTONS - Clean with gradient border */
+    .filter-buttons{display:flex;gap:12px;padding:16px 20px}
+    .filter-btn{flex:1;padding:14px 20px;border-radius:12px;border:none;background:#21262d;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;color:#e6edf3;position:relative;z-index:1}
+    .filter-btn::before{content:'';position:absolute;inset:-2px;border-radius:14px;background:linear-gradient(90deg,#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);background-size:400% 100%;animation:gradient-shift 8s linear infinite;z-index:-1}
+    .filter-btn::after{content:'';position:absolute;inset:0;border-radius:12px;background:#21262d;z-index:-1}
+    .filter-btn:hover{transform:scale(1.02)}
+    .filter-btn:hover::after{background:#2d333b}
+    .filter-btn:active{transform:scale(0.98)}
     .header-text .week-count{font-size:12px;color:#6366f1;margin-top:4px}.header-text .version-display{font-size:10px;color:#484f58;margin-top:2px}
     .chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;min-height:200px;max-height:60vh}
     .msg{display:flex;flex-direction:column}.msg.user{align-items:flex-end}.msg.bot{align-items:flex-start}
@@ -86,7 +64,9 @@
     .msg.user .bubble{background:#2d333b;color:#e6edf3;border-bottom-right-radius:4px}
     .msg.bot .bubble{background:#21262d;color:#c9d1d9;border-bottom-left-radius:4px}
     .events{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-    .event-card{background:#2d333b;border-radius:12px;padding:14px 16px}
+    .event-card{background:#2d333b;border-radius:12px;padding:14px 16px;position:relative;z-index:1}
+    .event-card::before{content:'';position:absolute;inset:-1px;border-radius:13px;background:linear-gradient(90deg,#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);background-size:400% 100%;animation:gradient-shift 8s linear infinite;z-index:-1;opacity:0.6}
+    .event-card::after{content:'';position:absolute;inset:0;border-radius:12px;background:#2d333b;z-index:-1}
     .event-actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #444c56}
     .cal-btn{flex:1;padding:8px 12px;border-radius:8px;border:1px solid #444c56;background:transparent;color:#8b949e;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s}
     .cal-btn:hover{background:#444c56;color:#e6edf3}
@@ -162,14 +142,18 @@
 <body>
 
 <div id="welcomeOverlay" class="welcome-overlay">
-  <div class="welcome-popup" id="welcomePopup">
+  <div class="welcome-modal">
     <button class="welcome-close" onclick="closeWelcome()" aria-label="Luk">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <path d="M18 6L6 18M6 6l12 12"/>
       </svg>
     </button>
-    <h3>🕺 Velkommen til DanceMap</h3>
-    <p>Find salsa og bachata events i København – vælg Salsa eller Bachata ovenfor</p>
+    <div class="welcome-icon">🕺</div>
+    <h2>Velkommen til DanceMap</h2>
+    <p>Slip for at søge gennem Facebook events og opslag for at finde salsa og bachata i København.</p>
+    <p>Vi samler det hele ét sted, så du altid ved hvad der sker.</p>
+    <div class="welcome-note">Opdateres løbende med nye events</div>
+    <button class="welcome-start" onclick="closeWelcome()">Kom i gang</button>
   </div>
 </div>
 <script>
@@ -178,52 +162,22 @@ if(localStorage.getItem('dancemap_welcomed')){
 }
 </script>
 
+<div class="header-outside">
+  <div class="logo">
+    <img src="/dancemap-icon.svg" alt="DanceMap" />
+  </div>
+  <div class="header-text">
+    <h1>DanceMap</h1>
+    <div class="sub">Salsa og Bachata events i København</div>
+    <div class="week-count" id="weekCount"></div>
+    <div class="version-display" id="versionDisplay"></div>
+  </div>
+</div>
+
 <div class="card">
-  <div class="theme-toggle" onclick="toggleTheme()" title="Skift tema">
-    <span class="theme-label" id="themeLabel">dark</span>
-    <svg viewBox="0 0 32 56">
-      <!-- Track -->
-      <rect class="toggle-track" x="2" y="2" width="28" height="52" rx="14"/>
-      <!-- Sun icon (TOP) -->
-      <g class="toggle-sun" transform="translate(16,16)">
-        <circle cx="0" cy="0" r="3.5"/>
-        <line x1="0" y1="-7" x2="0" y2="-5.5"/>
-        <line x1="0" y1="5.5" x2="0" y2="7"/>
-        <line x1="-7" y1="0" x2="-5.5" y2="0"/>
-        <line x1="5.5" y1="0" x2="7" y2="0"/>
-        <line x1="-5" y1="-5" x2="-3.5" y2="-3.5"/>
-        <line x1="3.5" y1="3.5" x2="5" y2="5"/>
-        <line x1="-5" y1="5" x2="-3.5" y2="3.5"/>
-        <line x1="3.5" y1="-3.5" x2="5" y2="-5"/>
-      </g>
-      <!-- Moon icon (BOTTOM) - simple crescent -->
-      <g class="toggle-moon" transform="translate(16,40)">
-        <path d="M2.5,-5 A5,5 0 1,1 2.5,5 A4,4 0 0,0 2.5,-5" fill="#c4d82e"/>
-      </g>
-    </svg>
-  </div>
-  <div class="header">
-    <div class="logo">
-      <img src="/dancemap-icon.svg" alt="DanceMap" />
-      <div class="icon-bubbles">
-        <div class="icon-bubble"></div>
-        <div class="icon-bubble"></div>
-        <div class="icon-bubble"></div>
-        <div class="icon-bubble"></div>
-        <div class="icon-bubble"></div>
-        <div class="icon-bubble"></div>
-      </div>
-    </div>
-    <div class="header-text">
-      <h1 style="color:#e6edf3 !important;">DanceMap</h1>
-      <div class="sub" style="color:#7d8590 !important;">Salsa og Bachata events i København</div>
-      <div class="week-count" id="weekCount"></div>
-      <div class="version-display" id="versionDisplay"></div>
-    </div>
-  </div>
   <div class="filter-buttons">
-    <button class="filter-btn salsa" onclick="filterSearch('salsa')"><span style="color:#fff;">Salsa</span></button>
-    <button class="filter-btn bachata" onclick="filterSearch('bachata')"><span style="color:#fff;">Bachata</span></button>
+    <button class="filter-btn salsa" onclick="filterSearch('salsa')">Salsa</button>
+    <button class="filter-btn bachata" onclick="filterSearch('bachata')">Bachata</button>
   </div>
   <div id="chat" class="chat"></div>
   <div class="input-area">
@@ -649,15 +603,28 @@ async function loadMore(){
 sendBtn.onclick=doSearch;
 input.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();doSearch();}};
 
-// FILTER SEARCH - for Salsa/Bachata buttons
+// FILTER SEARCH - for Salsa/Bachata buttons with music
+const salsaSound = new Audio('https://www.soundjay.com/misc/sounds/small-bell-ring-01a.mp3');
+const bachataSound = new Audio('https://www.soundjay.com/misc/sounds/small-bell-ring-02a.mp3');
+salsaSound.volume = 0.3;
+bachataSound.volume = 0.3;
+
 function filterSearch(type){
+  // Play sound
+  if(type === 'salsa'){
+    salsaSound.currentTime = 0;
+    salsaSound.play().catch(()=>{});
+  } else if(type === 'bachata'){
+    bachataSound.currentTime = 0;
+    bachataSound.play().catch(()=>{});
+  }
   input.value=type;
   doSearch();
 }
 
 // HEADER CLICK: 1x = reset chat, 3x = admin
 let clicks=0,clickTimer;
-document.querySelector('.header').onclick=()=>{
+document.querySelector('.header-outside').onclick=()=>{
   clicks++;
   clearTimeout(clickTimer);
   
@@ -670,7 +637,6 @@ document.querySelector('.header').onclick=()=>{
       if(clicks===1){
         // 1x klik = reset chat
         chat.innerHTML='';
-        addMsg('Vælg Salsa eller Bachata ovenfor',false);
         input.value='';
         lastQ='';page=0;hasMore=false;
       }
@@ -1115,7 +1081,7 @@ $('adminSubmitBtn').onclick=async()=>{
   isSubmitting=false;
 };
 
-addMsg('Vælg Salsa eller Bachata ovenfor',false);
+// No initial message - clean start
 
 async function loadWeekCount(){try{const d=await jsonp(API+'?action=weekcount&_='+Date.now());if(d.success&&d.count>0)$('weekCount').textContent=d.count+' kommende events';}catch(e){}}
 loadWeekCount();
@@ -1142,66 +1108,6 @@ function showWelcome(){
 }
 
 // Console: showWelcome() to test again
-
-// THEME TOGGLE (DARK/LIGHT/AUTO MODE)
-const themes = ['dark', 'light', 'auto'];
-let currentThemeIndex = 0;
-
-// MOBILE KEYBOARD FIX - scroll input into view
-const chatInput = $('q');
-if(chatInput){
-  chatInput.addEventListener('focus', () => {
-    setTimeout(() => {
-      chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 300);
-  });
-}
-
-// Visual viewport resize handler for mobile keyboards
-if(window.visualViewport){
-  window.visualViewport.addEventListener('resize', () => {
-    if(document.activeElement === chatInput){
-      setTimeout(() => chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
-    }
-  });
-}
-
-function applyTheme(theme) {
-  const label = $('themeLabel');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  
-  let isLight = false;
-  if (theme === 'auto') {
-    isLight = !prefersDark;
-    if(label) label.textContent = 'auto';
-  } else if (theme === 'light') {
-    isLight = true;
-    if(label) label.textContent = 'light';
-  } else {
-    isLight = false;
-    if(label) label.textContent = 'dark';
-  }
-  
-  document.body.classList.toggle('light-mode', isLight);
-}
-
-function toggleTheme() {
-  currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-  const theme = themes[currentThemeIndex];
-  localStorage.setItem('dancemap_theme', theme);
-  applyTheme(theme);
-}
-
-// Restore saved theme
-const savedTheme = localStorage.getItem('dancemap_theme') || 'dark';
-currentThemeIndex = themes.indexOf(savedTheme);
-if (currentThemeIndex === -1) currentThemeIndex = 0;
-applyTheme(themes[currentThemeIndex]);
-
-// Listen for system theme changes when in auto mode
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-  if (themes[currentThemeIndex] === 'auto') applyTheme('auto');
-});
 
 // ADMIN TABS
 const tabAdd=$('tabAdd'),tabPending=$('tabPending');
