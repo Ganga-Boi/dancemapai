@@ -353,6 +353,23 @@
       background: rgba(99, 102, 241, 0.1);
     }
     
+    /* Spinner animation */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
     /* Password gate */
     .password-input {
       text-align: center;
@@ -417,7 +434,7 @@
     <form id="eventForm">
       <div class="form-group">
         <label>Dit navn / organisation *</label>
-        <input type="text" id="arrangør" placeholder="Fx: Copenhagen Salsa Academy" required />
+        <input type="text" id="arrangør" placeholder="Dit navn gemmes til næste gang" required />
       </div>
       
       <div class="form-group">
@@ -485,12 +502,12 @@
     <form id="cancelForm">
       <div class="form-group">
         <label>Dit navn / organisation *</label>
-        <input type="text" id="cancelArrangør" placeholder="Fx: Copenhagen Salsa Academy" required />
+        <input type="text" id="cancelArrangør" placeholder="Dit navn (huskes automatisk)" required />
       </div>
       
       <div class="form-group">
         <label>Event navn *</label>
-        <input type="text" id="cancelNavn" placeholder="Præcis som det hedder på DanceMap" required />
+        <input type="text" id="cancelNavn" placeholder="Hele eller del af event-navnet" required />
       </div>
       
       <div class="form-group">
@@ -670,17 +687,22 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
   
   // Validate dance type
   if (!document.getElementById('dansetype').value) {
-    status.textContent = 'Vælg mindst én dansetype';
+    status.textContent = '⚠️ Vælg mindst én dansetype';
     status.className = 'status error';
     return;
   }
   
   btn.disabled = true;
-  btn.textContent = 'Sender...';
+  btn.innerHTML = '<span class="spinner"></span> Sender til DanceMap...';
   status.style.display = 'none';
   
-  const arrangør = document.getElementById('arrangør').value;
+  const arrangør = document.getElementById('arrangør').value.trim();
   const now = new Date().toISOString().split('T')[0];
+  
+  // Save organizer name
+  if (arrangør) {
+    localStorage.setItem('dancemap_arrangør_name', arrangør);
+  }
   
   const params = new URLSearchParams();
   params.set('action', 'arrangør-submit');
@@ -764,8 +786,11 @@ function showSuccess(icon, title, text) {
 }
 
 function resetForm() {
+  const savedName = document.getElementById('arrangør').value; // Keep the name
   document.getElementById('eventForm').reset();
   document.getElementById('cancelForm').reset();
+  document.getElementById('arrangør').value = savedName; // Restore name
+  document.getElementById('cancelArrangør').value = savedName; // Also in cancel form
   document.getElementById('dansetype').value = '';
   selectedTypes = [];
   document.querySelectorAll('.dance-type').forEach(btn => btn.classList.remove('selected'));
@@ -778,6 +803,22 @@ function resetForm() {
 
 // Set default date to today
 document.getElementById('dato').valueAsDate = new Date();
+
+// Load saved organizer name
+const savedArrangør = localStorage.getItem('dancemap_arrangør_name');
+if (savedArrangør) {
+  document.getElementById('arrangør').value = savedArrangør;
+  document.getElementById('cancelArrangør').value = savedArrangør;
+}
+
+// Save organizer name on change
+document.getElementById('arrangør').addEventListener('blur', () => {
+  const name = document.getElementById('arrangør').value.trim();
+  if (name) {
+    localStorage.setItem('dancemap_arrangør_name', name);
+    document.getElementById('cancelArrangør').value = name;
+  }
+});
 </script>
 
 </body>
