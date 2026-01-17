@@ -95,8 +95,13 @@
     .modal-overlay.open{display:flex}.modal{background:#161b22;border-radius:20px;width:100%;max-width:400px;padding:24px;max-height:90vh;overflow-y:auto}
     .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
     .modal-header h2{font-size:18px;font-weight:600;color:#e6edf3}.modal-close{background:none;border:none;color:#7d8590;font-size:28px;cursor:pointer}
-    .upload-btn{width:100%;padding:16px;border-radius:12px;border:2px dashed #30363d;background:transparent;color:#7d8590;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
+    .upload-btn{width:100%;padding:16px;border-radius:12px;border:2px dashed #30363d;background:transparent;color:#7d8590;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;transition:all 0.2s}
     .upload-btn:hover{border-color:#6366f1;color:#c9d1d9}
+    .upload-zone{border:2px dashed #30363d;border-radius:12px;padding:30px;text-align:center;transition:all 0.2s;margin-bottom:16px;background:rgba(99,102,241,0.05)}
+    .upload-zone.drag-over{border-color:#6366f1;background:rgba(99,102,241,0.15);transform:scale(1.02)}
+    .upload-zone-text{color:#8b949e;font-size:14px;line-height:1.6}
+    .upload-zone-text strong{color:#e6edf3;display:block;font-size:16px;margin-bottom:8px}
+    .upload-zone-shortcut{display:inline-block;background:#21262d;padding:4px 8px;border-radius:6px;font-family:monospace;font-size:12px;margin:0 4px}
     .image-preview{max-width:100%;max-height:150px;border-radius:12px;margin-bottom:12px;display:none}
     .ocr-status{font-size:14px;color:#7d8590;text-align:center;padding:12px}
     .form-group{margin-bottom:16px}.form-group label{display:block;font-size:13px;margin-bottom:8px;color:#7d8590}
@@ -207,13 +212,16 @@ if(localStorage.getItem('dancemap_welcomed')){
         <div style="font-size:12px;color:rgba(255,255,255,0.8);margin-top:4px;">Sammen får vi DanceMap til at vokse! 💃</div>
       </div>
       
-      <!-- ALTID SYNLIG: Paste, upload og ryd knapper -->
+      <!-- UPLOAD ZONE - Drag, paste, eller klik -->
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-zone-text">
+          <strong>📸 Drop flyer(s) her</strong>
+          <span class="upload-zone-shortcut">Ctrl+V</span> paste screenshot<br>
+          <span class="upload-zone-shortcut">Træk</span> én eller flere filer • <span class="upload-zone-shortcut">Klik</span> for at vælge
+        </div>
+      </div>
       <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <button type="button" class="upload-btn" id="pasteBtn" style="flex:1;margin-bottom:0;background:rgba(99,102,241,0.1);border-color:#6366f1;">
-          📋 Indsæt billede
-        </button>
-        <button type="button" class="upload-btn" id="uploadBtn" style="flex:0 0 auto;width:48px;margin-bottom:0;padding:14px;" title="Upload fil">📁</button>
-        <button type="button" class="upload-btn" id="clearAllBtn" style="flex:0 0 auto;width:48px;margin-bottom:0;padding:14px;border-color:#da3633;color:#da3633;" title="Ryd alt">🗑️</button>
+        <button type="button" class="upload-btn" id="clearAllBtn" style="flex:1;margin-bottom:0;border-color:#da3633;color:#da3633;">🗑️ Ryd alt og start forfra</button>
       </div>
       
       <!-- ALTID SYNLIG: Tekst paste område -->
@@ -285,7 +293,10 @@ if(localStorage.getItem('dancemap_welcomed')){
           <input type="checkbox" id="recurringCheck" />
           <label for="recurringCheck">Gentager ugentligt</label>
         </div>
-        <button type="button" class="submit-btn" id="adminSubmitBtn">Tilføj Event (pending)</button>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="submit-btn" id="adminSubmitBtn" style="flex:1;">Tilføj Event (pending)</button>
+          <button type="button" class="submit-btn" id="skipBtn" style="flex:0 0 auto;background:#30363d;display:none;">Skip ➜</button>
+        </div>
       </div>
       <div id="adminStatus" class="submit-status" style="display:none"></div>
       <div id="backendVersion" class="version-info"></div>
@@ -918,6 +929,58 @@ function simplifyPrice(pris){
   return min+'–'+max+' kr';
 }
 
+// KENDTE VENUES DATABASE - auto-udfyld adresse
+const knownVenues = {
+  'la hacienda': { sted: 'La Hacienda', adresse: 'Kultorvet 11', by: 'København K' },
+  'rumba': { sted: 'Rumba', adresse: 'Vester Voldgade 85', by: 'København V' },
+  'mambo': { sted: 'Mambo', adresse: 'Vester Voldgade 85', by: 'København V' },
+  'dansehallerne': { sted: 'Dansehallerne', adresse: 'Pasteursvej 20', by: 'København V' },
+  'pumpehuset': { sted: 'Pumpehuset', adresse: 'Studiestræde 52', by: 'København K' },
+  'the latin club': { sted: 'The Latin Club', adresse: 'Nørre Voldgade 2', by: 'København K' },
+  'latin club': { sted: 'The Latin Club', adresse: 'Nørre Voldgade 2', by: 'København K' },
+  'danceact': { sted: 'DanceAct', adresse: 'Smallegade 34', by: 'Frederiksberg' },
+  'salsa latina': { sted: 'Salsa Latina', adresse: 'Griffenfeldsgade 20', by: 'København N' },
+  'krudttønden': { sted: 'Krudttønden', adresse: 'Serridslevvej 2', by: 'København Ø' },
+  'vega': { sted: 'VEGA', adresse: 'Enghavevej 40', by: 'København V' },
+  'kulturhuset indre by': { sted: 'Kulturhuset Indre By', adresse: 'Charlotte Ammundsens Plads 3', by: 'København K' },
+  'stairway': { sted: 'Stairway', adresse: 'Store Regnegade 12', by: 'København K' },
+  'jazzhouse': { sted: 'JazzHouse', adresse: 'Niels Hemmingsens Gade 10', by: 'København K' },
+  'jazz house': { sted: 'JazzHouse', adresse: 'Niels Hemmingsens Gade 10', by: 'København K' },
+  'alice': { sted: 'Alice', adresse: 'Nørre Allé 7', by: 'København N' },
+  'uffa': { sted: 'UFFA', adresse: 'Flensborggade 33', by: 'København V' }
+};
+
+function matchVenue(stedInput) {
+  if (!stedInput) return null;
+  const normalized = stedInput.toLowerCase().trim();
+  
+  // Exact match
+  if (knownVenues[normalized]) return knownVenues[normalized];
+  
+  // Partial match
+  for (const [key, venue] of Object.entries(knownVenues)) {
+    if (normalized.includes(key) || key.includes(normalized)) {
+      return venue;
+    }
+  }
+  return null;
+}
+
+function autoFillVenue() {
+  const match = matchVenue(fields.sted.value);
+  if (match) {
+    fields.sted.value = match.sted;
+    if (!fields.adresse.value) fields.adresse.value = match.adresse;
+    if (!fields.by.value) fields.by.value = match.by;
+    updatePreview();
+    saveFormState();
+  }
+}
+
+// Listen for venue field changes
+fields.sted.addEventListener('blur', autoFillVenue);
+fields.sted.addEventListener('change', autoFillVenue);
+
 async function processImageWithClaude(file){
   ocrStatus.style.display='block';
   ocrStatus.innerHTML='🤖 <span class="loading-text">Claude analyserer billede...</span>';
@@ -940,6 +1003,8 @@ async function processImageWithClaude(file){
     if(d.sted && !fields.sted.value)fields.sted.value=d.sted;
     if(d.adresse && !fields.adresse.value)fields.adresse.value=d.adresse;
     if(d.by && !fields.by.value)fields.by.value=d.by;
+    // Auto-match kendte venues
+    autoFillVenue();
     if(d.pris && fields.prisType.value==='angiv' && !fields.prisOnline.value && !fields.prisDropin.value){const simplePris=simplifyPrice(d.pris);if(simplePris.toLowerCase()==='gratis'){fields.prisType.value='gratis';$('prisFields').style.display='none';}else{fields.prisType.value='angiv';$('prisFields').style.display='block';const prisMatch=simplePris.match(/(\d+)/g);if(prisMatch){if(prisMatch.length>=2){fields.prisOnline.value=prisMatch[0];fields.prisDropin.value=prisMatch[1];}else{fields.prisDropin.value=prisMatch[0];}}}}
     updatePrisField();updatePreview();
     const confidence=Math.round((result.confidence||0.8)*100);
@@ -984,8 +1049,6 @@ async function checkForDuplicates(){
 
 function fileToBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});}
 
-$('uploadBtn').onclick=()=>$('fileInput').click();
-
 // RYD ALT KNAP
 $('clearAllBtn').onclick=()=>{
   if(confirm('Ryd alle felter og start forfra?')){
@@ -997,34 +1060,6 @@ $('clearAllBtn').onclick=()=>{
     step2.style.display='none';
     status.style.display='none';
     warnings.classList.remove('show');
-  }
-};
-
-// PASTE FRA UDKLIPSHOLDER KNAP
-$('pasteBtn').onclick=async()=>{
-  try{
-    const items=await navigator.clipboard.read();
-    for(const item of items){
-      const imageType=item.types.find(t=>t.startsWith('image/'));
-      if(imageType){
-        const blob=await item.getType(imageType);
-        const file=new File([blob],'pasted-image.png',{type:imageType});
-        preview.src=URL.createObjectURL(file);
-        preview.style.display='block';
-        processImageWithClaude(file);
-        return;
-      }
-    }
-    ocrStatus.style.display='block';
-    ocrStatus.innerHTML='📋 Ingen billede i udklipsholder';
-    ocrStatus.style.color='#f0883e';
-    setTimeout(()=>ocrStatus.style.display='none',2000);
-  }catch(err){
-    console.log('Clipboard access denied, trying paste event');
-    ocrStatus.style.display='block';
-    ocrStatus.innerHTML='💡 Brug Ctrl+V for at indsætte';
-    ocrStatus.style.color='#7d8590';
-    setTimeout(()=>ocrStatus.style.display='none',2000);
   }
 };
 
@@ -1046,6 +1081,110 @@ function showAdminWelcome(){
 
 $('fileInput').onchange=e=>{const f=e.target.files[0];if(f?.type.startsWith('image/')){preview.src=URL.createObjectURL(f);preview.style.display='block';processImageWithClaude(f);}e.target.value='';};
 modal.onpaste=e=>{const items=e.clipboardData?.items||[];for(const item of items){if(item.type.startsWith('image/')){e.preventDefault();const f=item.getAsFile();preview.src=URL.createObjectURL(f);preview.style.display='block';processImageWithClaude(f);return;}}};
+
+// UPLOAD ZONE - drag, drop, click
+const uploadZone=$('uploadZone');
+if(uploadZone){
+  uploadZone.onclick=()=>$('fileInput').click();
+  uploadZone.ondragover=e=>{e.preventDefault();uploadZone.classList.add('drag-over');};
+  uploadZone.ondragleave=e=>{e.preventDefault();uploadZone.classList.remove('drag-over');};
+  uploadZone.ondrop=e=>{
+    e.preventDefault();
+    uploadZone.classList.remove('drag-over');
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    if(files.length === 1) {
+      preview.src=URL.createObjectURL(files[0]);
+      preview.style.display='block';
+      processImageWithClaude(files[0]);
+    } else if(files.length > 1) {
+      // Batch mode - add to queue
+      addToQueue(files);
+    }
+  };
+}
+
+// BATCH QUEUE for multiple flyers
+let flyerQueue = [];
+let queueIndex = 0;
+
+function addToQueue(files) {
+  flyerQueue = files;
+  queueIndex = 0;
+  updateQueueStatus();
+  processNextInQueue();
+}
+
+function processNextInQueue() {
+  if (queueIndex < flyerQueue.length) {
+    const file = flyerQueue[queueIndex];
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+    processImageWithClaude(file);
+    updateQueueStatus();
+  } else {
+    flyerQueue = [];
+    queueIndex = 0;
+    updateQueueStatus();
+  }
+}
+
+function updateQueueStatus() {
+  const skipBtn = $('skipBtn');
+  if (flyerQueue.length > 1) {
+    ocrStatus.style.display = 'block';
+    ocrStatus.innerHTML = `📚 Flyer ${queueIndex + 1} af ${flyerQueue.length}`;
+    ocrStatus.style.color = '#6366f1';
+    if(skipBtn) skipBtn.style.display = 'block';
+  } else {
+    if(skipBtn) skipBtn.style.display = 'none';
+  }
+}
+
+// Skip button handler
+if($('skipBtn')) {
+  $('skipBtn').onclick = () => nextInQueue();
+}
+
+function nextInQueue() {
+  queueIndex++;
+  clearFields();
+  preview.style.display = 'none';
+  step2.style.display = 'none';
+  warnings.classList.remove('show');
+  processNextInQueue();
+}
+
+// KEYBOARD SHORTCUTS
+document.addEventListener('keydown', e => {
+  // Only when admin modal is open
+  if (modal.style.display !== 'flex') return;
+  
+  // Ctrl+Enter = Submit
+  if (e.ctrlKey && e.key === 'Enter') {
+    e.preventDefault();
+    $('adminSubmitBtn').click();
+  }
+  
+  // Escape = Close modal
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    modal.style.display = 'none';
+  }
+  
+  // Ctrl+N = Next in queue (if batch mode)
+  if (e.ctrlKey && e.key === 'n' && flyerQueue.length > 1) {
+    e.preventDefault();
+    nextInQueue();
+  }
+});
+
+// Show keyboard hints
+if(uploadZone) {
+  const hints = document.createElement('div');
+  hints.style.cssText = 'margin-top:12px;font-size:11px;color:#484f58;text-align:center;';
+  hints.innerHTML = '⌨️ <b>Ctrl+Enter</b> = Submit • <b>Esc</b> = Luk • <b>Ctrl+N</b> = Næste i kø';
+  uploadZone.parentNode.insertBefore(hints, uploadZone.nextSibling);
+}
 
 
 // ADMIN SUBMIT
@@ -1077,7 +1216,19 @@ $('adminSubmitBtn').onclick=async()=>{
   try{
     const data=await jsonp(API+'?'+params.toString());
     status.style.display='block';
-    if(data.success){status.textContent='✅ Event tilføjet (pending)';status.className='submit-status success';$('previewCard').style.borderColor='#3fb950';clearFields();clearFormState();step2.style.display='none';payload.value='';preview.style.display='none';recurring.checked=false;}
+    if(data.success){
+      status.textContent='✅ Event tilføjet (pending)';
+      status.className='submit-status success';
+      $('previewCard').style.borderColor='#3fb950';
+      clearFields();clearFormState();step2.style.display='none';payload.value='';preview.style.display='none';recurring.checked=false;
+      // Auto-process next in queue
+      if(flyerQueue.length > 1 && queueIndex < flyerQueue.length - 1) {
+        setTimeout(() => {
+          nextInQueue();
+          status.style.display = 'none';
+        }, 1000);
+      }
+    }
     else if(data.error==='DUPLICATE'){status.textContent='⚠️ Dublet fundet';status.className='submit-status error';$('previewCard').style.borderColor='#f85149';}
     else{status.textContent=data.text||'❌ Fejl';status.className='submit-status error';}
   }catch(e){status.style.display='block';status.textContent='❌ Teknisk fejl';status.className='submit-status error';}
