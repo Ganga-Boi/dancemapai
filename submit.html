@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DanceMap – Arrangør Portal</title>
+  <link rel="icon" href="/dancemap-icon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      width: 100%;
+      max-width: 440px;
+    }
+    
+    .logo img {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+    }
+    
+    .header-text h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #e6edf3;
+      margin-bottom: 2px;
+    }
+    
+    .header-text .sub {
+      font-size: 13px;
+      color: #7d8590;
+    }
+    
+    .card {
+      background: #161b22;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 440px;
+      padding: 28px 24px;
+      position: relative;
+    }
+    
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 22px;
+      background: linear-gradient(90deg, #ff0000, #ff8000, #ffff00, #00ff00, #00ffff, #0080ff, #8000ff, #ff00ff, #ff0000);
+      background-size: 400% 100%;
+      animation: gradient-shift 8s linear infinite;
+      z-index: -1;
+    }
+    
+    @keyframes gradient-shift {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 400% 50%; }
+    }
+    
+    .intro {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    
+    .intro h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .intro p {
+      font-size: 14px;
+      color: #8b949e;
+      line-height: 1.5;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #8b949e;
+      margin-bottom: 6px;
+    }
+    
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #30363d;
+      background: #0d1117;
+      color: #e6edf3;
+      font-size: 15px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+    
+    .form-group input::placeholder {
+      color: #484f58;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .form-row .form-group {
+      flex: 1;
+    }
+    
+    .dance-types {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .dance-type {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid #30363d;
+      background: #0d1117;
+      color: #8b949e;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .dance-type:hover {
+      border-color: #6366f1;
+    }
+    
+    .dance-type.selected {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: #6366f1;
+      color: #e6edf3;
+    }
+    
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      background: #6366f1;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+      position: relative;
+    }
+    
+    .submit-btn:hover {
+      background: #5558e3;
+      transform: scale(1.01);
+    }
+    
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .cancel-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      background: #da3633;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+    
+    .cancel-btn:hover {
+      background: #c42b28;
+      transform: scale(1.01);
+    }
+    
+    .status {
+      text-align: center;
+      padding: 14px;
+      border-radius: 10px;
+      margin-top: 16px;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .status.success {
+      background: rgba(63, 185, 80, 0.15);
+      color: #3fb950;
+      display: block;
+    }
+    
+    .status.error {
+      background: rgba(248, 81, 73, 0.15);
+      color: #f85149;
+      display: block;
+    }
+    
+    .benefits {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #6366f1;
+    }
+    
+    .benefits span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 12px;
+      color: #484f58;
+    }
+    
+    .footer a {
+      color: #6366f1;
+      text-decoration: none;
+    }
+    
+    .venue-suggestion {
+      font-size: 11px;
+      color: #6366f1;
+      margin-top: 4px;
+      cursor: pointer;
+    }
+    
+    .venue-suggestion:hover {
+      text-decoration: underline;
+    }
+    
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .tab {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #30363d;
+      background: transparent;
+      color: #8b949e;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .tab:hover {
+      border-color: #6366f1;
+    }
+    
+    .tab.active {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: #6366f1;
+      color: #e6edf3;
+    }
+    
+    .tab.cancel-tab.active {
+      background: rgba(218, 54, 51, 0.15);
+      border-color: #da3633;
+      color: #f85149;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* Success animation */
+    @keyframes success-pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+    
+    .success-card {
+      animation: success-pulse 0.5s ease;
+    }
+    
+    .success-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    .success-message h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    
+    .success-message p {
+      color: #8b949e;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .add-another {
+      margin-top: 20px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: 1px solid #30363d;
+      background: transparent;
+      color: #e6edf3;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .add-another:hover {
+      border-color: #6366f1;
+      background: rgba(99, 102, 241, 0.1);
+    }
+    
+    /* Password gate */
+    .password-input {
+      text-align: center;
+      letter-spacing: 8px;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    
+    .lock-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <img src="/dancemap-icon.svg" alt="DanceMap" />
+  </div>
+  <div class="header-text">
+    <h1>DanceMap for Arrangører</h1>
+    <div class="sub">Del dit event med dansemiljøet i København</div>
+  </div>
+</div>
+
+<!-- PASSWORD GATE -->
+<div class="card" id="passwordCard">
+  <div class="intro">
+    <div class="lock-icon">🔒</div>
+    <h2>Arrangør-adgang</h2>
+    <p>Indtast adgangskode for at fortsætte</p>
+  </div>
+  
+  <div class="form-group">
+    <input type="password" id="password" class="password-input" placeholder="••••" maxlength="4" />
+  </div>
+  
+  <button class="submit-btn" onclick="checkPassword()">Fortsæt</button>
+  <div class="status" id="passwordStatus"></div>
+  
+  <div class="benefits" style="margin-top:24px;">
+    <p style="color:#8b949e;font-size:12px;">Kontakt DanceMap for adgangskode</p>
+  </div>
+</div>
+
+<!-- MAIN PORTAL (hidden until password) -->
+<div class="card" id="mainCard" style="display:none;">
+  
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('add')">➕ Tilføj event</button>
+    <button class="tab cancel-tab" onclick="switchTab('cancel')">❌ Aflys event</button>
+  </div>
+  
+  <!-- ADD EVENT TAB -->
+  <div class="tab-content active" id="addTab">
+    <div class="intro">
+      <h2>🎉 Tilføj dit event</h2>
+      <p>Udfyld formularen – det tager under 1 minut.<br>Dit event går live med det samme!</p>
+    </div>
+    
+    <form id="eventForm">
+      <div class="form-group">
+        <label>Dit navn / organisation *</label>
+        <input type="text" id="arrangør" placeholder="Fx: Copenhagen Salsa Academy" required />
+      </div>
+      
+      <div class="form-group">
+        <label>Event navn *</label>
+        <input type="text" id="navn" placeholder="Fx: Salsa Social Night" required />
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Dato *</label>
+          <input type="date" id="dato" required />
+        </div>
+        <div class="form-group">
+          <label>Starttid *</label>
+          <input type="time" id="starttid" required />
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Dansetype *</label>
+        <div class="dance-types">
+          <button type="button" class="dance-type" data-type="Salsa">💃 Salsa</button>
+          <button type="button" class="dance-type" data-type="Bachata">🕺 Bachata</button>
+          <button type="button" class="dance-type" data-type="Kizomba">🌙 Kizomba</button>
+          <button type="button" class="dance-type" data-type="Mix">🎭 Mix</button>
+        </div>
+        <input type="hidden" id="dansetype" required />
+      </div>
+      
+      <div class="form-group">
+        <label>Sted *</label>
+        <input type="text" id="sted" placeholder="Fx: La Hacienda" required />
+        <div class="venue-suggestion" id="venueSuggestion" style="display:none;"></div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Adresse</label>
+          <input type="text" id="adresse" placeholder="Gadenavn 12" />
+        </div>
+        <div class="form-group">
+          <label>By</label>
+          <input type="text" id="by" value="København" />
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Pris</label>
+        <input type="text" id="pris" placeholder="Fx: 100 kr eller Gratis" />
+      </div>
+      
+      <button type="submit" class="submit-btn" id="submitBtn">🚀 Publicer på DanceMap</button>
+      
+      <div class="status" id="addStatus"></div>
+    </form>
+  </div>
+  
+  <!-- CANCEL EVENT TAB -->
+  <div class="tab-content" id="cancelTab">
+    <div class="intro">
+      <h2>❌ Aflys et event</h2>
+      <p>Angiv hvilket event der skal aflyses.<br>Det fjernes fra DanceMap med det samme.</p>
+    </div>
+    
+    <form id="cancelForm">
+      <div class="form-group">
+        <label>Dit navn / organisation *</label>
+        <input type="text" id="cancelArrangør" placeholder="Fx: Copenhagen Salsa Academy" required />
+      </div>
+      
+      <div class="form-group">
+        <label>Event navn *</label>
+        <input type="text" id="cancelNavn" placeholder="Præcis som det hedder på DanceMap" required />
+      </div>
+      
+      <div class="form-group">
+        <label>Event dato *</label>
+        <input type="date" id="cancelDato" required />
+      </div>
+      
+      <div class="form-group">
+        <label>Årsag (valgfrit)</label>
+        <input type="text" id="cancelÅrsag" placeholder="Fx: Sygdom, for få tilmeldte..." />
+      </div>
+      
+      <button type="submit" class="cancel-btn" id="cancelBtn">🗑️ Aflys event</button>
+      
+      <div class="status" id="cancelStatus"></div>
+    </form>
+  </div>
+  
+  <div class="benefits">
+    <span>✓ Live med det samme</span>
+    <span>✓ Nem aflysning</span>
+  </div>
+</div>
+
+<!-- SUCCESS CARD -->
+<div class="card success-card" id="successCard" style="display:none; text-align:center;">
+  <div class="success-icon" id="successIcon">🎉</div>
+  <div class="success-message">
+    <h3 id="successTitle">Tak for dit event!</h3>
+    <p id="successText">Dit event er nu live på DanceMap.</p>
+  </div>
+  <button class="add-another" onclick="resetForm()">← Tilbage til portalen</button>
+</div>
+
+<div class="footer">
+  <a href="/">← Tilbage til DanceMap</a>
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbyLdLh5KIpFPOp0lOLZkJOBdkBOKRn3leJVDx4my1MXfhrqVGnCe7g6kVX_OeG9V73E/exec';
+const PASSWORD = '2026';
+
+// Password check
+function checkPassword() {
+  const input = document.getElementById('password').value;
+  const status = document.getElementById('passwordStatus');
+  
+  if (input === PASSWORD) {
+    document.getElementById('passwordCard').style.display = 'none';
+    document.getElementById('mainCard').style.display = 'block';
+    localStorage.setItem('dancemap_arrangør_access', 'true');
+  } else {
+    status.textContent = '❌ Forkert kode';
+    status.className = 'status error';
+  }
+}
+
+// Check if already authenticated
+if (localStorage.getItem('dancemap_arrangør_access') === 'true') {
+  document.getElementById('passwordCard').style.display = 'none';
+  document.getElementById('mainCard').style.display = 'block';
+}
+
+// Enter key for password
+document.getElementById('password').addEventListener('keyup', (e) => {
+  if (e.key === 'Enter') checkPassword();
+});
+
+// Tab switching
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  
+  if (tab === 'add') {
+    document.querySelector('.tab:first-child').classList.add('active');
+    document.getElementById('addTab').classList.add('active');
+  } else {
+    document.querySelector('.tab.cancel-tab').classList.add('active');
+    document.getElementById('cancelTab').classList.add('active');
+  }
+}
+
+// Kendte venues
+const knownVenues = {
+  'la hacienda': { sted: 'La Hacienda', adresse: 'Kultorvet 11', by: 'København K' },
+  'rumba': { sted: 'Rumba', adresse: 'Vester Voldgade 85', by: 'København V' },
+  'mambo': { sted: 'Mambo', adresse: 'Vester Voldgade 85', by: 'København V' },
+  'dansehallerne': { sted: 'Dansehallerne', adresse: 'Pasteursvej 20', by: 'København V' },
+  'pumpehuset': { sted: 'Pumpehuset', adresse: 'Studiestræde 52', by: 'København K' },
+  'the latin club': { sted: 'The Latin Club', adresse: 'Nørre Voldgade 2', by: 'København K' },
+  'latin club': { sted: 'The Latin Club', adresse: 'Nørre Voldgade 2', by: 'København K' },
+  'danceact': { sted: 'DanceAct', adresse: 'Smallegade 34', by: 'Frederiksberg' },
+  'krudttønden': { sted: 'Krudttønden', adresse: 'Serridslevvej 2', by: 'København Ø' },
+  'vega': { sted: 'VEGA', adresse: 'Enghavevej 40', by: 'København V' },
+  'stairway': { sted: 'Stairway', adresse: 'Store Regnegade 12', by: 'København K' },
+  'jazzhouse': { sted: 'JazzHouse', adresse: 'Niels Hemmingsens Gade 10', by: 'København K' },
+  'jazz house': { sted: 'JazzHouse', adresse: 'Niels Hemmingsens Gade 10', by: 'København K' },
+  'alice': { sted: 'Alice', adresse: 'Nørre Allé 7', by: 'København N' }
+};
+
+// Dance type selection
+let selectedTypes = [];
+document.querySelectorAll('.dance-type').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const type = btn.dataset.type;
+    if (btn.classList.contains('selected')) {
+      btn.classList.remove('selected');
+      selectedTypes = selectedTypes.filter(t => t !== type);
+    } else {
+      btn.classList.add('selected');
+      selectedTypes.push(type);
+    }
+    document.getElementById('dansetype').value = selectedTypes.join(' & ');
+  });
+});
+
+// Venue auto-suggest
+const stedInput = document.getElementById('sted');
+const adresseInput = document.getElementById('adresse');
+const byInput = document.getElementById('by');
+const suggestion = document.getElementById('venueSuggestion');
+
+stedInput.addEventListener('input', () => {
+  const val = stedInput.value.toLowerCase().trim();
+  let match = null;
+  
+  for (const [key, venue] of Object.entries(knownVenues)) {
+    if (val.includes(key) || key.includes(val)) {
+      match = venue;
+      break;
+    }
+  }
+  
+  if (match && val.length > 2) {
+    suggestion.textContent = `📍 ${match.sted}, ${match.adresse}, ${match.by} — klik for at udfylde`;
+    suggestion.style.display = 'block';
+    suggestion.onclick = () => {
+      stedInput.value = match.sted;
+      adresseInput.value = match.adresse;
+      byInput.value = match.by;
+      suggestion.style.display = 'none';
+    };
+  } else {
+    suggestion.style.display = 'none';
+  }
+});
+
+// JSONP helper
+function jsonp(url) {
+  return new Promise((resolve, reject) => {
+    const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+    const script = document.createElement('script');
+    
+    window[cb] = (data) => {
+      delete window[cb];
+      document.body.removeChild(script);
+      resolve(data);
+    };
+    
+    script.onerror = () => {
+      delete window[cb];
+      document.body.removeChild(script);
+      reject(new Error('Request failed'));
+    };
+    
+    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
+    document.body.appendChild(script);
+  });
+}
+
+// ADD EVENT FORM
+document.getElementById('eventForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const btn = document.getElementById('submitBtn');
+  const status = document.getElementById('addStatus');
+  
+  // Validate dance type
+  if (!document.getElementById('dansetype').value) {
+    status.textContent = 'Vælg mindst én dansetype';
+    status.className = 'status error';
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.textContent = 'Sender...';
+  status.style.display = 'none';
+  
+  const arrangør = document.getElementById('arrangør').value;
+  const now = new Date().toISOString().split('T')[0];
+  
+  const params = new URLSearchParams();
+  params.set('action', 'arrangør-submit');
+  params.set('dato', document.getElementById('dato').value);
+  params.set('navn', document.getElementById('navn').value);
+  params.set('starttid', document.getElementById('starttid').value);
+  params.set('dansetype', document.getElementById('dansetype').value);
+  params.set('sted', document.getElementById('sted').value);
+  params.set('adresse', document.getElementById('adresse').value);
+  params.set('by', document.getElementById('by').value);
+  params.set('pris', document.getElementById('pris').value || 'Ikke angivet');
+  params.set('kilde', arrangør);
+  params.set('indsendt', now);
+  params.set('_', Date.now());
+  
+  try {
+    const data = await jsonp(API + '?' + params.toString());
+    
+    if (data.success) {
+      showSuccess('🎉', 'Event publiceret!', `"${document.getElementById('navn').value}" er nu live på DanceMap.`);
+    } else {
+      status.textContent = data.error === 'DUPLICATE' ? '⚠️ Dette event findes allerede' : (data.text || 'Noget gik galt');
+      status.className = 'status error';
+    }
+  } catch (err) {
+    status.textContent = '❌ Kunne ikke sende. Prøv igen.';
+    status.className = 'status error';
+  }
+  
+  btn.disabled = false;
+  btn.textContent = '🚀 Publicer på DanceMap';
+});
+
+// CANCEL EVENT FORM
+document.getElementById('cancelForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const btn = document.getElementById('cancelBtn');
+  const status = document.getElementById('cancelStatus');
+  
+  btn.disabled = true;
+  btn.textContent = 'Aflyser...';
+  status.style.display = 'none';
+  
+  const arrangør = document.getElementById('cancelArrangør').value;
+  const now = new Date().toISOString().split('T')[0];
+  
+  const params = new URLSearchParams();
+  params.set('action', 'arrangør-cancel');
+  params.set('navn', document.getElementById('cancelNavn').value);
+  params.set('dato', document.getElementById('cancelDato').value);
+  params.set('årsag', document.getElementById('cancelÅrsag').value || 'Ikke angivet');
+  params.set('kilde', arrangør);
+  params.set('indsendt', now);
+  params.set('_', Date.now());
+  
+  try {
+    const data = await jsonp(API + '?' + params.toString());
+    
+    if (data.success) {
+      showSuccess('✅', 'Event aflyst', `"${document.getElementById('cancelNavn').value}" er fjernet fra DanceMap.`);
+    } else {
+      status.textContent = data.text || 'Kunne ikke finde eventet';
+      status.className = 'status error';
+    }
+  } catch (err) {
+    status.textContent = '❌ Kunne ikke sende. Prøv igen.';
+    status.className = 'status error';
+  }
+  
+  btn.disabled = false;
+  btn.textContent = '🗑️ Aflys event';
+});
+
+function showSuccess(icon, title, text) {
+  document.getElementById('mainCard').style.display = 'none';
+  document.getElementById('successCard').style.display = 'block';
+  document.getElementById('successIcon').textContent = icon;
+  document.getElementById('successTitle').textContent = title;
+  document.getElementById('successText').textContent = text;
+}
+
+function resetForm() {
+  document.getElementById('eventForm').reset();
+  document.getElementById('cancelForm').reset();
+  document.getElementById('dansetype').value = '';
+  selectedTypes = [];
+  document.querySelectorAll('.dance-type').forEach(btn => btn.classList.remove('selected'));
+  document.getElementById('mainCard').style.display = 'block';
+  document.getElementById('successCard').style.display = 'none';
+  document.getElementById('addStatus').style.display = 'none';
+  document.getElementById('cancelStatus').style.display = 'none';
+  switchTab('add');
+}
+
+// Set default date to today
+document.getElementById('dato').valueAsDate = new Date();
+</script>
+
+</body>
+</html>
