@@ -189,7 +189,7 @@
     <form id="eventForm">
       <div class="field-row">
         <label>Dit navn / organisation *</label>
-        <input type="text" id="arrangør" required />
+        <input type="text" id="arrangor" required />
       </div>
       
       <div class="field-row">
@@ -217,7 +217,6 @@
           <option value="Tango">Tango</option>
           <option value="Swing">Swing</option>
           <option value="Latin">Latin</option>
-          <option value="Festival">Festival</option>
         </select>
       </div>
       
@@ -250,10 +249,6 @@
           <div><label>Online pris (kr)</label><input type="text" id="prisOnline" placeholder="50" /></div>
           <div><label>Drop-in pris (kr)</label><input type="text" id="prisDropin" placeholder="70" /></div>
         </div>
-        <div class="field-row">
-          <label>Billet-link (valgfrit)</label>
-          <input type="url" id="billetLink" placeholder="https://..." />
-        </div>
       </div>
       
       <div class="checkbox-group">
@@ -285,7 +280,7 @@
     <form id="cancelForm">
       <div class="field-row">
         <label>Dit navn / organisation *</label>
-        <input type="text" id="cancelArrangør" required />
+        <input type="text" id="cancelArrangor" required />
       </div>
       
       <div class="field-row">
@@ -300,7 +295,7 @@
       
       <div class="field-row">
         <label>Årsag (valgfrit)</label>
-        <input type="text" id="cancelÅrsag" />
+        <input type="text" id="cancelAarsag" />
       </div>
       
       <div class="btn-row">
@@ -328,25 +323,18 @@
 </div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbyLdLh5KIpFPOp0lOLZkJOBdkBOKRn3leJVDx4my1MXfhrqVGnCe7g6kVX_OeG9V73E/exec';
+// KORREKT API URL FRA INDEX.HTML!
+const API = 'https://script.google.com/macros/s/AKfycbyJdVscl-4f-ow7Ynj-LGsazpGFSR8VzVZWHruWdNE66HbVK6LJLOXKRmS6TFUUFC6i/exec';
 const PASSWORD = '2026';
 
-// Elements
 const $ = id => document.getElementById(id);
-const fields = {
-  arrangør: $('arrangør'), navn: $('navn'), dato: $('dato'),
-  starttid: $('starttid'), sluttid: $('sluttid'), dansetype: $('dansetype'),
-  sted: $('sted'), adresse: $('adresse'), by: $('by'),
-  prisType: $('prisType'), prisOnline: $('prisOnline'), prisDropin: $('prisDropin'),
-  billetLink: $('billetLink'), recurring: $('recurring')
-};
 
 // Password check
 function checkPassword() {
   if ($('password').value === PASSWORD) {
     $('passwordCard').style.display = 'none';
     $('mainCard').style.display = 'block';
-    localStorage.setItem('dancemap_arrangør_access', 'true');
+    localStorage.setItem('dancemap_arrangor_access', 'true');
     loadSavedName();
   } else {
     $('passwordStatus').textContent = '❌ Forkert kode';
@@ -354,28 +342,29 @@ function checkPassword() {
   }
 }
 
-if (localStorage.getItem('dancemap_arrangør_access') === 'true') {
+// Auto-login hvis allerede godkendt
+if (localStorage.getItem('dancemap_arrangor_access') === 'true') {
   $('passwordCard').style.display = 'none';
   $('mainCard').style.display = 'block';
-  loadSavedName();
+  setTimeout(loadSavedName, 100);
 }
 
 $('password').onkeyup = e => { if (e.key === 'Enter') checkPassword(); };
 
 // Load/save name
 function loadSavedName() {
-  const saved = localStorage.getItem('dancemap_arrangør_name');
+  const saved = localStorage.getItem('dancemap_arrangor_name');
   if (saved) {
-    fields.arrangør.value = saved;
-    $('cancelArrangør').value = saved;
+    $('arrangor').value = saved;
+    $('cancelArrangor').value = saved;
   }
 }
 
-fields.arrangør.onblur = () => {
-  const name = fields.arrangør.value.trim();
+$('arrangor').onblur = function() {
+  const name = this.value.trim();
   if (name) {
-    localStorage.setItem('dancemap_arrangør_name', name);
-    $('cancelArrangør').value = name;
+    localStorage.setItem('dancemap_arrangor_name', name);
+    $('cancelArrangor').value = name;
   }
 };
 
@@ -398,100 +387,100 @@ $('prisType').onchange = function() {
   updatePreview();
 };
 
-// Build pris string
+// Build pris string (same as admin.html)
 function buildPrisString() {
-  const pt = fields.prisType.value;
+  const pt = $('prisType').value;
   if (pt === 'gratis') return 'Gratis';
   if (pt === 'kontakt') return 'Kontakt arrangør';
-  const o = fields.prisOnline.value.trim();
-  const d = fields.prisDropin.value.trim();
+  const o = $('prisOnline').value.trim();
+  const d = $('prisDropin').value.trim();
   if (o && d) return o + ' kr (online) / ' + d + ' kr (drop-in)';
   if (o) return o + ' kr (online)';
   if (d) return d + ' kr (drop-in)';
   return '';
 }
 
-// Preview
+// Preview (same format as admin.html)
 function updatePreview() {
   const dage = ['Søn','Man','Tir','Ons','Tor','Fre','Lør'];
   const mdr = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
   
   let datoStr = '—';
-  if (fields.dato.value) {
-    const d = new Date(fields.dato.value);
+  if ($('dato').value) {
+    const d = new Date($('dato').value);
     if (!isNaN(d.getTime())) {
       datoStr = dage[d.getDay()] + ' ' + d.getDate() + '. ' + mdr[d.getMonth()];
-      if (fields.recurring.checked) datoStr += ' 🔁';
+      if ($('recurring').checked) datoStr += ' 🔁';
     }
   }
   
-  let tidStr = fields.starttid.value || '—';
-  if (fields.sluttid.value) tidStr += '–' + fields.sluttid.value;
+  let tidStr = $('starttid').value || '—';
+  if ($('sluttid').value) tidStr += '–' + $('sluttid').value;
   
-  let stedStr = fields.sted.value || '—';
-  if (fields.adresse.value) stedStr += ', ' + fields.adresse.value;
-  if (fields.by.value) stedStr += ', ' + fields.by.value;
+  let stedStr = $('sted').value || '—';
+  if ($('adresse').value) stedStr += ', ' + $('adresse').value;
+  if ($('by').value) stedStr += ', ' + $('by').value;
   
   const pris = buildPrisString() || '—';
   
-  $('previewContent').innerHTML = `
-    <div class="line"><span class="icon">🗓</span><span>${datoStr}</span></div>
-    <div class="line"><span class="icon">📌</span><span>${fields.navn.value || '—'}</span></div>
-    <div class="line"><span class="icon">🕗</span><span>${tidStr}</span></div>
-    <div class="line"><span class="icon">💃</span><span>${fields.dansetype.value || '—'}</span></div>
-    <div class="line"><span class="icon">📍</span><span>${stedStr}</span></div>
-    <div class="line"><span class="icon">💰</span><span>${pris}</span></div>
-  `;
+  $('previewContent').innerHTML = 
+    '<div class="line"><span class="icon">🗓</span><span>' + datoStr + '</span></div>' +
+    '<div class="line"><span class="icon">📌</span><span>' + ($('navn').value || '—') + '</span></div>' +
+    '<div class="line"><span class="icon">🕗</span><span>' + tidStr + '</span></div>' +
+    '<div class="line"><span class="icon">💃</span><span>' + ($('dansetype').value || '—') + '</span></div>' +
+    '<div class="line"><span class="icon">📍</span><span>' + stedStr + '</span></div>' +
+    '<div class="line"><span class="icon">💰</span><span>' + pris + '</span></div>';
 }
 
 // Update preview on any change
-Object.values(fields).forEach(f => {
-  if (f?.addEventListener) {
-    f.addEventListener('input', updatePreview);
-    f.addEventListener('change', updatePreview);
+['dato','navn','starttid','sluttid','dansetype','sted','adresse','by','prisType','prisOnline','prisDropin','recurring'].forEach(id => {
+  const el = $(id);
+  if (el) {
+    el.addEventListener('input', updatePreview);
+    el.addEventListener('change', updatePreview);
   }
 });
 
 // Clear form
 function clearForm() {
-  const savedName = fields.arrangør.value;
+  const savedName = $('arrangor').value;
   $('eventForm').reset();
-  fields.arrangør.value = savedName;
-  fields.by.value = 'København';
-  fields.dato.valueAsDate = new Date();
+  $('arrangor').value = savedName;
+  $('by').value = 'København';
+  $('dato').valueAsDate = new Date();
   $('prisFields').style.display = 'block';
   $('addStatus').style.display = 'none';
   updatePreview();
 }
 
 function clearCancelForm() {
-  const savedName = $('cancelArrangør').value;
+  const savedName = $('cancelArrangor').value;
   $('cancelForm').reset();
-  $('cancelArrangør').value = savedName;
+  $('cancelArrangor').value = savedName;
   $('cancelStatus').style.display = 'none';
 }
 
-// JSONP helper
+// JSONP helper (same as index.html)
 function jsonp(url) {
   return new Promise((resolve, reject) => {
-    const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
-    const script = document.createElement('script');
+    const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
     window[cb] = data => { delete window[cb]; script.remove(); resolve(data); };
-    script.onerror = () => { delete window[cb]; script.remove(); reject(new Error('Failed')); };
+    const script = document.createElement('script');
     script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
+    script.onerror = () => { delete window[cb]; script.remove(); reject(new Error('JSONP failed')); };
     document.body.appendChild(script);
   });
 }
 
-// ADD EVENT FORM
-$('eventForm').onsubmit = async (e) => {
+// ADD EVENT FORM - uses SAME params as admin-import
+$('eventForm').onsubmit = async function(e) {
   e.preventDefault();
   
   const btn = $('submitBtn');
   const status = $('addStatus');
   
   // Validate pris
-  if (fields.prisType.value === 'angiv' && !fields.prisOnline.value && !fields.prisDropin.value) {
+  if ($('prisType').value === 'angiv' && !$('prisOnline').value && !$('prisDropin').value) {
     status.textContent = '⚠️ Angiv mindst én pris';
     status.className = 'status error';
     return;
@@ -501,30 +490,29 @@ $('eventForm').onsubmit = async (e) => {
   btn.innerHTML = '<span class="spinner"></span> Sender...';
   status.style.display = 'none';
   
-  const arrangør = fields.arrangør.value.trim();
-  if (arrangør) localStorage.setItem('dancemap_arrangør_name', arrangør);
+  const arrangor = $('arrangor').value.trim();
+  if (arrangor) localStorage.setItem('dancemap_arrangor_name', arrangor);
   
+  // SAMME PARAMS SOM ADMIN-IMPORT!
   const params = new URLSearchParams();
-  params.set('action', 'arrangør-submit');
-  params.set('dato', fields.dato.value);
-  params.set('navn', fields.navn.value);
-  params.set('starttid', fields.starttid.value);
-  params.set('sluttid', fields.sluttid.value);
-  params.set('dansetype', fields.dansetype.value);
-  params.set('sted', fields.sted.value);
-  params.set('adresse', fields.adresse.value);
-  params.set('by', fields.by.value);
+  params.set('action', 'arrangor-submit');
+  params.set('dato', $('dato').value);
+  params.set('navn', $('navn').value);
+  params.set('starttid', $('starttid').value);
+  params.set('sluttid', $('sluttid').value);
+  params.set('dansetype', $('dansetype').value);
+  params.set('sted', $('sted').value);
+  params.set('adresse', $('adresse').value);
+  params.set('by', $('by').value);
   params.set('pris', buildPrisString());
-  params.set('link', fields.billetLink.value);
-  params.set('recurring', fields.recurring.checked);
-  params.set('kilde', arrangør);
-  params.set('indsendt', new Date().toISOString().split('T')[0]);
+  params.set('recurring', $('recurring').checked);
+  params.set('kilde', arrangor);
   params.set('_', Date.now());
   
   try {
     const data = await jsonp(API + '?' + params.toString());
     if (data.success) {
-      showSuccess('🎉', 'Event publiceret!', '"' + fields.navn.value + '" er nu live på DanceMap.');
+      showSuccess('🎉', 'Event publiceret!', '"' + $('navn').value + '" er nu live på DanceMap.');
     } else {
       status.textContent = data.error === 'DUPLICATE' ? '⚠️ Dette event findes allerede' : (data.text || 'Noget gik galt');
       status.className = 'status error';
@@ -539,7 +527,7 @@ $('eventForm').onsubmit = async (e) => {
 };
 
 // CANCEL EVENT FORM
-$('cancelForm').onsubmit = async (e) => {
+$('cancelForm').onsubmit = async function(e) {
   e.preventDefault();
   
   const btn = $('cancelBtn');
@@ -550,11 +538,11 @@ $('cancelForm').onsubmit = async (e) => {
   status.style.display = 'none';
   
   const params = new URLSearchParams();
-  params.set('action', 'arrangør-cancel');
+  params.set('action', 'arrangor-cancel');
   params.set('navn', $('cancelNavn').value);
   params.set('dato', $('cancelDato').value);
-  params.set('årsag', $('cancelÅrsag').value || 'Ikke angivet');
-  params.set('kilde', $('cancelArrangør').value);
+  params.set('aarsag', $('cancelAarsag').value || 'Ikke angivet');
+  params.set('kilde', $('cancelArrangor').value);
   params.set('_', Date.now());
   
   try {
