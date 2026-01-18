@@ -270,13 +270,21 @@
 
 <script>
 (function() {
-  var API = 'https://script.google.com/macros/s/AKfycbyJdVscl-4f-ow7Ynj-LGsazpGFSR8VzVZWHruWdNE66HbVK6LJLOXKRmS6TFUUFC6i/exec';
+  var API = 'https://script.google.com/macros/s/AKfycbyNGuntMdNwytrMako2GD5QHDcwQ8JPP_YsgDy6sgLLo3dNIaZ1-gif68Af--kHS_y0/exec';
   var PASSWORD = '2026';
-  var TIMEOUT = 15000; // 15 sekunder timeout
+  var TIMEOUT = 15000;
   var submittedEventName = '';
   var isSubmitting = false;
 
   function $(id) { return document.getElementById(id); }
+
+  // ═══════════════════════════════════════════════════════════
+  // RESET via URL: submit.html?reset=1
+  // ═══════════════════════════════════════════════════════════
+  if (window.location.search.includes('reset=1')) {
+    try { localStorage.removeItem('dm_access'); } catch(e) {}
+    window.location.href = window.location.pathname;
+  }
 
   // PASSWORD
   $('pwBtn').onclick = function() {
@@ -417,7 +425,6 @@
       callback(new Error('Network error'));
     };
 
-    // TIMEOUT
     timer = setTimeout(function() {
       if (done) return;
       cleanup();
@@ -428,7 +435,6 @@
     document.body.appendChild(script);
   }
 
-  // RESET BUTTON STATE
   function resetButton() {
     var btn = $('submitBtn');
     btn.disabled = false;
@@ -440,20 +446,17 @@
   $('eventForm').onsubmit = function(e) {
     e.preventDefault();
     
-    // Prevent double submit
     if (isSubmitting) return;
     
     var btn = $('submitBtn');
     var status = $('addStatus');
     
-    // Validate pris
     if ($('prisType').value === 'angiv' && !$('prisOnline').value && !$('prisDropin').value) {
       status.textContent = 'Angiv mindst én pris';
       status.className = 'status error';
       return;
     }
     
-    // GEM EVENT-NAVNET
     submittedEventName = ($('navn').value || '').trim();
     if (!submittedEventName) {
       status.textContent = 'Event navn mangler';
@@ -471,7 +474,6 @@
       if (kilde) localStorage.setItem('dm_name', kilde);
     } catch(e) {}
     
-    // BUILD URL
     var params = [];
     params.push('action=admin-import');
     params.push('dato=' + encodeURIComponent($('dato').value || ''));
@@ -491,7 +493,6 @@
     var url = API + '?' + params.join('&');
     
     jsonp(url, function(err, data) {
-      // ALTID RESET BUTTON!
       resetButton();
       
       if (err) {
