@@ -62,18 +62,6 @@
     .intro h2 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
     .intro p { font-size: 14px; color: #8b949e; line-height: 1.5; }
     
-    .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
-    .tab {
-      flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #30363d;
-      background: transparent; color: #8b949e; font-size: 14px; font-weight: 500; cursor: pointer;
-    }
-    .tab:hover { border-color: #6366f1; }
-    .tab.active { background: rgba(99, 102, 241, 0.15); border-color: #6366f1; color: #e6edf3; }
-    .tab.cancel-tab.active { background: rgba(218, 54, 51, 0.15); border-color: #da3633; color: #f85149; }
-    
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    
     .field-row { margin-bottom: 14px; }
     .field-row label { display: block; font-size: 12px; margin-bottom: 6px; color: #7d8590; }
     .field-row input, .field-row select {
@@ -106,12 +94,6 @@
     }
     .clear-btn:hover { border-color: #f85149; color: #f85149; }
     
-    .cancel-btn {
-      flex: 1; padding: 16px; border-radius: 12px; border: none;
-      background: #da3633; color: white; font-size: 15px; font-weight: 600; cursor: pointer;
-    }
-    .cancel-btn:hover { background: #c42b28; }
-    
     .status {
       text-align: center; padding: 14px; border-radius: 10px; margin-top: 16px; font-size: 14px; display: none;
     }
@@ -132,8 +114,10 @@
     
     .success-card { text-align: center; }
     .success-icon { font-size: 48px; margin-bottom: 16px; }
-    .success-message h3 { font-size: 18px; margin-bottom: 8px; }
-    .success-message p { color: #8b949e; font-size: 14px; line-height: 1.5; }
+    .success-message h3 { font-size: 18px; margin-bottom: 8px; color: #3fb950; }
+    .success-message p { color: #8b949e; font-size: 14px; line-height: 1.5; margin-bottom: 8px; }
+    .success-message .event-name { color: #e6edf3; font-weight: 600; font-size: 16px; margin-bottom: 16px; }
+    .success-message .note { font-size: 12px; color: #6e7681; margin-top: 12px; }
     .add-another {
       margin-top: 20px; padding: 12px 24px; border-radius: 10px; border: 1px solid #30363d;
       background: transparent; color: #e6edf3; font-size: 14px; cursor: pointer;
@@ -166,156 +150,118 @@
     <p>Indtast adgangskode for at fortsætte</p>
   </div>
   <div class="field-row">
-    <input type="password" id="password" class="password-input" placeholder="••••" maxlength="4" />
+    <input type="password" id="password" class="password-input" placeholder="****" maxlength="4" />
   </div>
-  <button class="submit-btn" onclick="checkPassword()">Fortsæt</button>
+  <button class="submit-btn" id="pwBtn">Fortsæt</button>
   <div class="status" id="passwordStatus"></div>
 </div>
 
-<!-- MAIN PORTAL -->
+<!-- MAIN FORM -->
 <div class="card" id="mainCard" style="display:none;">
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('add')">➕ Tilføj event</button>
-    <button class="tab cancel-tab" onclick="switchTab('cancel')">❌ Aflys event</button>
+  <div class="intro">
+    <h2>🎉 Tilføj dit event</h2>
+    <p>Udfyld felterne og dit event bliver tilføjet</p>
   </div>
   
-  <!-- ADD EVENT TAB -->
-  <div class="tab-content active" id="addTab">
-    <div class="intro">
-      <h2>🎉 Tilføj dit event</h2>
-      <p>Dit event går live med det samme!</p>
+  <form id="eventForm">
+    <div class="field-row">
+      <label>Dit navn / organisation *</label>
+      <input type="text" id="kilde" required />
     </div>
     
-    <form id="eventForm">
-      <div class="field-row">
-        <label>Dit navn / organisation *</label>
-        <input type="text" id="arrangor" required />
-      </div>
-      
-      <div class="field-row">
-        <label>Event navn *</label>
-        <input type="text" id="navn" required />
-      </div>
-      
-      <div class="field-row">
-        <label>Dato *</label>
-        <input type="date" id="dato" required />
-      </div>
-      
+    <div class="field-row">
+      <label>Event navn *</label>
+      <input type="text" id="navn" required />
+    </div>
+    
+    <div class="field-row">
+      <label>Dato *</label>
+      <input type="date" id="dato" required />
+    </div>
+    
+    <div class="field-row two-col">
+      <div><label>Start *</label><input type="time" id="starttid" required /></div>
+      <div><label>Slut *</label><input type="time" id="sluttid" required /></div>
+    </div>
+    
+    <div class="field-row">
+      <label>Dansetype *</label>
+      <select id="dansetype" required>
+        <option value="Salsa">Salsa</option>
+        <option value="Bachata">Bachata</option>
+        <option value="Kizomba">Kizomba</option>
+        <option value="Zouk">Zouk</option>
+        <option value="Tango">Tango</option>
+        <option value="Swing">Swing</option>
+        <option value="Latin">Latin</option>
+      </select>
+    </div>
+    
+    <div class="field-row">
+      <label>Sted *</label>
+      <input type="text" id="sted" required />
+    </div>
+    
+    <div class="field-row">
+      <label>Adresse *</label>
+      <input type="text" id="adresse" required />
+    </div>
+    
+    <div class="field-row">
+      <label>By *</label>
+      <input type="text" id="by" value="København" required />
+    </div>
+    
+    <div class="field-row">
+      <label>Pristype</label>
+      <select id="prisType">
+        <option value="angiv">Angiv priser</option>
+        <option value="gratis">Gratis</option>
+        <option value="kontakt">Kontakt arrangør</option>
+      </select>
+    </div>
+    
+    <div id="prisFields">
       <div class="field-row two-col">
-        <div><label>Start *</label><input type="time" id="starttid" required /></div>
-        <div><label>Slut *</label><input type="time" id="sluttid" required /></div>
+        <div><label>Online pris (kr)</label><input type="text" id="prisOnline" placeholder="50" /></div>
+        <div><label>Drop-in pris (kr)</label><input type="text" id="prisDropin" placeholder="70" /></div>
       </div>
-      
-      <div class="field-row">
-        <label>Dansetype *</label>
-        <select id="dansetype" required>
-          <option value="Salsa">Salsa</option>
-          <option value="Bachata">Bachata</option>
-          <option value="Kizomba">Kizomba</option>
-          <option value="Zouk">Zouk</option>
-          <option value="Tango">Tango</option>
-          <option value="Swing">Swing</option>
-          <option value="Latin">Latin</option>
-        </select>
-      </div>
-      
-      <div class="field-row">
-        <label>Sted *</label>
-        <input type="text" id="sted" required />
-      </div>
-      
-      <div class="field-row">
-        <label>Adresse *</label>
-        <input type="text" id="adresse" required />
-      </div>
-      
-      <div class="field-row">
-        <label>By *</label>
-        <input type="text" id="by" value="København" required />
-      </div>
-      
-      <div class="field-row">
-        <label>Pristype</label>
-        <select id="prisType">
-          <option value="angiv">Angiv priser</option>
-          <option value="gratis">Gratis</option>
-          <option value="kontakt">Kontakt arrangør</option>
-        </select>
-      </div>
-      
-      <div id="prisFields">
-        <div class="field-row two-col">
-          <div><label>Online pris (kr)</label><input type="text" id="prisOnline" placeholder="50" /></div>
-          <div><label>Drop-in pris (kr)</label><input type="text" id="prisDropin" placeholder="70" /></div>
-        </div>
-      </div>
-      
-      <div class="checkbox-group">
-        <input type="checkbox" id="recurring" />
-        <label for="recurring">Gentager ugentligt</label>
-      </div>
-      
-      <div id="previewCard" class="preview-card">
-        <div class="preview-label">Forhåndsvisning</div>
-        <div id="previewContent" class="preview-content"></div>
-      </div>
-      
-      <div class="btn-row">
-        <button type="button" class="clear-btn" onclick="clearForm()">Ryd</button>
-        <button type="submit" class="submit-btn" id="submitBtn">🚀 Publicer</button>
-      </div>
-      
-      <div class="status" id="addStatus"></div>
-    </form>
-  </div>
-  
-  <!-- CANCEL EVENT TAB -->
-  <div class="tab-content" id="cancelTab">
-    <div class="intro">
-      <h2>❌ Aflys et event</h2>
-      <p>Angiv hvilket event der skal aflyses</p>
     </div>
     
-    <form id="cancelForm">
-      <div class="field-row">
-        <label>Dit navn / organisation *</label>
-        <input type="text" id="cancelArrangor" required />
-      </div>
-      
-      <div class="field-row">
-        <label>Event navn *</label>
-        <input type="text" id="cancelNavn" required />
-      </div>
-      
-      <div class="field-row">
-        <label>Event dato *</label>
-        <input type="date" id="cancelDato" required />
-      </div>
-      
-      <div class="field-row">
-        <label>Årsag (valgfrit)</label>
-        <input type="text" id="cancelAarsag" />
-      </div>
-      
-      <div class="btn-row">
-        <button type="button" class="clear-btn" onclick="clearCancelForm()">Ryd</button>
-        <button type="submit" class="cancel-btn" id="cancelBtn">🗑️ Aflys event</button>
-      </div>
-      
-      <div class="status" id="cancelStatus"></div>
-    </form>
-  </div>
+    <div class="field-row">
+      <label>Billet-link (valgfrit)</label>
+      <input type="url" id="link" placeholder="https://..." />
+    </div>
+    
+    <div class="checkbox-group">
+      <input type="checkbox" id="recurring" />
+      <label for="recurring">Gentager ugentligt</label>
+    </div>
+    
+    <div id="previewCard" class="preview-card">
+      <div class="preview-label">Forhåndsvisning</div>
+      <div id="previewContent" class="preview-content"></div>
+    </div>
+    
+    <div class="btn-row">
+      <button type="button" class="clear-btn" id="clearBtn">Ryd</button>
+      <button type="submit" class="submit-btn" id="submitBtn">🚀 Send event</button>
+    </div>
+    
+    <div class="status" id="addStatus"></div>
+  </form>
 </div>
 
 <!-- SUCCESS CARD -->
 <div class="card success-card" id="successCard" style="display:none;">
-  <div class="success-icon" id="successIcon">🎉</div>
+  <div class="success-icon">✅</div>
   <div class="success-message">
-    <h3 id="successTitle">Event publiceret!</h3>
-    <p id="successText">Dit event er nu live på DanceMap.</p>
+    <h3>Event indsendt!</h3>
+    <div class="event-name" id="successEventName"></div>
+    <p>Eventet er lagt ind i systemet og afventer godkendelse.</p>
+    <p class="note">Du får besked når eventet er live på DanceMap.</p>
   </div>
-  <button class="add-another" onclick="resetToForm()">← Tilbage til portalen</button>
+  <button class="add-another" id="addAnotherBtn">+ Tilføj endnu et event</button>
 </div>
 
 <div class="footer">
@@ -323,260 +269,207 @@
 </div>
 
 <script>
-// KORREKT API URL FRA INDEX.HTML!
-const API = 'https://script.google.com/macros/s/AKfycbyJdVscl-4f-ow7Ynj-LGsazpGFSR8VzVZWHruWdNE66HbVK6LJLOXKRmS6TFUUFC6i/exec';
-const PASSWORD = '2026';
+var API = 'https://script.google.com/macros/s/AKfycbyJdVscl-4f-ow7Ynj-LGsazpGFSR8VzVZWHruWdNE66HbVK6LJLOXKRmS6TFUUFC6i/exec';
+var PASSWORD = '2026';
+var submittedEventName = '';
 
-const $ = id => document.getElementById(id);
+function $(id) { return document.getElementById(id); }
 
-// Password check
-function checkPassword() {
+// Password
+$('pwBtn').onclick = function() {
   if ($('password').value === PASSWORD) {
     $('passwordCard').style.display = 'none';
     $('mainCard').style.display = 'block';
-    localStorage.setItem('dancemap_arrangor_access', 'true');
-    loadSavedName();
+    localStorage.setItem('dm_access', '1');
+    loadName();
   } else {
-    $('passwordStatus').textContent = '❌ Forkert kode';
+    $('passwordStatus').textContent = 'Forkert kode';
     $('passwordStatus').className = 'status error';
-  }
-}
-
-// Auto-login hvis allerede godkendt
-if (localStorage.getItem('dancemap_arrangor_access') === 'true') {
-  $('passwordCard').style.display = 'none';
-  $('mainCard').style.display = 'block';
-  setTimeout(loadSavedName, 100);
-}
-
-$('password').onkeyup = e => { if (e.key === 'Enter') checkPassword(); };
-
-// Load/save name
-function loadSavedName() {
-  const saved = localStorage.getItem('dancemap_arrangor_name');
-  if (saved) {
-    $('arrangor').value = saved;
-    $('cancelArrangor').value = saved;
-  }
-}
-
-$('arrangor').onblur = function() {
-  const name = this.value.trim();
-  if (name) {
-    localStorage.setItem('dancemap_arrangor_name', name);
-    $('cancelArrangor').value = name;
   }
 };
 
-// Tab switching
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  if (tab === 'add') {
-    document.querySelector('.tab:first-child').classList.add('active');
-    $('addTab').classList.add('active');
-  } else {
-    document.querySelector('.tab.cancel-tab').classList.add('active');
-    $('cancelTab').classList.add('active');
-  }
+if (localStorage.getItem('dm_access') === '1') {
+  $('passwordCard').style.display = 'none';
+  $('mainCard').style.display = 'block';
+  loadName();
 }
 
-// Pristype handling
+$('password').onkeyup = function(e) { if (e.key === 'Enter') $('pwBtn').click(); };
+
+function loadName() {
+  var n = localStorage.getItem('dm_name');
+  if (n) $('kilde').value = n;
+}
+
+$('kilde').onblur = function() {
+  if (this.value.trim()) localStorage.setItem('dm_name', this.value.trim());
+};
+
+// Pristype
 $('prisType').onchange = function() {
   $('prisFields').style.display = this.value === 'angiv' ? 'block' : 'none';
   updatePreview();
 };
 
-// Build pris string (same as admin.html)
-function buildPrisString() {
-  const pt = $('prisType').value;
+function buildPris() {
+  var pt = $('prisType').value;
   if (pt === 'gratis') return 'Gratis';
   if (pt === 'kontakt') return 'Kontakt arrangør';
-  const o = $('prisOnline').value.trim();
-  const d = $('prisDropin').value.trim();
+  var o = $('prisOnline').value.trim();
+  var d = $('prisDropin').value.trim();
   if (o && d) return o + ' kr (online) / ' + d + ' kr (drop-in)';
   if (o) return o + ' kr (online)';
   if (d) return d + ' kr (drop-in)';
   return '';
 }
 
-// Preview (same format as admin.html)
 function updatePreview() {
-  const dage = ['Søn','Man','Tir','Ons','Tor','Fre','Lør'];
-  const mdr = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+  var dage = ['Søn','Man','Tir','Ons','Tor','Fre','Lør'];
+  var mdr = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
   
-  let datoStr = '—';
+  var datoStr = '—';
   if ($('dato').value) {
-    const d = new Date($('dato').value);
+    var d = new Date($('dato').value);
     if (!isNaN(d.getTime())) {
       datoStr = dage[d.getDay()] + ' ' + d.getDate() + '. ' + mdr[d.getMonth()];
       if ($('recurring').checked) datoStr += ' 🔁';
     }
   }
   
-  let tidStr = $('starttid').value || '—';
+  var tidStr = $('starttid').value || '—';
   if ($('sluttid').value) tidStr += '–' + $('sluttid').value;
   
-  let stedStr = $('sted').value || '—';
+  var stedStr = $('sted').value || '—';
   if ($('adresse').value) stedStr += ', ' + $('adresse').value;
   if ($('by').value) stedStr += ', ' + $('by').value;
   
-  const pris = buildPrisString() || '—';
+  var pris = buildPris() || '—';
   
-  $('previewContent').innerHTML = 
-    '<div class="line"><span class="icon">🗓</span><span>' + datoStr + '</span></div>' +
-    '<div class="line"><span class="icon">📌</span><span>' + ($('navn').value || '—') + '</span></div>' +
-    '<div class="line"><span class="icon">🕗</span><span>' + tidStr + '</span></div>' +
-    '<div class="line"><span class="icon">💃</span><span>' + ($('dansetype').value || '—') + '</span></div>' +
-    '<div class="line"><span class="icon">📍</span><span>' + stedStr + '</span></div>' +
-    '<div class="line"><span class="icon">💰</span><span>' + pris + '</span></div>';
+  var html = '<div class="line"><span class="icon">🗓</span><span>' + datoStr + '</span></div>';
+  html += '<div class="line"><span class="icon">📌</span><span>' + ($('navn').value || '—') + '</span></div>';
+  html += '<div class="line"><span class="icon">🕗</span><span>' + tidStr + '</span></div>';
+  html += '<div class="line"><span class="icon">💃</span><span>' + ($('dansetype').value || '—') + '</span></div>';
+  html += '<div class="line"><span class="icon">📍</span><span>' + stedStr + '</span></div>';
+  html += '<div class="line"><span class="icon">💰</span><span>' + pris + '</span></div>';
+  if ($('link').value) html += '<div class="line"><span class="icon">🎫</span><span>' + $('link').value + '</span></div>';
+  
+  $('previewContent').innerHTML = html;
 }
 
-// Update preview on any change
-['dato','navn','starttid','sluttid','dansetype','sted','adresse','by','prisType','prisOnline','prisDropin','recurring'].forEach(id => {
-  const el = $(id);
+// Bind preview updates
+var fields = ['dato','navn','starttid','sluttid','dansetype','sted','adresse','by','prisType','prisOnline','prisDropin','link','recurring'];
+for (var i = 0; i < fields.length; i++) {
+  var el = $(fields[i]);
   if (el) {
-    el.addEventListener('input', updatePreview);
-    el.addEventListener('change', updatePreview);
+    el.oninput = updatePreview;
+    el.onchange = updatePreview;
   }
-});
+}
 
-// Clear form
-function clearForm() {
-  const savedName = $('arrangor').value;
+// Clear
+$('clearBtn').onclick = function() {
+  var savedName = $('kilde').value;
   $('eventForm').reset();
-  $('arrangor').value = savedName;
+  $('kilde').value = savedName;
   $('by').value = 'København';
   $('dato').valueAsDate = new Date();
   $('prisFields').style.display = 'block';
   $('addStatus').style.display = 'none';
   updatePreview();
+};
+
+// JSONP
+function jsonp(url, cb) {
+  var cbName = 'cb_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+  var script = document.createElement('script');
+  window[cbName] = function(data) {
+    delete window[cbName];
+    script.remove();
+    cb(null, data);
+  };
+  script.onerror = function() {
+    delete window[cbName];
+    script.remove();
+    cb(new Error('Failed'));
+  };
+  script.src = url + (url.indexOf('?') > -1 ? '&' : '?') + 'callback=' + cbName;
+  document.body.appendChild(script);
 }
 
-function clearCancelForm() {
-  const savedName = $('cancelArrangor').value;
-  $('cancelForm').reset();
-  $('cancelArrangor').value = savedName;
-  $('cancelStatus').style.display = 'none';
-}
-
-// JSONP helper (same as index.html)
-function jsonp(url) {
-  return new Promise((resolve, reject) => {
-    const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-    window[cb] = data => { delete window[cb]; script.remove(); resolve(data); };
-    const script = document.createElement('script');
-    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
-    script.onerror = () => { delete window[cb]; script.remove(); reject(new Error('JSONP failed')); };
-    document.body.appendChild(script);
-  });
-}
-
-// ADD EVENT FORM - uses SAME params as admin-import
-$('eventForm').onsubmit = async function(e) {
+// Submit - USES EXISTING admin-import ACTION!
+$('eventForm').onsubmit = function(e) {
   e.preventDefault();
   
-  const btn = $('submitBtn');
-  const status = $('addStatus');
+  var btn = $('submitBtn');
+  var status = $('addStatus');
   
   // Validate pris
   if ($('prisType').value === 'angiv' && !$('prisOnline').value && !$('prisDropin').value) {
-    status.textContent = '⚠️ Angiv mindst én pris';
+    status.textContent = 'Angiv mindst én pris';
     status.className = 'status error';
     return;
   }
+  
+  // GEM EVENT-NAVNET FØR SUBMIT!
+  submittedEventName = $('navn').value.trim();
   
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Sender...';
   status.style.display = 'none';
   
-  const arrangor = $('arrangor').value.trim();
-  if (arrangor) localStorage.setItem('dancemap_arrangor_name', arrangor);
+  var kilde = $('kilde').value.trim();
+  if (kilde) localStorage.setItem('dm_name', kilde);
   
-  // SAMME PARAMS SOM ADMIN-IMPORT!
-  const params = new URLSearchParams();
-  params.set('action', 'arrangor-submit');
-  params.set('dato', $('dato').value);
-  params.set('navn', $('navn').value);
-  params.set('starttid', $('starttid').value);
-  params.set('sluttid', $('sluttid').value);
-  params.set('dansetype', $('dansetype').value);
-  params.set('sted', $('sted').value);
-  params.set('adresse', $('adresse').value);
-  params.set('by', $('by').value);
-  params.set('pris', buildPrisString());
-  params.set('recurring', $('recurring').checked);
-  params.set('kilde', arrangor);
-  params.set('_', Date.now());
+  // Build URL with params - SAME AS ADMIN!
+  var params = [];
+  params.push('action=admin-import');
+  params.push('dato=' + encodeURIComponent($('dato').value));
+  params.push('navn=' + encodeURIComponent(submittedEventName));
+  params.push('starttid=' + encodeURIComponent($('starttid').value));
+  params.push('sluttid=' + encodeURIComponent($('sluttid').value));
+  params.push('dansetype=' + encodeURIComponent($('dansetype').value));
+  params.push('sted=' + encodeURIComponent($('sted').value));
+  params.push('adresse=' + encodeURIComponent($('adresse').value));
+  params.push('by=' + encodeURIComponent($('by').value));
+  params.push('pris=' + encodeURIComponent(buildPris()));
+  params.push('link=' + encodeURIComponent($('link').value));
+  params.push('recurring=' + $('recurring').checked);
+  params.push('kilde=' + encodeURIComponent(kilde + ' (arrangor)'));
+  params.push('_=' + Date.now());
   
-  try {
-    const data = await jsonp(API + '?' + params.toString());
-    if (data.success) {
-      showSuccess('🎉', 'Event publiceret!', '"' + $('navn').value + '" er nu live på DanceMap.');
+  var url = API + '?' + params.join('&');
+  
+  jsonp(url, function(err, data) {
+    btn.disabled = false;
+    btn.textContent = '🚀 Send event';
+    
+    if (err) {
+      status.textContent = 'Kunne ikke sende. Prøv igen.';
+      status.className = 'status error';
+      return;
+    }
+    
+    if (data && data.success) {
+      // Vis success med EVENT-NAVNET
+      $('successEventName').textContent = '📌 ' + submittedEventName;
+      $('mainCard').style.display = 'none';
+      $('successCard').style.display = 'block';
+    } else if (data && data.error === 'DUPLICATE') {
+      status.textContent = 'Dette event findes allerede';
+      status.className = 'status error';
     } else {
-      status.textContent = data.error === 'DUPLICATE' ? '⚠️ Dette event findes allerede' : (data.text || 'Noget gik galt');
+      status.textContent = (data && data.text) || 'Noget gik galt';
       status.className = 'status error';
     }
-  } catch (err) {
-    status.textContent = '❌ Kunne ikke sende. Prøv igen.';
-    status.className = 'status error';
-  }
-  
-  btn.disabled = false;
-  btn.textContent = '🚀 Publicer';
+  });
 };
 
-// CANCEL EVENT FORM
-$('cancelForm').onsubmit = async function(e) {
-  e.preventDefault();
-  
-  const btn = $('cancelBtn');
-  const status = $('cancelStatus');
-  
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Aflyser...';
-  status.style.display = 'none';
-  
-  const params = new URLSearchParams();
-  params.set('action', 'arrangor-cancel');
-  params.set('navn', $('cancelNavn').value);
-  params.set('dato', $('cancelDato').value);
-  params.set('aarsag', $('cancelAarsag').value || 'Ikke angivet');
-  params.set('kilde', $('cancelArrangor').value);
-  params.set('_', Date.now());
-  
-  try {
-    const data = await jsonp(API + '?' + params.toString());
-    if (data.success) {
-      showSuccess('✅', 'Event aflyst', '"' + $('cancelNavn').value + '" er fjernet fra DanceMap.');
-    } else {
-      status.textContent = data.text || 'Kunne ikke finde eventet';
-      status.className = 'status error';
-    }
-  } catch (err) {
-    status.textContent = '❌ Kunne ikke sende. Prøv igen.';
-    status.className = 'status error';
-  }
-  
-  btn.disabled = false;
-  btn.textContent = '🗑️ Aflys event';
-};
-
-function showSuccess(icon, title, text) {
-  $('mainCard').style.display = 'none';
-  $('successCard').style.display = 'block';
-  $('successIcon').textContent = icon;
-  $('successTitle').textContent = title;
-  $('successText').textContent = text;
-}
-
-function resetToForm() {
-  clearForm();
-  clearCancelForm();
+// Add another
+$('addAnotherBtn').onclick = function() {
+  $('clearBtn').click();
   $('mainCard').style.display = 'block';
   $('successCard').style.display = 'none';
-  switchTab('add');
-}
+};
 
 // Init
 $('dato').valueAsDate = new Date();
