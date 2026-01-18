@@ -148,12 +148,18 @@
     .pending-empty{text-align:center;color:#7d8590;padding:40px 20px}
     .offline-banner{position:fixed;top:0;left:0;right:0;background:#da3633;color:white;text-align:center;padding:8px;font-size:13px;z-index:3000;display:none}
     .offline-banner.show{display:block}
+    .slide-notification{position:fixed;top:0;left:50%;transform:translateX(-50%) translateY(-100%);background:white;color:#1a1a1a;padding:14px 24px;border-radius:0 0 16px 16px;font-size:14px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.3);z-index:2500;transition:transform 0.4s ease-out;max-width:90%;text-align:center}
+    .slide-notification.show{transform:translateX(-50%) translateY(0)}
+    .slide-notification .count{font-weight:700;color:#6366f1}
   </style>
 </head>
 <body>
 
 <!-- Offline banner -->
-<div id="offlineBanner" class="offline-banner">📡 Ingen forbindelse - viser cached data</div>
+<div id="offlineBanner" class="offline-banner">Ingen forbindelse - viser cached data</div>
+
+<!-- Slide-in notification -->
+<div id="slideNotification" class="slide-notification"></div>
 
 <div id="welcomeOverlay" class="welcome-overlay">
   <div class="welcome-modal">
@@ -333,8 +339,8 @@ window.onunhandledrejection = function(event) {
   console.error('Unhandled promise rejection:', event.reason);
 };
 
-const FRONTEND_VERSION = 'v6.5.2-2025-01-18';
-const FORM_VERSION = '6.5.2';
+const FRONTEND_VERSION = 'v6.5.3-2025-01-18';
+const FORM_VERSION = '6.5.3';
 
 // ═══════════════════════════════════════════════════════════
 // API URL
@@ -1541,7 +1547,19 @@ $('adminSubmitBtn').onclick=async()=>{
 async function loadWeekCount(){
   try{
     const d=await jsonp(API+'?action=weekcount&_='+Date.now(), 10000);
-    if(d.success&&d.count>0)$('weekCount').textContent=d.count+' kommende events';
+    if(d.success&&d.count>0){
+      $('weekCount').textContent=d.count+' kommende events';
+      
+      // Slide-in notification (kun første besøg per session)
+      if(!sessionStorage.getItem('dm_notif_shown')){
+        sessionStorage.setItem('dm_notif_shown','1');
+        const notif=$('slideNotification');
+        notif.innerHTML='<span class="count">'+d.count+'</span> salsa og bachata events de næste 7 dage';
+        setTimeout(()=>notif.classList.add('show'),1500);
+        setTimeout(()=>notif.classList.remove('show'),6500);
+        notif.onclick=()=>notif.classList.remove('show');
+      }
+    }
   }catch(e){
     console.log('Week count failed (offline?)');
   }
