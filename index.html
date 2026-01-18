@@ -148,8 +148,8 @@
     .pending-empty{text-align:center;color:#7d8590;padding:40px 20px}
     .offline-banner{position:fixed;top:0;left:0;right:0;background:#da3633;color:white;text-align:center;padding:8px;font-size:13px;z-index:3000;display:none}
     .offline-banner.show{display:block}
-    .slide-notification{position:fixed;top:20px;left:16px;right:16px;background:white;color:#1a1a1a;padding:14px 24px;font-size:14px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.3);z-index:2500;transform:translateY(-150%);transition:transform 0.4s ease-out;text-align:center;border-radius:12px}
-    .slide-notification.show{transform:translateY(0)}
+    .slide-notification{position:fixed;top:-100px;left:16px;right:16px;background:white;color:#1a1a1a;padding:14px 24px;font-size:14px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.3);z-index:2500;transition:top 0.4s ease-out;text-align:center;border-radius:12px}
+    .slide-notification.show{top:20px}
     .slide-notification .count{font-weight:700}
   </style>
 </head>
@@ -1548,10 +1548,10 @@ async function loadWeekCount(){
     const d=await jsonp(API+'?action=weekcount&_='+Date.now(), 10000);
     if(d.success&&d.count>0){
       // Slide-in notification (kun én gang per uge)
-      const lastShown = localStorage.getItem('dm_notif_time');
+      const lastShown = localStorage.getItem('dm_notif_time_v3');
       const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
       if(!lastShown || parseInt(lastShown) < weekAgo){
-        localStorage.setItem('dm_notif_time', Date.now().toString());
+        localStorage.setItem('dm_notif_time_v3', Date.now().toString());
         const notif=$('slideNotification');
         notif.innerHTML='<span class="count">'+d.count+'</span> salsa og bachata events de næste 7 dage';
         setTimeout(()=>notif.classList.add('show'),1500);
