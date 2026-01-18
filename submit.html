@@ -273,25 +273,18 @@
   var API = 'https://script.google.com/macros/s/AKfycbyNGuntMdNwytrMako2GD5QHDcwQ8JPP_YsgDy6sgLLo3dNIaZ1-gif68Af--kHS_y0/exec';
   var PASSWORD = '2026';
   var TIMEOUT = 15000;
+  var ACCESS_KEY = 'dm_access_v2'; // Ny nøgle - alle skal logge ind igen
   var submittedEventName = '';
   var isSubmitting = false;
 
   function $(id) { return document.getElementById(id); }
-
-  // ═══════════════════════════════════════════════════════════
-  // RESET via URL: submit.html?reset=1
-  // ═══════════════════════════════════════════════════════════
-  if (window.location.search.includes('reset=1')) {
-    try { localStorage.removeItem('dm_access'); } catch(e) {}
-    window.location.href = window.location.pathname;
-  }
 
   // PASSWORD
   $('pwBtn').onclick = function() {
     if ($('password').value === PASSWORD) {
       $('passwordCard').style.display = 'none';
       $('mainCard').style.display = 'block';
-      try { localStorage.setItem('dm_access', '1'); } catch(e) {}
+      try { localStorage.setItem(ACCESS_KEY, '1'); } catch(e) {}
       loadName();
     } else {
       $('passwordStatus').textContent = 'Forkert kode';
@@ -301,7 +294,7 @@
 
   // Auto-login
   try {
-    if (localStorage.getItem('dm_access') === '1') {
+    if (localStorage.getItem(ACCESS_KEY) === '1') {
       $('passwordCard').style.display = 'none';
       $('mainCard').style.display = 'block';
       loadName();
