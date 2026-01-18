@@ -143,9 +143,14 @@
     .pending-approve-btn{padding:10px 12px;background:#238636;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px}
     .pending-approve-btn:disabled{opacity:0.5}
     .pending-empty{text-align:center;color:#7d8590;padding:40px 20px}
+    .offline-banner{position:fixed;top:0;left:0;right:0;background:#da3633;color:white;text-align:center;padding:8px;font-size:13px;z-index:3000;display:none}
+    .offline-banner.show{display:block}
   </style>
 </head>
 <body>
+
+<!-- Offline banner -->
+<div id="offlineBanner" class="offline-banner">📡 Ingen forbindelse - viser cached data</div>
 
 <div id="welcomeOverlay" class="welcome-overlay">
   <div class="welcome-modal">
@@ -310,14 +315,26 @@ if(localStorage.getItem('dancemap_welcomed')){
 </div>
 
 <script>
-const FRONTEND_VERSION = 'v6.5.0-2025-01-15';
-const FORM_VERSION = '6.5.0';
+// ═══════════════════════════════════════════════════════════
+// GLOBAL ERROR HANDLER - fanger alle uncaught errors
+// ═══════════════════════════════════════════════════════════
+window.onerror = function(msg, url, line, col, error) {
+  console.error('Global error:', msg, 'at', url, line, col);
+  return false; // Lad browseren også logge fejlen
+};
+window.onunhandledrejection = function(event) {
+  console.error('Unhandled promise rejection:', event.reason);
+};
+
+const FRONTEND_VERSION = 'v6.5.1-2025-01-18';
+const FORM_VERSION = '6.5.1';
 
 // ═══════════════════════════════════════════════════════════
-// ⚠️ VIGTIGT: OPDATER DENNE URL EFTER NY DEPLOYMENT ⚠️
+// API URL
 // ═══════════════════════════════════════════════════════════
 const API = 'https://script.google.com/macros/s/AKfycbyNGuntMdNwytrMako2GD5QHDcwQ8JPP_YsgDy6sgLLo3dNIaZ1-gif68Af--kHS_y0/exec';
 
+// Clear old form state if version changed
 (function(){try{const s=localStorage.getItem('dancemap_admin_form');if(s){const d=JSON.parse(s);if(d.formVersion!==FORM_VERSION)localStorage.removeItem('dancemap_admin_form');}}catch(e){localStorage.removeItem('dancemap_admin_form');}})();
 
 const $=id=>document.getElementById(id);
@@ -329,6 +346,109 @@ const step2=$('adminStep2'),warnings=$('fieldWarnings');
 let lastQ='',page=0,hasMore=false,loading=false,moreBtn=null;
 
 const fields={dato:$('fieldDato'),navn:$('fieldNavn'),start:$('fieldStart'),slut:$('fieldSlut'),dans:$('fieldDans'),sted:$('fieldSted'),adresse:$('fieldAdresse'),by:$('fieldBy'),pris:$('fieldPris'),prisType:$('fieldPrisType'),prisOnline:$('fieldPrisOnline'),prisDropin:$('fieldPrisDropin'),mobilepay:$('fieldMobilepay'),mobilepayPris:$('fieldMobilepayPris'),mobilepayInfo:$('fieldMobilepayInfo'),link:$('fieldLink')};
+
+// ═══════════════════════════════════════════════════════════
+// ONLINE/OFFLINE DETECTION
+// ═══════════════════════════════════════════════════════════
+const offlineBanner = $('offlineBanner');
+function updateOnlineStatus() {
+  if (navigator.onLine) {
+    offlineBanner.classList.remove('show');
+  } else {
+    offlineBanner.classList.add('show');
+  }
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+
+// ═══════════════════════════════════════════════════════════
+// JSONP MED TIMEOUT - forhindrer uendelig hæng
+// ═══════════════════════════════════════════════════════════
+function jsonp(url, timeoutMs = 15000) {
+  return new Promise((resolve, reject) => {
+    const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    let timeoutId;
+    let completed = false;
+    
+    const cleanup = () => {
+      completed = true;
+      clearTimeout(timeoutId);
+      delete window[cb];
+      if (script.parentNode) script.remove();
+    };
+    
+    window[cb] = data => {
+      if (completed) return;
+      cleanup();
+      resolve(data);
+    };
+    
+    const script = document.createElement('script');
+    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
+    
+    script.onerror = () => {
+      if (completed) return;
+      cleanup();
+      reject(new Error('Network error'));
+    };
+    
+    timeoutId = setTimeout(() => {
+      if (completed) return;
+      cleanup();
+      reject(new Error('Request timeout'));
+    }, timeoutMs);
+    
+    document.body.appendChild(script);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// VERSION CHECK - INGEN AUTO-REFRESH (undgår loop)
+// ═══════════════════════════════════════════════════════════
+let versionChecked = false;
+async function checkVersion() {
+  if (versionChecked) return; // Kun check én gang per session
+  versionChecked = true;
+  
+  try {
+    const data = await jsonp(API + '?action=ping&_=' + Date.now(), 10000);
+    const adminEl = $('backendVersion'), frontEl = $('versionDisplay');
+    
+    if (data.version) {
+      const backendMajor = data.version.match(/v?(\d+\.\d+)/)?.[1] || '';
+      const frontendMajor = FRONTEND_VERSION.match(/v?(\d+\.\d+)/)?.[1] || '';
+      const match = backendMajor === frontendMajor;
+      
+      if (adminEl) {
+        adminEl.textContent = match ? 'Version ' + frontendMajor : 'Backend: ' + data.version;
+        adminEl.style.color = match ? '#3fb950' : '#f0883e';
+      }
+      if (frontEl) {
+        frontEl.textContent = 'Version ' + frontendMajor;
+        frontEl.style.color = '#484f58';
+      }
+      
+      // INGEN auto-refresh - vis bare info til bruger
+      if (!match && frontEl) {
+        frontEl.textContent = 'Ny version tilgængelig';
+        frontEl.style.color = '#f0883e';
+        frontEl.style.cursor = 'pointer';
+        frontEl.title = 'Klik for at opdatere';
+        frontEl.onclick = () => location.reload(true);
+      }
+    }
+  } catch (e) {
+    console.log('Version check failed (offline?):', e.message);
+    const frontEl = $('versionDisplay');
+    if (frontEl) {
+      frontEl.textContent = FRONTEND_VERSION.match(/v?(\d+\.\d+)/)?.[0] || 'v6.5';
+      frontEl.style.color = '#484f58';
+    }
+  }
+}
+// Check version efter siden er loadet
+setTimeout(checkVersion, 1000);
 
 // Dansetype checkboxes handler
 function getSelectedDanceTypes(){
@@ -353,46 +473,6 @@ document.querySelectorAll('input[name="dansetype"]').forEach(cb=>{
 });
 
 function esc(t){return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-
-function jsonp(url){
-  return new Promise((resolve,reject)=>{
-    const cb='cb_'+Date.now()+'_'+Math.random().toString(36).slice(2);
-    window[cb]=data=>{delete window[cb];script.remove();resolve(data);};
-    const script=document.createElement('script');
-    script.src=url+(url.includes('?')?'&':'?')+'callback='+cb;
-    script.onerror=()=>{delete window[cb];script.remove();reject(new Error('JSONP failed'));};
-    document.body.appendChild(script);
-  });
-}
-
-// VERSION CHECK - Auto-refresh ved mismatch
-async function checkVersion(){
-  try{
-    const data=await jsonp(API+'?action=ping&_='+Date.now());
-    const adminEl=$('backendVersion'),frontEl=$('versionDisplay');
-    if(data.version){
-      const match=data.version===FRONTEND_VERSION;
-      if(adminEl){adminEl.textContent=match?'Version 6.5.0':'Backend: '+data.version;adminEl.style.color=match?'#3fb950':'#f85149';}
-      if(frontEl){frontEl.textContent=match?'Version 6.5.0':'Opdaterer...';frontEl.style.color=match?'#484f58':'#f0883e';}
-      
-      // Auto-refresh hvis version mismatch
-      if(!match){
-        console.log('Version mismatch - refreshing...');
-        // Ryd service worker cache
-        if('caches' in window){
-          const names=await caches.keys();
-          await Promise.all(names.map(name=>caches.delete(name)));
-        }
-        // Refresh efter kort delay
-        setTimeout(()=>location.reload(true),1500);
-      }
-    }
-  }catch(e){
-    const frontEl=$('versionDisplay');
-    if(frontEl){frontEl.textContent='Version 6.5.0 (offline)';frontEl.style.color='#f85149';}
-  }
-}
-checkVersion();
 
 // PRIS
 $('fieldPrisType').onchange=function(){
@@ -427,7 +507,9 @@ function updatePrisField(){
   }
 }
 
-// SEARCH med CACHING for hurtigere resultater
+// ═══════════════════════════════════════════════════════════
+// SEARCH CACHE - hurtigere resultater
+// ═══════════════════════════════════════════════════════════
 const SEARCH_CACHE_KEY = 'dancemap_search_cache';
 const CACHE_MAX_AGE = 5 * 60 * 1000; // 5 minutter
 
@@ -464,7 +546,6 @@ function createGoogleCalUrl(event){
   const location = encodeURIComponent(event.sted || '');
   const details = encodeURIComponent(`${event.type || ''}\n${event.pris || ''}`);
   
-  // Parse date and time
   const dateMatch = event.dato && event.dato.match(/(\d{1,2})\.?\s*(\w+)/i);
   const timeMatch = event.tid && event.tid.match(/(\d{1,2})[:\.]?(\d{2})?/);
   
@@ -483,7 +564,7 @@ function createGoogleCalUrl(event){
   }
   
   const start = new Date(year, month, day, startHour, startMin);
-  const end = new Date(start.getTime() + 3*60*60*1000); // 3 hours later
+  const end = new Date(start.getTime() + 3*60*60*1000);
   
   const formatDate = d => d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
   
@@ -552,15 +633,52 @@ function renderEvents(events){
   </div>`).join('');
 }
 
-function addMsg(text,isUser,showMore=false){if(moreBtn){moreBtn.remove();moreBtn=null;}const loadingMsg=chat.querySelector('.loading-msg');if(loadingMsg)loadingMsg.remove();const msg=document.createElement('div');msg.className='msg '+(isUser?'user':'bot');if(isUser){msg.innerHTML=`<div class="bubble">${esc(text)}</div>`;}else{const events=parseEvents(text);msg.innerHTML=events.length>0?`<div class="bubble">Her er events:<div class="events">${renderEvents(events)}</div></div>`:`<div class="bubble">${esc(text)}</div>`;}chat.appendChild(msg);if(showMore){moreBtn=document.createElement('button');moreBtn.className='more-btn';moreBtn.textContent='Vis flere';moreBtn.onclick=loadMore;chat.appendChild(moreBtn);}chat.scrollTop=chat.scrollHeight;}
+function addMsg(text,isUser,showMore=false){
+  if(moreBtn){moreBtn.remove();moreBtn=null;}
+  const loadingMsg=chat.querySelector('.loading-msg');
+  if(loadingMsg)loadingMsg.remove();
+  
+  const msg=document.createElement('div');
+  msg.className='msg '+(isUser?'user':'bot');
+  
+  if(isUser){
+    msg.innerHTML=`<div class="bubble">${esc(text)}</div>`;
+  }else{
+    const events=parseEvents(text);
+    msg.innerHTML=events.length>0
+      ?`<div class="bubble">Her er events:<div class="events">${renderEvents(events)}</div></div>`
+      :`<div class="bubble">${esc(text)}</div>`;
+  }
+  
+  chat.appendChild(msg);
+  
+  if(showMore){
+    moreBtn=document.createElement('button');
+    moreBtn.className='more-btn';
+    moreBtn.textContent='Vis flere';
+    moreBtn.onclick=loadMore;
+    chat.appendChild(moreBtn);
+  }
+  
+  chat.scrollTop=chat.scrollHeight;
+}
 
-function showLoading(){const msg=document.createElement('div');msg.className='msg bot loading-msg';msg.innerHTML=`<div class="bubble loading-text">Søger events...</div>`;chat.appendChild(msg);chat.scrollTop=chat.scrollHeight;}
+function showLoading(){
+  const msg=document.createElement('div');
+  msg.className='msg bot loading-msg';
+  msg.innerHTML=`<div class="bubble loading-text">Søger events...</div>`;
+  chat.appendChild(msg);
+  chat.scrollTop=chat.scrollHeight;
+}
 
-async function search(q,p){return await jsonp(API+'?query='+encodeURIComponent(q)+'&page='+p+'&_='+Date.now());}
+async function search(q,p){
+  return await jsonp(API+'?query='+encodeURIComponent(q)+'&page='+p+'&_='+Date.now(), 20000);
+}
 
 async function doSearch(){
   const q=input.value.trim();
   if(!q||loading)return;
+  
   addMsg(q,true);
   input.value='';
   lastQ=q;page=0;hasMore=false;loading=true;
@@ -572,19 +690,25 @@ async function doSearch(){
     hasMore=!!cached.hasMore;
     addMsg(cached.text||'Ingen resultater.',false,hasMore);
     loading=false;sendBtn.disabled=false;
-    // Opdater cache i baggrunden
+    // Opdater cache i baggrunden (fire and forget)
     search(q,0).then(data=>{setSearchCache(q+'_0',data);}).catch(()=>{});
     return;
   }
   
   showLoading();
+  
   try{
     const data=await search(q,0);
     hasMore=!!data.hasMore;
     setSearchCache(q+'_0',data);
     addMsg(data.text||'Ingen resultater.',false,hasMore);
-  }catch(e){addMsg('Fejl. Prøv igen.',false);}
-  finally{loading=false;sendBtn.disabled=false;}
+  }catch(e){
+    console.error('Search error:', e);
+    addMsg('Kunne ikke søge. Tjek din forbindelse og prøv igen.',false);
+  }finally{
+    loading=false;
+    sendBtn.disabled=false;
+  }
 }
 
 async function loadMore(){
@@ -608,31 +732,44 @@ async function loadMore(){
     hasMore=!!data.hasMore;
     setSearchCache(lastQ+'_'+page,data);
     addMsg(data.text,false,hasMore);
-  }catch(e){addMsg('Fejl.',false);hasMore=false;}
-  finally{loading=false;if(moreBtn)moreBtn.disabled=false;}
+  }catch(e){
+    addMsg('Fejl ved indlæsning.',false);
+    hasMore=false;
+  }finally{
+    loading=false;
+    if(moreBtn)moreBtn.disabled=false;
+  }
 }
 
 sendBtn.onclick=doSearch;
 input.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();doSearch();}};
 
 // FILTER SEARCH - for Salsa/Bachata buttons with music
-const salsaSound = new Audio('/Salsa.mp3');
-const bachataSound = new Audio('/Bachata.mp3');
-salsaSound.volume = 0.3;
-bachataSound.volume = 0.3;
+let salsaSound, bachataSound;
+try {
+  salsaSound = new Audio('/Salsa.mp3');
+  bachataSound = new Audio('/Bachata.mp3');
+  salsaSound.volume = 0.3;
+  bachataSound.volume = 0.3;
+} catch(e) {
+  console.log('Audio not available');
+}
 
 function filterSearch(type){
   // Stop any playing sound and play new one
-  salsaSound.pause();
-  bachataSound.pause();
+  try {
+    if(salsaSound) salsaSound.pause();
+    if(bachataSound) bachataSound.pause();
+    
+    if(type === 'salsa' && salsaSound){
+      salsaSound.currentTime = 0;
+      salsaSound.play().catch(()=>{});
+    } else if(type === 'bachata' && bachataSound){
+      bachataSound.currentTime = 0;
+      bachataSound.play().catch(()=>{});
+    }
+  } catch(e) {}
   
-  if(type === 'salsa'){
-    salsaSound.currentTime = 0;
-    salsaSound.play().catch(()=>{});
-  } else if(type === 'bachata'){
-    bachataSound.currentTime = 0;
-    bachataSound.play().catch(()=>{});
-  }
   input.value=type;
   doSearch();
 }
@@ -644,13 +781,11 @@ document.querySelector('.header-outside').onclick=()=>{
   clearTimeout(clickTimer);
   
   if(clicks===3){
-    // 3x klik = åbn admin
     clicks=0;
     openAdmin();
   } else {
     clickTimer=setTimeout(()=>{
       if(clicks===1){
-        // 1x klik = reset chat
         chat.innerHTML='';
         input.value='';
         lastQ='';page=0;hasMore=false;
@@ -661,17 +796,109 @@ document.querySelector('.header-outside').onclick=()=>{
 };
 
 function openAdmin(){
+  const welcomeOverlay = $('welcomeOverlay');
   if(welcomeOverlay && welcomeOverlay.style.display !== 'none') closeWelcome();
-  modal.classList.add('open');status.style.display='none';preview.style.display='none';ocrStatus.style.display='none';warnings.classList.remove('show');restoreFormState();checkVersion();showAdminWelcome();
+  modal.classList.add('open');
+  status.style.display='none';
+  preview.style.display='none';
+  ocrStatus.style.display='none';
+  warnings.classList.remove('show');
+  restoreFormState();
+  showAdminWelcome();
 }
 
-function saveFormState(){localStorage.setItem('dancemap_admin_form',JSON.stringify({formVersion:FORM_VERSION,payload:payload.value,dato:fields.dato.value,navn:fields.navn.value,start:fields.start.value,slut:fields.slut.value,dansTypes:getSelectedDanceTypes(),sted:fields.sted.value,adresse:fields.adresse.value,by:fields.by.value,prisType:fields.prisType.value,prisOnline:fields.prisOnline.value,prisDropin:fields.prisDropin.value,mobilepay:fields.mobilepay.value,mobilepayPris:fields.mobilepayPris.value,mobilepayInfo:fields.mobilepayInfo.value,link:fields.link.value,recurring:recurring.checked,step:step2.style.display==='block'?2:1}));}
+function saveFormState(){
+  try {
+    localStorage.setItem('dancemap_admin_form',JSON.stringify({
+      formVersion:FORM_VERSION,
+      payload:payload.value,
+      dato:fields.dato.value,
+      navn:fields.navn.value,
+      start:fields.start.value,
+      slut:fields.slut.value,
+      dansTypes:getSelectedDanceTypes(),
+      sted:fields.sted.value,
+      adresse:fields.adresse.value,
+      by:fields.by.value,
+      prisType:fields.prisType.value,
+      prisOnline:fields.prisOnline.value,
+      prisDropin:fields.prisDropin.value,
+      mobilepay:fields.mobilepay.value,
+      mobilepayPris:fields.mobilepayPris.value,
+      mobilepayInfo:fields.mobilepayInfo.value,
+      link:fields.link.value,
+      recurring:recurring.checked,
+      step:step2.style.display==='block'?2:1
+    }));
+  } catch(e) {
+    console.log('Could not save form state');
+  }
+}
 
-function restoreFormState(){try{const saved=localStorage.getItem('dancemap_admin_form');if(!saved){step2.style.display='none';payload.value='';clearFields();return;}const s=JSON.parse(saved);payload.value=s.payload||'';fields.dato.value=s.dato||'';fields.navn.value=s.navn||'';fields.start.value=s.start||'';fields.slut.value=s.slut||'';if(s.dansTypes)setSelectedDanceTypes(s.dansTypes);else if(s.dans)setSelectedDanceTypes([s.dans]);updateDansField();fields.sted.value=s.sted||'';fields.adresse.value=s.adresse||'';fields.by.value=s.by||'København';fields.prisType.value=s.prisType||'angiv';fields.prisOnline.value=s.prisOnline||'';fields.prisDropin.value=s.prisDropin||'';fields.mobilepay.value=s.mobilepay||'';fields.mobilepayPris.value=s.mobilepayPris||'';fields.mobilepayInfo.value=s.mobilepayInfo||'';fields.link.value=s.link||'';recurring.checked=s.recurring||false;$('prisFields').style.display=s.prisType==='angiv'?'block':'none';$('mobilepayFields').style.display=s.prisType==='mobilepay'?'block':'none';if(s.step===2){step2.style.display='block';updatePrisField();updatePreview();}else{step2.style.display='none';}}catch(e){step2.style.display='none';}}
+function restoreFormState(){
+  try{
+    const saved=localStorage.getItem('dancemap_admin_form');
+    if(!saved){step2.style.display='none';payload.value='';clearFields();return;}
+    const s=JSON.parse(saved);
+    payload.value=s.payload||'';
+    fields.dato.value=s.dato||'';
+    fields.navn.value=s.navn||'';
+    fields.start.value=s.start||'';
+    fields.slut.value=s.slut||'';
+    if(s.dansTypes)setSelectedDanceTypes(s.dansTypes);
+    else if(s.dans)setSelectedDanceTypes([s.dans]);
+    updateDansField();
+    fields.sted.value=s.sted||'';
+    fields.adresse.value=s.adresse||'';
+    fields.by.value=s.by||'København';
+    fields.prisType.value=s.prisType||'angiv';
+    fields.prisOnline.value=s.prisOnline||'';
+    fields.prisDropin.value=s.prisDropin||'';
+    fields.mobilepay.value=s.mobilepay||'';
+    fields.mobilepayPris.value=s.mobilepayPris||'';
+    fields.mobilepayInfo.value=s.mobilepayInfo||'';
+    fields.link.value=s.link||'';
+    recurring.checked=s.recurring||false;
+    $('prisFields').style.display=s.prisType==='angiv'?'block':'none';
+    $('mobilepayFields').style.display=s.prisType==='mobilepay'?'block':'none';
+    if(s.step===2){
+      step2.style.display='block';
+      updatePrisField();
+      updatePreview();
+    }else{
+      step2.style.display='none';
+    }
+  }catch(e){
+    step2.style.display='none';
+  }
+}
 
 function clearFormState(){localStorage.removeItem('dancemap_admin_form');}
 
-function clearFields(){fields.dato.value='';fields.navn.value='';fields.start.value='';fields.slut.value='';document.querySelectorAll('input[name="dansetype"]').forEach(c=>c.checked=false);fields.dans.value='';fields.sted.value='';fields.adresse.value='';fields.by.value='København';fields.pris.value='';fields.prisType.value='angiv';fields.prisOnline.value='';fields.prisDropin.value='';fields.mobilepay.value='';fields.mobilepayPris.value='';fields.mobilepayInfo.value='';fields.link.value='';$('prisFields').style.display='block';$('mobilepayFields').style.display='none';warnings.classList.remove('show');$('previewContent').innerHTML='';$('previewCard').style.borderColor='';}
+function clearFields(){
+  fields.dato.value='';
+  fields.navn.value='';
+  fields.start.value='';
+  fields.slut.value='';
+  document.querySelectorAll('input[name="dansetype"]').forEach(c=>c.checked=false);
+  fields.dans.value='';
+  fields.sted.value='';
+  fields.adresse.value='';
+  fields.by.value='København';
+  fields.pris.value='';
+  fields.prisType.value='angiv';
+  fields.prisOnline.value='';
+  fields.prisDropin.value='';
+  fields.mobilepay.value='';
+  fields.mobilepayPris.value='';
+  fields.mobilepayInfo.value='';
+  fields.link.value='';
+  $('prisFields').style.display='block';
+  $('mobilepayFields').style.display='none';
+  warnings.classList.remove('show');
+  $('previewContent').innerHTML='';
+  $('previewCard').style.borderColor='';
+}
 
 $('closeAdmin').onclick=()=>{saveFormState();modal.classList.remove('open');};
 $('backBtn').onclick=()=>{step2.style.display='none';status.style.display='none';saveFormState();};
@@ -689,18 +916,15 @@ function parseTextToFields(txt){
   const r={dato:'',navn:'',start:'',slut:'',dans:'Salsa',sted:'',adresse:'',by:'København',pris:'',prisType:'angiv',prisOnline:'',prisDropin:'',link:''};
   
   // === DATO ===
-  // Format: "January 17th", "17. januar", "2026-01-17"
   const isoMatch=txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);
   if(isoMatch){
     r.dato=isoMatch[0];
   }else{
-    // Engelsk: "January 17th" eller "Saturday January 17th"
     const engMatch=txt.match(/(?:saturday|sunday|monday|tuesday|wednesday|thursday|friday)?\s*(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?(?:\s*,?\s*(20\d{2}))?/i);
     if(engMatch){
       const year=engMatch[3]||new Date().getFullYear();
       r.dato=`${year}-${MONTHS[engMatch[1].toLowerCase()]}-${engMatch[2].padStart(2,'0')}`;
     }else{
-      // Dansk: "17. januar" eller "17 januar 2026"
       const dkMatch=txt.match(/\b(\d{1,2})\.?\s*(januar|februar|marts|april|maj|juni|juli|august|september|oktober|november|december|jan|feb|mar|apr|maj|jun|jul|aug|sep|okt|nov|dec)\.?\s*(20\d{2})?\b/i);
       if(dkMatch){
         const year=dkMatch[3]||new Date().getFullYear();
@@ -710,7 +934,6 @@ function parseTextToFields(txt){
   }
   
   // === TIDER ===
-  // Find alle tider og sorter dem intelligent (00:30 er efter 23:00)
   const allTimes=txt.match(/\b([0-2]?\d)[:\.]([0-5]\d)\b/g)||[];
   if(allTimes.length>0){
     const timeToMinutes=t=>{const[h,m]=t.replace('.',':').split(':').map(Number);return h<6?(h+24)*60+m:h*60+m;};
@@ -720,7 +943,6 @@ function parseTextToFields(txt){
   }
   
   // === DANSETYPE ===
-  // Check først for procent-angivelse (fx "70% Salsa")
   const percentMatch=txt.match(/(\d+)\s*%\s*(salsa|bachata|kizomba|zouk|tango|swing)/gi);
   if(percentMatch){
     let maxPercent=0;let mainDance='Salsa';
@@ -736,21 +958,17 @@ function parseTextToFields(txt){
   }
   
   // === STED & ADRESSE ===
-  // Søg efter "Address:" pattern først
   const addressMatch=txt.match(/address[:\s]+([^,\n]+)/i);
   if(addressMatch){
     let fullAddr=addressMatch[1].trim();
-    // Fjern trailing punktum og info-tegn
     fullAddr=fullAddr.replace(/[.ℹ︎]+.*$/,'').trim();
     r.adresse=fullAddr;
     r.sted=fullAddr.split('(')[0].trim();
   }
-  // Find postnummer og by: "2720 Vanløse" (4 cifre efterfulgt af by)
   const zipMatch=txt.match(/\b(\d{4})\s+([A-Za-zæøåÆØÅ][A-Za-zæøåÆØÅ]+)\b/);
   if(zipMatch&&parseInt(zipMatch[1])>=1000&&parseInt(zipMatch[1])<=9999){
     r.by=zipMatch[2].trim();
   }
-  // Fallback til kendte venues
   if(!r.sted){
     for(const v of VENUES){
       if(t.includes(v)){
@@ -782,12 +1000,10 @@ function parseTextToFields(txt){
   if(linkMatch){
     const ticketLink=linkMatch.find(l=>/billetto|ticketmaster|tikkio|eventbrite|place2book|bookwhen/i.test(l));
     const foundLink=ticketLink||linkMatch[0];
-    // Bloker afkortede links
     r.link=foundLink.includes('...')?'':foundLink;
   }
   
   // === NAVN ===
-  // Prioritet: 1) ☆/★ titel, 2) "invites you to", 3) Første betydningsfulde linje
   const starTitle=txt.match(/[☆★]\s*([^☆★\n]{10,}?)\s*[☆★]/);
   if(starTitle&&!starTitle[1].includes('kr')&&!starTitle[1].includes('ENTRANCE')){
     r.navn=starTitle[1].trim();
@@ -796,7 +1012,6 @@ function parseTextToFields(txt){
     if(inviteMatch){
       r.navn=inviteMatch[1].trim();
     }else{
-      // Brug organisationsnavn + event type
       const orgMatch=txt.match(/^(?:Begivenhed af\s+)?([^\n]+)/i);
       if(orgMatch&&orgMatch[1].length<60)r.navn=orgMatch[1].trim();
     }
@@ -805,18 +1020,66 @@ function parseTextToFields(txt){
   return r;
 }
 
-function validateFields(){const e=[];if(!fields.dato.value)e.push('❌ Dato mangler');if(!fields.navn.value)e.push('❌ Navn mangler');if(!fields.start.value)e.push('❌ Starttid mangler');if(!fields.slut.value)e.push('❌ Sluttid mangler');if(getSelectedDanceTypes().length===0)e.push('❌ Vælg mindst én dansetype');if(!fields.sted.value)e.push('❌ Sted mangler');if(!fields.adresse.value)e.push('❌ Adresse mangler');if(!fields.by.value)e.push('❌ By mangler');if(fields.prisType.value==='angiv'&&!fields.prisOnline.value&&!fields.prisDropin.value)e.push('❌ Angiv mindst én pris');if(fields.prisType.value==='mobilepay'&&!fields.mobilepayPris.value)e.push('❌ Angiv MobilePay pris');return{errors:e};}
+function validateFields(){
+  const e=[];
+  if(!fields.dato.value)e.push('❌ Dato mangler');
+  if(!fields.navn.value)e.push('❌ Navn mangler');
+  if(!fields.start.value)e.push('❌ Starttid mangler');
+  if(!fields.slut.value)e.push('❌ Sluttid mangler');
+  if(getSelectedDanceTypes().length===0)e.push('❌ Vælg mindst én dansetype');
+  if(!fields.sted.value)e.push('❌ Sted mangler');
+  if(!fields.adresse.value)e.push('❌ Adresse mangler');
+  if(!fields.by.value)e.push('❌ By mangler');
+  if(fields.prisType.value==='angiv'&&!fields.prisOnline.value&&!fields.prisDropin.value)e.push('❌ Angiv mindst én pris');
+  if(fields.prisType.value==='mobilepay'&&!fields.mobilepayPris.value)e.push('❌ Angiv MobilePay pris');
+  return{errors:e};
+}
 
-function updatePreview(){updateDansField();updatePrisField();const dage=['Søn','Man','Tir','Ons','Tor','Fre','Lør'];const mdr=['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];let datoStr='—';if(fields.dato.value){const d=new Date(fields.dato.value);if(!isNaN(d.getTime())){datoStr=dage[d.getDay()]+' '+d.getDate()+'. '+mdr[d.getMonth()];if(recurring.checked)datoStr+=' 🔁';}}let tidStr=fields.start.value||'—';if(fields.slut.value)tidStr+='–'+fields.slut.value;let stedStr=fields.sted.value||'—';if(fields.adresse.value)stedStr+=', '+fields.adresse.value;if(fields.by.value)stedStr+=', '+fields.by.value;const dansStr=fields.dans.value||'—';const previewEl=$('previewContent');previewEl.innerHTML=`<div class="line"><span class="icon">🗓</span><span>${esc(datoStr)}</span></div><div class="line"><span class="icon">📌</span><span>${esc(fields.navn.value||'—')}</span></div><div class="line"><span class="icon">🕗</span><span>${esc(tidStr)}</span></div><div class="line"><span class="icon">💃</span><span>${esc(dansStr)}</span></div><div class="line"><span class="icon">📍</span><span>${esc(stedStr)}</span></div><div class="line"><span class="icon">💰</span><span>${esc(fields.pris.value||'—')}</span></div>`;const{errors}=validateFields();const pc=$('previewCard');if(errors.length===0){pc.querySelector('.preview-label').textContent='✅ Klar til indsendelse';pc.style.borderColor='#3fb950';warnings.classList.remove('show');}else{pc.querySelector('.preview-label').textContent='Forhåndsvisning';pc.style.borderColor='';}}
+function updatePreview(){
+  updateDansField();
+  updatePrisField();
+  const dage=['Søn','Man','Tir','Ons','Tor','Fre','Lør'];
+  const mdr=['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+  let datoStr='—';
+  if(fields.dato.value){
+    const d=new Date(fields.dato.value);
+    if(!isNaN(d.getTime())){
+      datoStr=dage[d.getDay()]+' '+d.getDate()+'. '+mdr[d.getMonth()];
+      if(recurring.checked)datoStr+=' 🔁';
+    }
+  }
+  let tidStr=fields.start.value||'—';
+  if(fields.slut.value)tidStr+='–'+fields.slut.value;
+  let stedStr=fields.sted.value||'—';
+  if(fields.adresse.value)stedStr+=', '+fields.adresse.value;
+  if(fields.by.value)stedStr+=', '+fields.by.value;
+  const dansStr=fields.dans.value||'—';
+  const previewEl=$('previewContent');
+  previewEl.innerHTML=`<div class="line"><span class="icon">🗓</span><span>${esc(datoStr)}</span></div><div class="line"><span class="icon">📌</span><span>${esc(fields.navn.value||'—')}</span></div><div class="line"><span class="icon">🕗</span><span>${esc(tidStr)}</span></div><div class="line"><span class="icon">💃</span><span>${esc(dansStr)}</span></div><div class="line"><span class="icon">📍</span><span>${esc(stedStr)}</span></div><div class="line"><span class="icon">💰</span><span>${esc(fields.pris.value||'—')}</span></div>`;
+  const{errors}=validateFields();
+  const pc=$('previewCard');
+  if(errors.length===0){
+    pc.querySelector('.preview-label').textContent='✅ Klar til indsendelse';
+    pc.style.borderColor='#3fb950';
+    warnings.classList.remove('show');
+  }else{
+    pc.querySelector('.preview-label').textContent='Forhåndsvisning';
+    pc.style.borderColor='';
+  }
+}
 
-Object.values(fields).forEach(f=>{if(f?.addEventListener){f.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});f.addEventListener('change',()=>{updatePrisField();updatePreview();saveFormState();});}});
+Object.values(fields).forEach(f=>{
+  if(f?.addEventListener){
+    f.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
+    f.addEventListener('change',()=>{updatePrisField();updatePreview();saveFormState();});
+  }
+});
 recurring.addEventListener('change',()=>{updatePreview();saveFormState();});
-// Also listen to mobilepay fields specifically
 if(fields.mobilepay)fields.mobilepay.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
 if(fields.mobilepayPris)fields.mobilepayPris.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
 if(fields.mobilepayInfo)fields.mobilepayInfo.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
 
-// AUTO-PARSE: Kører automatisk når tekst pastes
+// AUTO-PARSE
 function autoParse(){
   const txt=payload.value.trim();
   if(!txt)return;
@@ -825,7 +1088,6 @@ function autoParse(){
   const found=[];
   const missing=[];
   
-  // Udfyld kun tomme felter og track hvad der blev fundet
   if(p.dato){
     if(!fields.dato.value){fields.dato.value=p.dato;found.push('📅 Dato');}
   }else{missing.push('Dato');}
@@ -877,7 +1139,6 @@ function autoParse(){
     }
   }else{missing.push('Pris');}
   
-  // Vis parse status
   const parseStatus=$('parseStatus');
   if(found.length>0){
     let html='<div style="color:#3fb950;margin-bottom:4px;">✅ Fundet: '+found.join(', ')+'</div>';
@@ -898,38 +1159,27 @@ function autoParse(){
   updatePrisField();updatePreview();step2.style.display='block';saveFormState();
 }
 
-// Lyt på paste event
 payload.addEventListener('paste',()=>{
-  setTimeout(autoParse,100); // Vent til tekst er indsat
+  setTimeout(autoParse,100);
 });
-
-// Skjul status når man redigerer
-payload.addEventListener('input',()=>{
-  saveFormState();
-});
-
-// Double-click for at re-parse
 payload.addEventListener('dblclick',autoParse);
 
-// CLAUDE VISION (via Vercel proxy)
+// CLAUDE VISION
 function simplifyPrice(pris){
   if(!pris)return'';
   const p=pris.toLowerCase();
   if(p.includes('free')||p.includes('gratis'))return'Gratis';
-  // Find alle priser i teksten
   const prices=pris.match(/\d+\s*(kr|dkk)?/gi)||[];
   if(prices.length===0)return pris;
-  // Fjern "DKK", "kr" osv og få bare tal
   const nums=prices.map(x=>parseInt(x.match(/\d+/)[0])).filter(n=>n>0);
   if(nums.length===0)return pris;
-  // Find laveste og højeste pris
   const min=Math.min(...nums);
   const max=Math.max(...nums);
   if(min===max)return min+' kr';
   return min+'–'+max+' kr';
 }
 
-// KENDTE VENUES DATABASE - auto-udfyld adresse
+// KENDTE VENUES
 const knownVenues = {
   'la hacienda': { sted: 'La Hacienda', adresse: 'Kultorvet 11', by: 'København K' },
   'rumba': { sted: 'Rumba', adresse: 'Vester Voldgade 85', by: 'København V' },
@@ -953,11 +1203,7 @@ const knownVenues = {
 function matchVenue(stedInput) {
   if (!stedInput) return null;
   const normalized = stedInput.toLowerCase().trim();
-  
-  // Exact match
   if (knownVenues[normalized]) return knownVenues[normalized];
-  
-  // Partial match
   for (const [key, venue] of Object.entries(knownVenues)) {
     if (normalized.includes(key) || key.includes(normalized)) {
       return venue;
@@ -977,7 +1223,6 @@ function autoFillVenue() {
   }
 }
 
-// Listen for venue field changes
 fields.sted.addEventListener('blur', autoFillVenue);
 fields.sted.addEventListener('change', autoFillVenue);
 
@@ -1003,9 +1248,26 @@ async function processImageWithClaude(file){
     if(d.sted && !fields.sted.value)fields.sted.value=d.sted;
     if(d.adresse && !fields.adresse.value)fields.adresse.value=d.adresse;
     if(d.by && !fields.by.value)fields.by.value=d.by;
-    // Auto-match kendte venues
     autoFillVenue();
-    if(d.pris && fields.prisType.value==='angiv' && !fields.prisOnline.value && !fields.prisDropin.value){const simplePris=simplifyPrice(d.pris);if(simplePris.toLowerCase()==='gratis'){fields.prisType.value='gratis';$('prisFields').style.display='none';}else{fields.prisType.value='angiv';$('prisFields').style.display='block';const prisMatch=simplePris.match(/(\d+)/g);if(prisMatch){if(prisMatch.length>=2){fields.prisOnline.value=prisMatch[0];fields.prisDropin.value=prisMatch[1];}else{fields.prisDropin.value=prisMatch[0];}}}}
+    if(d.pris && fields.prisType.value==='angiv' && !fields.prisOnline.value && !fields.prisDropin.value){
+      const simplePris=simplifyPrice(d.pris);
+      if(simplePris.toLowerCase()==='gratis'){
+        fields.prisType.value='gratis';
+        $('prisFields').style.display='none';
+      }else{
+        fields.prisType.value='angiv';
+        $('prisFields').style.display='block';
+        const prisMatch=simplePris.match(/(\d+)/g);
+        if(prisMatch){
+          if(prisMatch.length>=2){
+            fields.prisOnline.value=prisMatch[0];
+            fields.prisDropin.value=prisMatch[1];
+          }else{
+            fields.prisDropin.value=prisMatch[0];
+          }
+        }
+      }
+    }
     updatePrisField();updatePreview();
     const confidence=Math.round((result.confidence||0.8)*100);
     ocrStatus.innerHTML=`✅ Parsed med ${confidence}% sikkerhed`;
@@ -1016,7 +1278,11 @@ async function processImageWithClaude(file){
     saveFormState();
     await checkForDuplicates();
     setTimeout(()=>ocrStatus.style.display='none',3000);
-  }catch(err){console.error('Claude Vision error:',err);ocrStatus.innerHTML='❌ '+(err.message||'Netværksfejl');ocrStatus.style.color='#f85149';}
+  }catch(err){
+    console.error('Claude Vision error:',err);
+    ocrStatus.innerHTML='❌ '+(err.message||'Netværksfejl');
+    ocrStatus.style.color='#f85149';
+  }
 }
 
 async function checkForDuplicates(){
@@ -1029,7 +1295,7 @@ async function checkForDuplicates(){
   params.set('dansetype',fields.dans.value);
   params.set('_',Date.now());
   try{
-    const result=await jsonp(API+'?'+params.toString());
+    const result=await jsonp(API+'?'+params.toString(), 10000);
     if(result.success&&result.matches&&result.matches.length>0){
       const match=result.matches[0];
       if(result.isDuplicate){
@@ -1049,7 +1315,7 @@ async function checkForDuplicates(){
 
 function fileToBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});}
 
-// RYD ALT KNAP
+// RYD ALT
 $('clearAllBtn').onclick=()=>{
   if(confirm('Ryd alle felter og start forfra?')){
     clearFields();
@@ -1063,7 +1329,7 @@ $('clearAllBtn').onclick=()=>{
   }
 };
 
-// ADMIN VELKOMMEN
+// ADMIN WELCOME
 function showAdminWelcome(){
   const name=localStorage.getItem('dancemap_admin_name');
   if(name){
@@ -1079,10 +1345,31 @@ function showAdminWelcome(){
   }
 }
 
-$('fileInput').onchange=e=>{const f=e.target.files[0];if(f?.type.startsWith('image/')){preview.src=URL.createObjectURL(f);preview.style.display='block';processImageWithClaude(f);}e.target.value='';};
-modal.onpaste=e=>{const items=e.clipboardData?.items||[];for(const item of items){if(item.type.startsWith('image/')){e.preventDefault();const f=item.getAsFile();preview.src=URL.createObjectURL(f);preview.style.display='block';processImageWithClaude(f);return;}}};
+$('fileInput').onchange=e=>{
+  const f=e.target.files[0];
+  if(f?.type.startsWith('image/')){
+    preview.src=URL.createObjectURL(f);
+    preview.style.display='block';
+    processImageWithClaude(f);
+  }
+  e.target.value='';
+};
 
-// UPLOAD ZONE - drag, drop, click
+modal.onpaste=e=>{
+  const items=e.clipboardData?.items||[];
+  for(const item of items){
+    if(item.type.startsWith('image/')){
+      e.preventDefault();
+      const f=item.getAsFile();
+      preview.src=URL.createObjectURL(f);
+      preview.style.display='block';
+      processImageWithClaude(f);
+      return;
+    }
+  }
+};
+
+// UPLOAD ZONE
 const uploadZone=$('uploadZone');
 if(uploadZone){
   uploadZone.onclick=()=>$('fileInput').click();
@@ -1097,13 +1384,12 @@ if(uploadZone){
       preview.style.display='block';
       processImageWithClaude(files[0]);
     } else if(files.length > 1) {
-      // Batch mode - add to queue
       addToQueue(files);
     }
   };
 }
 
-// BATCH QUEUE for multiple flyers
+// BATCH QUEUE
 let flyerQueue = [];
 let queueIndex = 0;
 
@@ -1140,7 +1426,6 @@ function updateQueueStatus() {
   }
 }
 
-// Skip button handler
 if($('skipBtn')) {
   $('skipBtn').onclick = () => nextInQueue();
 }
@@ -1156,22 +1441,16 @@ function nextInQueue() {
 
 // KEYBOARD SHORTCUTS
 document.addEventListener('keydown', e => {
-  // Only when admin modal is open
-  if (modal.style.display !== 'flex') return;
-  
-  // Ctrl+Enter = Submit
+  if (!modal.classList.contains('open')) return;
   if (e.ctrlKey && e.key === 'Enter') {
     e.preventDefault();
     $('adminSubmitBtn').click();
   }
-  
-  // Escape = Close modal
   if (e.key === 'Escape') {
     e.preventDefault();
-    modal.style.display = 'none';
+    saveFormState();
+    modal.classList.remove('open');
   }
-  
-  // Ctrl+N = Next in queue (if batch mode)
   if (e.ctrlKey && e.key === 'n' && flyerQueue.length > 1) {
     e.preventDefault();
     nextInQueue();
@@ -1186,13 +1465,19 @@ if(uploadZone) {
   uploadZone.parentNode.insertBefore(hints, uploadZone.nextSibling);
 }
 
-
 // ADMIN SUBMIT
 let isSubmitting=false;
 $('adminSubmitBtn').onclick=async()=>{
   if(isSubmitting)return;
   const{errors}=validateFields();
-  if(errors.length){warnings.innerHTML=errors.join('<br>');warnings.classList.add('show');status.style.display='block';status.textContent='Udfyld alle felter';status.className='submit-status error';return;}
+  if(errors.length){
+    warnings.innerHTML=errors.join('<br>');
+    warnings.classList.add('show');
+    status.style.display='block';
+    status.textContent='Udfyld alle felter';
+    status.className='submit-status error';
+    return;
+  }
   warnings.classList.remove('show');
   const params=new URLSearchParams();
   params.set('action','admin-import');
@@ -1214,14 +1499,13 @@ $('adminSubmitBtn').onclick=async()=>{
   isSubmitting=true;
   status.style.display='none';
   try{
-    const data=await jsonp(API+'?'+params.toString());
+    const data=await jsonp(API+'?'+params.toString(), 20000);
     status.style.display='block';
     if(data.success){
       status.textContent='✅ Event tilføjet (pending)';
       status.className='submit-status success';
       $('previewCard').style.borderColor='#3fb950';
       clearFields();clearFormState();step2.style.display='none';payload.value='';preview.style.display='none';recurring.checked=false;
-      // Auto-process next in queue
       if(flyerQueue.length > 1 && queueIndex < flyerQueue.length - 1) {
         setTimeout(() => {
           nextInQueue();
@@ -1229,22 +1513,37 @@ $('adminSubmitBtn').onclick=async()=>{
         }, 1000);
       }
     }
-    else if(data.error==='DUPLICATE'){status.textContent='⚠️ Dublet fundet';status.className='submit-status error';$('previewCard').style.borderColor='#f85149';}
-    else{status.textContent=data.text||'❌ Fejl';status.className='submit-status error';}
-  }catch(e){status.style.display='block';status.textContent='❌ Teknisk fejl';status.className='submit-status error';}
+    else if(data.error==='DUPLICATE'){
+      status.textContent='⚠️ Dublet fundet';
+      status.className='submit-status error';
+      $('previewCard').style.borderColor='#f85149';
+    }
+    else{
+      status.textContent=data.text||'❌ Fejl';
+      status.className='submit-status error';
+    }
+  }catch(e){
+    status.style.display='block';
+    status.textContent='❌ Teknisk fejl - prøv igen';
+    status.className='submit-status error';
+  }
   btn.disabled=false;btn.textContent='Tilføj Event (pending)';
   isSubmitting=false;
 };
 
-// No initial message - clean start
-
-async function loadWeekCount(){try{const d=await jsonp(API+'?action=weekcount&_='+Date.now());if(d.success&&d.count>0)$('weekCount').textContent=d.count+' kommende events';}catch(e){}}
+async function loadWeekCount(){
+  try{
+    const d=await jsonp(API+'?action=weekcount&_='+Date.now(), 10000);
+    if(d.success&&d.count>0)$('weekCount').textContent=d.count+' kommende events';
+  }catch(e){
+    console.log('Week count failed (offline?)');
+  }
+}
 loadWeekCount();
 
-// WELCOME BANNER FOR FIRST-TIME USERS
-const welcomePopup=$('welcomePopup'),welcomeOverlay=$('welcomeOverlay');
-
+// WELCOME BANNER
 function closeWelcome(){
+  const welcomeOverlay=$('welcomeOverlay');
   if(!welcomeOverlay)return;
   welcomeOverlay.style.transform='translateY(-100%)';
   welcomeOverlay.style.transition='transform 0.3s ease-in';
@@ -1255,14 +1554,13 @@ function closeWelcome(){
 }
 
 function showWelcome(){
+  const welcomeOverlay=$('welcomeOverlay');
   if(!welcomeOverlay)return;
   localStorage.removeItem('dancemap_welcomed');
   welcomeOverlay.style.transform='';
   welcomeOverlay.style.transition='';
-  welcomeOverlay.style.display='block';
+  welcomeOverlay.style.display='flex';
 }
-
-// Console: showWelcome() to test again
 
 // ADMIN TABS
 const tabAdd=$('tabAdd'),tabPending=$('tabPending');
@@ -1275,11 +1573,13 @@ async function loadPendingList(){
   list.innerHTML='<div style="color:#7d8590;text-align:center;padding:20px;">Henter...</div>';
   empty.style.display='none';
   try{
-    const data=await jsonp(API+'?action=list-pending&_='+Date.now());
+    const data=await jsonp(API+'?action=list-pending&_='+Date.now(), 15000);
     if(!data.success||!data.events?.length){list.innerHTML='';empty.style.display='block';return;}
     list.innerHTML=data.events.map(e=>`<div class="pending-item" data-row="${e.row}"><div class="pending-item-header"><span class="pending-item-title">${esc(e.navn)}</span></div><div class="pending-item-details"><div class="pending-item-row"><span>🗓</span><span>${esc(e.dato)}</span></div><div class="pending-item-row"><span>🕗</span><span>${esc(e.starttid)}–${esc(e.sluttid)}</span></div><div class="pending-item-row"><span>💃</span><span>${esc(e.dansetype)}</span></div><div class="pending-item-row"><span>📍</span><span>${esc(e.sted)}, ${esc(e.adresse)}, ${esc(e.by)}</span></div><div class="pending-item-row"><span>💰</span><span>${esc(e.pris)}</span></div>${e.insertedAt?`<div class="pending-item-row" style="font-size:11px;color:#7d8590"><span>📥</span><span>Tilføjet: ${esc(e.insertedAt)}</span></div>`:''}</div><div class="pending-actions"><button class="pending-approve-btn" onclick="changeStatus(${e.row},'active')">Godkend ✓</button><button style="padding:10px 12px;background:#da3633;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;" onclick="deleteEvent(${e.row})">Afvis ✕</button></div></div>`).join('');
     empty.style.display='none';
-  }catch(e){list.innerHTML='<div style="color:#f85149;text-align:center;padding:20px;">Fejl</div>';}
+  }catch(e){
+    list.innerHTML='<div style="color:#f85149;text-align:center;padding:20px;">Kunne ikke hente liste</div>';
+  }
 }
 
 async function changeStatus(row,nextStatus){
@@ -1287,8 +1587,11 @@ async function changeStatus(row,nextStatus){
   const btn=item?.querySelector('.pending-approve-btn');
   if(btn){btn.disabled=true;btn.textContent='Opdaterer...';}
   try{
-    const data=await jsonp(API+'?action=update-status&row='+row+'&status='+encodeURIComponent(nextStatus)+'&_='+Date.now());
-    if(data?.success&&nextStatus==='active'){if(item){item.style.background='#238636';if(btn)btn.textContent='✓ Godkendt';setTimeout(()=>item.remove(),600);}loadWeekCount();}
+    const data=await jsonp(API+'?action=update-status&row='+row+'&status='+encodeURIComponent(nextStatus)+'&_='+Date.now(), 15000);
+    if(data?.success&&nextStatus==='active'){
+      if(item){item.style.background='#238636';if(btn)btn.textContent='✓ Godkendt';setTimeout(()=>item.remove(),600);}
+      loadWeekCount();
+    }
     else{if(btn){btn.disabled=false;btn.textContent='Fejl';}}
   }catch(e){if(btn){btn.disabled=false;btn.textContent='Fejl';}}
 }
@@ -1297,14 +1600,19 @@ async function deleteEvent(row){
   if(!confirm('Er du sikker på du vil afvise dette event?'))return;
   const item=document.querySelector(`.pending-item[data-row="${row}"]`);
   try{
-    const data=await jsonp(API+'?action=delete-row&row='+row+'&_='+Date.now());
+    const data=await jsonp(API+'?action=delete-row&row='+row+'&_='+Date.now(), 15000);
     if(data?.success){if(item){item.style.background='#da3633';item.style.opacity='0.5';setTimeout(()=>item.remove(),400);}}
   }catch(e){}
 }
 
 $('refreshPending').onclick=loadPendingList;
 
-if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+// SERVICE WORKER - med error handling
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(err=>{
+    console.log('Service worker registration failed:', err);
+  });
+}
 </script>
 </body>
 </html>
