@@ -269,211 +269,263 @@
 </div>
 
 <script>
-var API = 'https://script.google.com/macros/s/AKfycbyJdVscl-4f-ow7Ynj-LGsazpGFSR8VzVZWHruWdNE66HbVK6LJLOXKRmS6TFUUFC6i/exec';
-var PASSWORD = '2026';
-var submittedEventName = '';
+(function() {
+  var API = 'https://script.google.com/macros/s/AKfycbyJdVscl-4f-ow7Ynj-LGsazpGFSR8VzVZWHruWdNE66HbVK6LJLOXKRmS6TFUUFC6i/exec';
+  var PASSWORD = '2026';
+  var TIMEOUT = 15000; // 15 sekunder timeout
+  var submittedEventName = '';
+  var isSubmitting = false;
 
-function $(id) { return document.getElementById(id); }
+  function $(id) { return document.getElementById(id); }
 
-// Password
-$('pwBtn').onclick = function() {
-  if ($('password').value === PASSWORD) {
-    $('passwordCard').style.display = 'none';
-    $('mainCard').style.display = 'block';
-    localStorage.setItem('dm_access', '1');
-    loadName();
-  } else {
-    $('passwordStatus').textContent = 'Forkert kode';
-    $('passwordStatus').className = 'status error';
+  // PASSWORD
+  $('pwBtn').onclick = function() {
+    if ($('password').value === PASSWORD) {
+      $('passwordCard').style.display = 'none';
+      $('mainCard').style.display = 'block';
+      try { localStorage.setItem('dm_access', '1'); } catch(e) {}
+      loadName();
+    } else {
+      $('passwordStatus').textContent = 'Forkert kode';
+      $('passwordStatus').className = 'status error';
+    }
+  };
+
+  // Auto-login
+  try {
+    if (localStorage.getItem('dm_access') === '1') {
+      $('passwordCard').style.display = 'none';
+      $('mainCard').style.display = 'block';
+      loadName();
+    }
+  } catch(e) {}
+
+  $('password').onkeyup = function(e) { if (e.key === 'Enter') $('pwBtn').click(); };
+
+  function loadName() {
+    try {
+      var n = localStorage.getItem('dm_name');
+      if (n) $('kilde').value = n;
+    } catch(e) {}
   }
-};
 
-if (localStorage.getItem('dm_access') === '1') {
-  $('passwordCard').style.display = 'none';
-  $('mainCard').style.display = 'block';
-  loadName();
-}
+  $('kilde').onblur = function() {
+    try {
+      if (this.value.trim()) localStorage.setItem('dm_name', this.value.trim());
+    } catch(e) {}
+  };
 
-$('password').onkeyup = function(e) { if (e.key === 'Enter') $('pwBtn').click(); };
+  // PRISTYPE
+  $('prisType').onchange = function() {
+    $('prisFields').style.display = this.value === 'angiv' ? 'block' : 'none';
+    updatePreview();
+  };
 
-function loadName() {
-  var n = localStorage.getItem('dm_name');
-  if (n) $('kilde').value = n;
-}
+  function buildPris() {
+    var pt = $('prisType').value;
+    if (pt === 'gratis') return 'Gratis';
+    if (pt === 'kontakt') return 'Kontakt arrangør';
+    var o = ($('prisOnline').value || '').trim();
+    var d = ($('prisDropin').value || '').trim();
+    if (o && d) return o + ' kr (online) / ' + d + ' kr (drop-in)';
+    if (o) return o + ' kr (online)';
+    if (d) return d + ' kr (drop-in)';
+    return '';
+  }
 
-$('kilde').onblur = function() {
-  if (this.value.trim()) localStorage.setItem('dm_name', this.value.trim());
-};
+  function updatePreview() {
+    var dage = ['Søn','Man','Tir','Ons','Tor','Fre','Lør'];
+    var mdr = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+    
+    var datoStr = '—';
+    var datoVal = $('dato').value;
+    if (datoVal) {
+      try {
+        var d = new Date(datoVal);
+        if (!isNaN(d.getTime())) {
+          datoStr = dage[d.getDay()] + ' ' + d.getDate() + '. ' + mdr[d.getMonth()];
+          if ($('recurring').checked) datoStr += ' 🔁';
+        }
+      } catch(e) {}
+    }
+    
+    var tidStr = $('starttid').value || '—';
+    if ($('sluttid').value) tidStr += '–' + $('sluttid').value;
+    
+    var stedStr = $('sted').value || '—';
+    if ($('adresse').value) stedStr += ', ' + $('adresse').value;
+    if ($('by').value) stedStr += ', ' + $('by').value;
+    
+    var pris = buildPris() || '—';
+    
+    var html = '<div class="line"><span class="icon">🗓</span><span>' + datoStr + '</span></div>';
+    html += '<div class="line"><span class="icon">📌</span><span>' + ($('navn').value || '—') + '</span></div>';
+    html += '<div class="line"><span class="icon">🕗</span><span>' + tidStr + '</span></div>';
+    html += '<div class="line"><span class="icon">💃</span><span>' + ($('dansetype').value || '—') + '</span></div>';
+    html += '<div class="line"><span class="icon">📍</span><span>' + stedStr + '</span></div>';
+    html += '<div class="line"><span class="icon">💰</span><span>' + pris + '</span></div>';
+    if ($('link').value) html += '<div class="line"><span class="icon">🎫</span><span>' + $('link').value + '</span></div>';
+    
+    $('previewContent').innerHTML = html;
+  }
 
-// Pristype
-$('prisType').onchange = function() {
-  $('prisFields').style.display = this.value === 'angiv' ? 'block' : 'none';
-  updatePreview();
-};
-
-function buildPris() {
-  var pt = $('prisType').value;
-  if (pt === 'gratis') return 'Gratis';
-  if (pt === 'kontakt') return 'Kontakt arrangør';
-  var o = $('prisOnline').value.trim();
-  var d = $('prisDropin').value.trim();
-  if (o && d) return o + ' kr (online) / ' + d + ' kr (drop-in)';
-  if (o) return o + ' kr (online)';
-  if (d) return d + ' kr (drop-in)';
-  return '';
-}
-
-function updatePreview() {
-  var dage = ['Søn','Man','Tir','Ons','Tor','Fre','Lør'];
-  var mdr = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
-  
-  var datoStr = '—';
-  if ($('dato').value) {
-    var d = new Date($('dato').value);
-    if (!isNaN(d.getTime())) {
-      datoStr = dage[d.getDay()] + ' ' + d.getDate() + '. ' + mdr[d.getMonth()];
-      if ($('recurring').checked) datoStr += ' 🔁';
+  // BIND PREVIEW
+  var fields = ['dato','navn','starttid','sluttid','dansetype','sted','adresse','by','prisType','prisOnline','prisDropin','link','recurring'];
+  for (var i = 0; i < fields.length; i++) {
+    var el = $(fields[i]);
+    if (el) {
+      el.oninput = updatePreview;
+      el.onchange = updatePreview;
     }
   }
-  
-  var tidStr = $('starttid').value || '—';
-  if ($('sluttid').value) tidStr += '–' + $('sluttid').value;
-  
-  var stedStr = $('sted').value || '—';
-  if ($('adresse').value) stedStr += ', ' + $('adresse').value;
-  if ($('by').value) stedStr += ', ' + $('by').value;
-  
-  var pris = buildPris() || '—';
-  
-  var html = '<div class="line"><span class="icon">🗓</span><span>' + datoStr + '</span></div>';
-  html += '<div class="line"><span class="icon">📌</span><span>' + ($('navn').value || '—') + '</span></div>';
-  html += '<div class="line"><span class="icon">🕗</span><span>' + tidStr + '</span></div>';
-  html += '<div class="line"><span class="icon">💃</span><span>' + ($('dansetype').value || '—') + '</span></div>';
-  html += '<div class="line"><span class="icon">📍</span><span>' + stedStr + '</span></div>';
-  html += '<div class="line"><span class="icon">💰</span><span>' + pris + '</span></div>';
-  if ($('link').value) html += '<div class="line"><span class="icon">🎫</span><span>' + $('link').value + '</span></div>';
-  
-  $('previewContent').innerHTML = html;
-}
 
-// Bind preview updates
-var fields = ['dato','navn','starttid','sluttid','dansetype','sted','adresse','by','prisType','prisOnline','prisDropin','link','recurring'];
-for (var i = 0; i < fields.length; i++) {
-  var el = $(fields[i]);
-  if (el) {
-    el.oninput = updatePreview;
-    el.onchange = updatePreview;
-  }
-}
-
-// Clear
-$('clearBtn').onclick = function() {
-  var savedName = $('kilde').value;
-  $('eventForm').reset();
-  $('kilde').value = savedName;
-  $('by').value = 'København';
-  $('dato').valueAsDate = new Date();
-  $('prisFields').style.display = 'block';
-  $('addStatus').style.display = 'none';
-  updatePreview();
-};
-
-// JSONP
-function jsonp(url, cb) {
-  var cbName = 'cb_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
-  var script = document.createElement('script');
-  window[cbName] = function(data) {
-    delete window[cbName];
-    script.remove();
-    cb(null, data);
+  // CLEAR
+  $('clearBtn').onclick = function() {
+    var savedName = $('kilde').value;
+    $('eventForm').reset();
+    $('kilde').value = savedName;
+    $('by').value = 'København';
+    try { $('dato').valueAsDate = new Date(); } catch(e) {}
+    $('prisFields').style.display = 'block';
+    $('addStatus').style.display = 'none';
+    updatePreview();
   };
-  script.onerror = function() {
-    delete window[cbName];
-    script.remove();
-    cb(new Error('Failed'));
-  };
-  script.src = url + (url.indexOf('?') > -1 ? '&' : '?') + 'callback=' + cbName;
-  document.body.appendChild(script);
-}
 
-// Submit - USES EXISTING admin-import ACTION!
-$('eventForm').onsubmit = function(e) {
-  e.preventDefault();
-  
-  var btn = $('submitBtn');
-  var status = $('addStatus');
-  
-  // Validate pris
-  if ($('prisType').value === 'angiv' && !$('prisOnline').value && !$('prisDropin').value) {
-    status.textContent = 'Angiv mindst én pris';
-    status.className = 'status error';
-    return;
+  // JSONP MED TIMEOUT
+  function jsonp(url, callback) {
+    var cbName = 'cb_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+    var script = document.createElement('script');
+    var done = false;
+    var timer = null;
+
+    function cleanup() {
+      done = true;
+      if (timer) clearTimeout(timer);
+      try { delete window[cbName]; } catch(e) { window[cbName] = undefined; }
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[cbName] = function(data) {
+      if (done) return;
+      cleanup();
+      callback(null, data);
+    };
+
+    script.onerror = function() {
+      if (done) return;
+      cleanup();
+      callback(new Error('Network error'));
+    };
+
+    // TIMEOUT
+    timer = setTimeout(function() {
+      if (done) return;
+      cleanup();
+      callback(new Error('Timeout'));
+    }, TIMEOUT);
+
+    script.src = url + (url.indexOf('?') > -1 ? '&' : '?') + 'callback=' + cbName;
+    document.body.appendChild(script);
   }
-  
-  // GEM EVENT-NAVNET FØR SUBMIT!
-  submittedEventName = $('navn').value.trim();
-  
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Sender...';
-  status.style.display = 'none';
-  
-  var kilde = $('kilde').value.trim();
-  if (kilde) localStorage.setItem('dm_name', kilde);
-  
-  // Build URL with params - SAME AS ADMIN!
-  var params = [];
-  params.push('action=admin-import');
-  params.push('dato=' + encodeURIComponent($('dato').value));
-  params.push('navn=' + encodeURIComponent(submittedEventName));
-  params.push('starttid=' + encodeURIComponent($('starttid').value));
-  params.push('sluttid=' + encodeURIComponent($('sluttid').value));
-  params.push('dansetype=' + encodeURIComponent($('dansetype').value));
-  params.push('sted=' + encodeURIComponent($('sted').value));
-  params.push('adresse=' + encodeURIComponent($('adresse').value));
-  params.push('by=' + encodeURIComponent($('by').value));
-  params.push('pris=' + encodeURIComponent(buildPris()));
-  params.push('link=' + encodeURIComponent($('link').value));
-  params.push('recurring=' + $('recurring').checked);
-  params.push('kilde=' + encodeURIComponent(kilde + ' (arrangor)'));
-  params.push('_=' + Date.now());
-  
-  var url = API + '?' + params.join('&');
-  
-  jsonp(url, function(err, data) {
+
+  // RESET BUTTON STATE
+  function resetButton() {
+    var btn = $('submitBtn');
     btn.disabled = false;
     btn.textContent = '🚀 Send event';
+    isSubmitting = false;
+  }
+
+  // SUBMIT
+  $('eventForm').onsubmit = function(e) {
+    e.preventDefault();
     
-    if (err) {
-      status.textContent = 'Kunne ikke sende. Prøv igen.';
+    // Prevent double submit
+    if (isSubmitting) return;
+    
+    var btn = $('submitBtn');
+    var status = $('addStatus');
+    
+    // Validate pris
+    if ($('prisType').value === 'angiv' && !$('prisOnline').value && !$('prisDropin').value) {
+      status.textContent = 'Angiv mindst én pris';
       status.className = 'status error';
       return;
     }
     
-    if (data && data.success) {
-      // Vis success med EVENT-NAVNET
-      $('successEventName').textContent = '📌 ' + submittedEventName;
-      $('mainCard').style.display = 'none';
-      $('successCard').style.display = 'block';
-    } else if (data && data.error === 'DUPLICATE') {
-      status.textContent = 'Dette event findes allerede';
+    // GEM EVENT-NAVNET
+    submittedEventName = ($('navn').value || '').trim();
+    if (!submittedEventName) {
+      status.textContent = 'Event navn mangler';
       status.className = 'status error';
-    } else {
-      status.textContent = (data && data.text) || 'Noget gik galt';
-      status.className = 'status error';
+      return;
     }
-  });
-};
+    
+    isSubmitting = true;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Sender...';
+    status.style.display = 'none';
+    
+    var kilde = ($('kilde').value || '').trim();
+    try {
+      if (kilde) localStorage.setItem('dm_name', kilde);
+    } catch(e) {}
+    
+    // BUILD URL
+    var params = [];
+    params.push('action=admin-import');
+    params.push('dato=' + encodeURIComponent($('dato').value || ''));
+    params.push('navn=' + encodeURIComponent(submittedEventName));
+    params.push('starttid=' + encodeURIComponent($('starttid').value || ''));
+    params.push('sluttid=' + encodeURIComponent($('sluttid').value || ''));
+    params.push('dansetype=' + encodeURIComponent($('dansetype').value || ''));
+    params.push('sted=' + encodeURIComponent($('sted').value || ''));
+    params.push('adresse=' + encodeURIComponent($('adresse').value || ''));
+    params.push('by=' + encodeURIComponent($('by').value || ''));
+    params.push('pris=' + encodeURIComponent(buildPris()));
+    params.push('link=' + encodeURIComponent($('link').value || ''));
+    params.push('recurring=' + ($('recurring').checked ? 'true' : 'false'));
+    params.push('kilde=' + encodeURIComponent(kilde + ' (arrangor)'));
+    params.push('_=' + Date.now());
+    
+    var url = API + '?' + params.join('&');
+    
+    jsonp(url, function(err, data) {
+      // ALTID RESET BUTTON!
+      resetButton();
+      
+      if (err) {
+        status.textContent = 'Kunne ikke sende. Prøv igen.';
+        status.className = 'status error';
+        return;
+      }
+      
+      if (data && data.success) {
+        $('successEventName').textContent = '📌 ' + submittedEventName;
+        $('mainCard').style.display = 'none';
+        $('successCard').style.display = 'block';
+      } else if (data && data.error === 'DUPLICATE') {
+        status.textContent = 'Dette event findes allerede';
+        status.className = 'status error';
+      } else {
+        status.textContent = (data && data.text) || 'Noget gik galt';
+        status.className = 'status error';
+      }
+    });
+  };
 
-// Add another
-$('addAnotherBtn').onclick = function() {
-  $('clearBtn').click();
-  $('mainCard').style.display = 'block';
-  $('successCard').style.display = 'none';
-};
+  // ADD ANOTHER
+  $('addAnotherBtn').onclick = function() {
+    $('clearBtn').click();
+    $('mainCard').style.display = 'block';
+    $('successCard').style.display = 'none';
+  };
 
-// Init
-$('dato').valueAsDate = new Date();
-updatePreview();
+  // INIT
+  try { $('dato').valueAsDate = new Date(); } catch(e) {}
+  updatePreview();
+
+})();
 </script>
 
 </body>
