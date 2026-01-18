@@ -86,6 +86,9 @@
     .event-row.title{font-weight:600;color:#e6edf3;font-size:15px}
     .more-btn{margin-top:12px;padding:10px 16px;border-radius:10px;border:1px solid #30363d;background:transparent;color:#7d8590;font-size:14px;cursor:pointer}
     .more-btn:hover{background:#21262d;color:#c9d1d9}
+    .submit-footer{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-top:1px solid #21262d;font-size:13px;color:#7d8590}
+    .submit-footer a{color:#6366f1;text-decoration:none;font-weight:500;transition:color 0.2s}
+    .submit-footer a:hover{color:#818cf8}
     .input-area{display:none;padding:16px 20px;border-top:1px solid #21262d;gap:12px;position:sticky;bottom:0;background:#0d1117;z-index:10}
     .input-area input{flex:1;padding:14px 18px;border-radius:12px;border:1px solid #30363d;background:#0d1117;font-size:15px;font-family:inherit;color:#e6edf3;outline:none}
     .input-area input:focus{border-color:#6366f1}.input-area input::placeholder{color:#7d8590}
@@ -191,6 +194,10 @@ if(localStorage.getItem('dancemap_welcomed')){
     <button class="filter-btn bachata" onclick="filterSearch('bachata')">Bachata</button>
   </div>
   <div id="chat" class="chat"></div>
+  <div class="submit-footer">
+    <span>Kender du et event?</span>
+    <a href="/organizer.html">➕ Tilføj her</a>
+  </div>
   <div class="input-area">
     <input id="q" type="text" placeholder="Skriv fx: salsa eller bachata" autocomplete="off" enterkeyhint="search" />
     <button id="sendBtn" class="send-btn">
@@ -326,8 +333,8 @@ window.onunhandledrejection = function(event) {
   console.error('Unhandled promise rejection:', event.reason);
 };
 
-const FRONTEND_VERSION = 'v6.5.1-2025-01-18';
-const FORM_VERSION = '6.5.1';
+const FRONTEND_VERSION = 'v6.5.2-2025-01-18';
+const FORM_VERSION = '6.5.2';
 
 // ═══════════════════════════════════════════════════════════
 // API URL
