@@ -130,6 +130,32 @@
       margin-right: 8px; vertical-align: middle;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    
+    .image-upload-zone {
+      border: 2px dashed #30363d;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0d1117;
+    }
+    .image-upload-zone:hover { border-color: #6366f1; }
+    .image-upload-zone.drag-over { border-color: #6366f1; background: rgba(99,102,241,0.1); }
+    .image-upload-zone.has-image { padding: 8px; }
+    .upload-placeholder { color: #7d8590; }
+    .image-preview-img { max-width: 100%; max-height: 200px; border-radius: 8px; object-fit: contain; }
+    .remove-image-btn {
+      position: absolute; top: 8px; right: 8px; width: 28px; height: 28px;
+      border-radius: 50%; border: none; background: rgba(248,81,73,0.9); color: white;
+      font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .remove-image-btn:hover { background: #da3633; }
   </style>
 </head>
 <body>
@@ -234,9 +260,18 @@
     </div>
     
     <div class="field-row">
-      <label>Flyer/billede URL (valgfrit)</label>
-      <input type="url" id="billede" placeholder="https://... (link til billede)" />
-      <div style="font-size:11px;color:#6e7681;margin-top:4px;">Tip: Højreklik på billede → "Kopiér billedadresse"</div>
+      <label>Flyer/billede (valgfrit)</label>
+      <div class="image-upload-zone" id="imageUploadZone">
+        <div class="upload-placeholder" id="uploadPlaceholder">
+          <div style="font-size:24px;margin-bottom:8px;">📸</div>
+          <div>Paste billede (Ctrl+V)</div>
+          <div style="font-size:12px;color:#6e7681;margin-top:4px;">eller træk fil hertil</div>
+        </div>
+        <img id="imagePreview" class="image-preview-img" style="display:none;" />
+        <button type="button" id="removeImageBtn" class="remove-image-btn" style="display:none;">✕</button>
+      </div>
+      <div id="uploadStatus" style="font-size:12px;margin-top:6px;"></div>
+      <input type="hidden" id="billede" />
     </div>
     
     <div class="checkbox-group">
@@ -372,6 +407,7 @@
     html += '<div class="line"><span class="icon">📍</span><span>' + stedStr + '</span></div>';
     html += '<div class="line"><span class="icon">💰</span><span>' + pris + '</span></div>';
     if ($('link').value) html += '<div class="line"><span class="icon">🎫</span><span>' + $('link').value + '</span></div>';
+    if ($('billede').value) html += '<div class="line"><span class="icon">🖼</span><span style="color:#3fb950;">Billede vedhæftet ✓</span></div>';
     
     $('previewContent').innerHTML = html;
   }
@@ -395,6 +431,7 @@
     try { $('dato').valueAsDate = new Date(); } catch(e) {}
     $('prisFields').style.display = 'block';
     $('addStatus').style.display = 'none';
+    clearImage();
     updatePreview();
   };
 
@@ -518,6 +555,7 @@
   // ADD ANOTHER
   $('addAnotherBtn').onclick = function() {
     $('clearBtn').click();
+    clearImage();
     $('mainCard').style.display = 'block';
     $('successCard').style.display = 'none';
   };
@@ -525,6 +563,132 @@
   // INIT
   try { $('dato').valueAsDate = new Date(); } catch(e) {}
   updatePreview();
+
+  // ═══════════════════════════════════════════════════════════
+  // IMAGE UPLOAD TIL IMGBB
+  // ═══════════════════════════════════════════════════════════
+  var IMGBB_KEY = '982b6367e7b8ba54b770f95ca51f7828'; // Udskift med din ImgBB API nøgle
+  var uploadZone = $('imageUploadZone');
+  var imagePreview = $('imagePreview');
+  var uploadPlaceholder = $('uploadPlaceholder');
+  var removeImageBtn = $('removeImageBtn');
+  var uploadStatus = $('uploadStatus');
+  var billedeInput = $('billede');
+  var isUploading = false;
+
+  function showImagePreview(url) {
+    imagePreview.src = url;
+    imagePreview.style.display = 'block';
+    uploadPlaceholder.style.display = 'none';
+    removeImageBtn.style.display = 'flex';
+    uploadZone.classList.add('has-image');
+  }
+
+  function clearImage() {
+    imagePreview.src = '';
+    imagePreview.style.display = 'none';
+    uploadPlaceholder.style.display = 'block';
+    removeImageBtn.style.display = 'none';
+    uploadZone.classList.remove('has-image');
+    billedeInput.value = '';
+    uploadStatus.textContent = '';
+  }
+
+  removeImageBtn.onclick = function(e) {
+    e.stopPropagation();
+    clearImage();
+  };
+
+  async function uploadToImgBB(file) {
+    if (isUploading) return;
+    isUploading = true;
+    uploadStatus.innerHTML = '<span style="color:#6366f1;">Uploader billede...</span>';
+    
+    // Vis preview med det samme
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      showImagePreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
+
+    try {
+      var formData = new FormData();
+      formData.append('image', file);
+      formData.append('key', IMGBB_KEY);
+
+      var response = await fetch('https://api.imgbb.com/1/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      var result = await response.json();
+      
+      if (result.success) {
+        billedeInput.value = result.data.display_url;
+        uploadStatus.innerHTML = '<span style="color:#3fb950;">✓ Billede uploadet</span>';
+      } else {
+        throw new Error(result.error?.message || 'Upload fejlede');
+      }
+    } catch (err) {
+      uploadStatus.innerHTML = '<span style="color:#f85149;">✕ ' + (err.message || 'Upload fejlede') + '</span>';
+      // Behold preview men marker fejl
+    }
+    isUploading = false;
+  }
+
+  // PASTE handler
+  document.addEventListener('paste', function(e) {
+    // Kun hvis vi er på main form
+    if ($('mainCard').style.display === 'none') return;
+    
+    var items = e.clipboardData?.items || [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        e.preventDefault();
+        var file = items[i].getAsFile();
+        if (file) uploadToImgBB(file);
+        return;
+      }
+    }
+  });
+
+  // DRAG & DROP
+  uploadZone.ondragover = function(e) {
+    e.preventDefault();
+    uploadZone.classList.add('drag-over');
+  };
+  uploadZone.ondragleave = function(e) {
+    e.preventDefault();
+    uploadZone.classList.remove('drag-over');
+  };
+  uploadZone.ondrop = function(e) {
+    e.preventDefault();
+    uploadZone.classList.remove('drag-over');
+    var files = e.dataTransfer.files;
+    if (files.length > 0 && files[0].type.indexOf('image') !== -1) {
+      uploadToImgBB(files[0]);
+    }
+  };
+
+  // CLICK to upload
+  var fileInputHidden = document.createElement('input');
+  fileInputHidden.type = 'file';
+  fileInputHidden.accept = 'image/*';
+  fileInputHidden.style.display = 'none';
+  document.body.appendChild(fileInputHidden);
+
+  uploadZone.onclick = function() {
+    if (!billedeInput.value) {
+      fileInputHidden.click();
+    }
+  };
+
+  fileInputHidden.onchange = function() {
+    if (this.files.length > 0) {
+      uploadToImgBB(this.files[0]);
+    }
+    this.value = '';
+  };
 
 })();
 </script>
