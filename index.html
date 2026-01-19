@@ -20,13 +20,12 @@
     body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px}
     .header-outside{display:flex;align-items:center;gap:14px;margin-bottom:16px;width:100%;max-width:400px;cursor:pointer}
     .card{background:#161b22;border-radius:20px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;flex-direction:column;max-height:70vh;position:relative}
-    .card::before{content:'';position:absolute;inset:-2px;border-radius:22px;background:linear-gradient(90deg,#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);background-size:400% 100%;animation:gradient-shift 8s linear infinite;z-index:-1}
-    @keyframes gradient-shift{0%{background-position:0% 50%}100%{background-position:400% 50%}}
+    .card::before{content:'';position:absolute;inset:-2px;border-radius:22px;background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);z-index:-1;opacity:0.8}
     .logo{width:52px;height:52px;position:relative}.logo img{width:52px;height:52px;object-fit:cover;border-radius:12px}
     .welcome-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s ease-out}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     .welcome-modal{background:rgba(22,27,34,0.95);border-radius:20px;padding:40px 30px;max-width:360px;width:100%;text-align:center;position:relative;animation:scaleIn 0.3s ease-out}
-    .welcome-modal::before{content:'';position:absolute;inset:-2px;border-radius:22px;background:linear-gradient(90deg,#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);background-size:400% 100%;animation:gradient-shift 8s linear infinite;z-index:-1}
+    .welcome-modal::before{content:'';position:absolute;inset:-2px;border-radius:22px;background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);z-index:-1;opacity:0.8}
     @keyframes scaleIn{from{transform:scale(0.9);opacity:0}to{transform:scale(1);opacity:1}}
     .welcome-close{position:absolute;top:16px;right:16px;width:40px;height:40px;border:none;background:rgba(255,255,255,0.1);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
     .welcome-close:hover{background:rgba(255,255,255,0.2)}
@@ -36,11 +35,8 @@
     .welcome-modal h2{font-size:22px;font-weight:600;color:#e6edf3;margin-bottom:16px}
     .welcome-modal p{font-size:14px;color:#8b949e;line-height:1.6;margin-bottom:12px}
     .welcome-note{font-size:12px;color:#6366f1;font-style:italic;margin:20px 0}
-    .welcome-start{width:100%;padding:14px;border-radius:12px;border:none;background:#6366f1;color:white;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;position:relative;z-index:1}
-    .welcome-start::before{content:'';position:absolute;inset:-2px;border-radius:14px;background:linear-gradient(90deg,#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);background-size:400% 100%;animation:gradient-shift 8s linear infinite;z-index:-1}
-    .welcome-start::after{content:'';position:absolute;inset:0;border-radius:12px;background:#6366f1;z-index:-1;transition:background 0.2s}
-    .welcome-start:hover{transform:scale(1.02)}
-    .welcome-start:hover::after{background:#5558e3}
+    .welcome-start{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s}
+    .welcome-start:hover{transform:scale(1.02);box-shadow:0 4px 20px rgba(102,126,234,0.4)}
     
     /* LOGO - clean */
     .logo{width:52px;height:52px;position:relative;border-radius:50%}.logo img{width:44px;height:44px;object-fit:cover;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;border-radius:12px}
@@ -52,12 +48,12 @@
     
     /* FILTER BUTTONS - Clean with gradient border */
     .filter-buttons{display:flex;gap:12px;padding:16px 20px}
-    .filter-btn{flex:1;padding:14px 20px;border-radius:12px;border:none;background:#21262d;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;color:#e6edf3;position:relative;z-index:1}
-    .filter-btn::before{content:'';position:absolute;inset:-2px;border-radius:14px;background:linear-gradient(90deg,#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);background-size:400% 100%;animation:gradient-shift 8s linear infinite;z-index:-1}
-    .filter-btn::after{content:'';position:absolute;inset:0;border-radius:12px;background:#21262d;z-index:-1}
-    .filter-btn:hover{transform:scale(1.02)}
-    .filter-btn:hover::after{background:#2d333b}
-    .filter-btn:active{transform:scale(0.98)}
+    .filter-btn{flex:1;padding:14px 20px;border-radius:12px;border:none;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;color:white;position:relative;overflow:hidden}
+    .filter-btn.salsa{background:linear-gradient(135deg,#2d2d3a 0%,#667eea 50%,#764ba2 100%)}
+    .filter-btn.bachata{background:linear-gradient(135deg,#f5576c 0%,#f093fb 50%,#f5af19 100%)}
+    .filter-btn:hover{transform:scale(1.02);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
+    .filter-btn:active{transform:scale(0.98);opacity:0.9}
+    .filter-btn.clicked{opacity:0.7;transform:scale(0.98)}
     .header-text .version-display{font-size:10px;color:#484f58;margin-top:2px}
     .chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;min-height:150px}
     .msg{display:flex;flex-direction:column}.msg.user{align-items:flex-end}.msg.bot{align-items:flex-start}
@@ -65,9 +61,9 @@
     .msg.user .bubble{background:#2d333b;color:#e6edf3;border-bottom-right-radius:4px}
     .msg.bot .bubble{background:#21262d;color:#c9d1d9;border-bottom-left-radius:4px}
     .events{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-    .event-card{background:#2d333b;border-radius:12px;padding:14px 16px;position:relative;z-index:1}
-    .event-card::before{content:'';position:absolute;inset:-1px;border-radius:13px;background:linear-gradient(90deg,#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);background-size:400% 100%;animation:gradient-shift 8s linear infinite;z-index:-1;opacity:0.6}
-    .event-card::after{content:'';position:absolute;inset:0;border-radius:12px;background:#2d333b;z-index:-1}
+    .event-card{background:#1a1a2e;border-radius:16px;padding:16px 18px;position:relative;z-index:1;border:2px solid transparent;background-clip:padding-box}
+    .event-card::before{content:'';position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px;background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);border-radius:18px;z-index:-1;opacity:0.6}
+    .event-card:hover::before{opacity:1}
     .event-image{width:100%;border-radius:12px;margin-bottom:12px;max-height:200px;object-fit:cover;cursor:pointer;transition:all 0.3s ease;box-shadow:0 4px 15px rgba(0,0,0,0.2);position:relative}
     .event-image:hover{transform:scale(1.03);box-shadow:0 8px 25px rgba(0,0,0,0.3)}
     .event-card:has(.event-image) .event-image{border:2px solid rgba(255,255,255,0.1)}
@@ -95,7 +91,9 @@
     .cal-btn:hover{background:#444c56;color:#e6edf3}
     .cal-btn.google{border-color:#4285f4;color:#4285f4}.cal-btn.google:hover{background:rgba(66,133,244,0.15)}
     .cal-btn.apple{border-color:#a2aaad;color:#a2aaad}.cal-btn.apple:hover{background:rgba(162,170,173,0.15)}
-    body.light-mode .event-card{background:#f6f8fa}
+    body.light-mode .event-card{background:#ffffff}
+    body.light-mode .event-card::before{opacity:0.4}
+    body.light-mode .event-card:hover::before{opacity:0.7}
     body.light-mode .event-actions{border-color:#d1d5da}
     body.light-mode .cal-btn{border-color:#d1d5da;color:#57606a}
     body.light-mode .cal-btn:hover{background:#e8ebef}
@@ -385,8 +383,8 @@ window.onunhandledrejection = function(event) {
   console.error('Unhandled promise rejection:', event.reason);
 };
 
-const FRONTEND_VERSION = 'v6.8.1-2025-01-19-1';
-const FORM_VERSION = '6.8.1';
+const FRONTEND_VERSION = 'v6.9.0-2025-01-19';
+const FORM_VERSION = '6.9.0';
 
 // ═══════════════════════════════════════════════════════════
 // API URL
@@ -912,6 +910,13 @@ setTimeout(initMuteButton, 100);
 function filterSearch(type){
   // Husk hvilken type der blev spillet
   lastPlayedType = type;
+  
+  // Tilføj clicked effekt
+  const btn = document.querySelector(`.filter-btn.${type}`);
+  if(btn){
+    btn.classList.add('clicked');
+    setTimeout(()=>btn.classList.remove('clicked'), 300);
+  }
   
   // Stop any playing sound and play new one (if not muted)
   try {
