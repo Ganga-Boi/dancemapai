@@ -233,6 +233,12 @@
       <input type="url" id="link" placeholder="https://..." />
     </div>
     
+    <div class="field-row">
+      <label>Flyer/billede URL (valgfrit)</label>
+      <input type="url" id="billede" placeholder="https://... (link til billede)" />
+      <div style="font-size:11px;color:#6e7681;margin-top:4px;">Tip: Højreklik på billede → "Kopiér billedadresse"</div>
+    </div>
+    
     <div class="checkbox-group">
       <input type="checkbox" id="recurring" />
       <label for="recurring">Gentager ugentligt</label>
@@ -371,7 +377,7 @@
   }
 
   // BIND PREVIEW
-  var fields = ['dato','navn','starttid','sluttid','dansetype','sted','adresse','by','prisType','prisOnline','prisDropin','link','recurring'];
+  var fields = ['dato','navn','starttid','sluttid','dansetype','sted','adresse','by','prisType','prisOnline','prisDropin','link','billede','recurring'];
   for (var i = 0; i < fields.length; i++) {
     var el = $(fields[i]);
     if (el) {
@@ -479,6 +485,7 @@
     params.push('by=' + encodeURIComponent($('by').value || ''));
     params.push('pris=' + encodeURIComponent(buildPris()));
     params.push('link=' + encodeURIComponent($('link').value || ''));
+    params.push('billede=' + encodeURIComponent($('billede').value || ''));
     params.push('recurring=' + ($('recurring').checked ? 'true' : 'false'));
     params.push('kilde=' + encodeURIComponent(kilde + ' (arrangor)'));
     params.push('_=' + Date.now());
