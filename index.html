@@ -68,6 +68,7 @@
     .event-card{background:#2d333b;border-radius:12px;padding:14px 16px;position:relative;z-index:1}
     .event-card::before{content:'';position:absolute;inset:-1px;border-radius:13px;background:linear-gradient(90deg,#ff0000,#ff8000,#ffff00,#00ff00,#00ffff,#0080ff,#8000ff,#ff00ff,#ff0000);background-size:400% 100%;animation:gradient-shift 8s linear infinite;z-index:-1;opacity:0.6}
     .event-card::after{content:'';position:absolute;inset:0;border-radius:12px;background:#2d333b;z-index:-1}
+    .event-image{width:100%;border-radius:8px;margin-bottom:12px;max-height:180px;object-fit:cover}
     .event-actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #444c56}
     .cal-btn{flex:1;padding:8px 12px;border-radius:8px;border:1px solid #444c56;background:transparent;color:#8b949e;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s}
     .cal-btn:hover{background:#444c56;color:#e6edf3}
@@ -301,6 +302,10 @@ if(localStorage.getItem('dancemap_welcomed')){
           <label>🎫 Billetlink (valgfrit)</label>
           <input type="url" id="fieldLink" placeholder="https://billetto.dk/..." />
         </div>
+        <div class="field-row">
+          <label>🖼 Flyer/billede URL (valgfrit)</label>
+          <input type="url" id="fieldBillede" placeholder="https://... (link til billede)" />
+        </div>
         <div id="fieldWarnings" class="field-warnings"></div>
         <div id="previewCard" class="preview-card">
           <div class="preview-label">Forhåndsvisning</div>
@@ -338,8 +343,8 @@ window.onunhandledrejection = function(event) {
   console.error('Unhandled promise rejection:', event.reason);
 };
 
-const FRONTEND_VERSION = 'v6.5.4-2025-01-18';
-const FORM_VERSION = '6.5.4';
+const FRONTEND_VERSION = 'v6.6.0-2025-01-18';
+const FORM_VERSION = '6.6.0';
 
 // ═══════════════════════════════════════════════════════════
 // API URL
@@ -357,7 +362,7 @@ const step2=$('adminStep2'),warnings=$('fieldWarnings');
 
 let lastQ='',page=0,hasMore=false,loading=false,moreBtn=null;
 
-const fields={dato:$('fieldDato'),navn:$('fieldNavn'),start:$('fieldStart'),slut:$('fieldSlut'),dans:$('fieldDans'),sted:$('fieldSted'),adresse:$('fieldAdresse'),by:$('fieldBy'),pris:$('fieldPris'),prisType:$('fieldPrisType'),prisOnline:$('fieldPrisOnline'),prisDropin:$('fieldPrisDropin'),mobilepay:$('fieldMobilepay'),mobilepayPris:$('fieldMobilepayPris'),mobilepayInfo:$('fieldMobilepayInfo'),link:$('fieldLink')};
+const fields={dato:$('fieldDato'),navn:$('fieldNavn'),start:$('fieldStart'),slut:$('fieldSlut'),dans:$('fieldDans'),sted:$('fieldSted'),adresse:$('fieldAdresse'),by:$('fieldBy'),pris:$('fieldPris'),prisType:$('fieldPrisType'),prisOnline:$('fieldPrisOnline'),prisDropin:$('fieldPrisDropin'),mobilepay:$('fieldMobilepay'),mobilepayPris:$('fieldMobilepayPris'),mobilepayInfo:$('fieldMobilepayInfo'),link:$('fieldLink'),billede:$('fieldBillede')};
 
 // ═══════════════════════════════════════════════════════════
 // ONLINE/OFFLINE DETECTION
@@ -550,7 +555,7 @@ function setSearchCache(query, data) {
   } catch(e) {}
 }
 
-function parseEvents(text){return String(text||'').split('\n\n').filter(e=>e.trim()).map(event=>{const p={};event.split('\n').forEach(l=>{if(l.startsWith('🗓'))p.dato=l.replace('🗓','').trim();else if(l.startsWith('📌'))p.navn=l.replace('📌','').trim();else if(l.startsWith('🕗'))p.tid=l.replace('🕗','').trim();else if(l.startsWith('💃'))p.type=l.replace('💃','').trim();else if(l.startsWith('📍'))p.sted=l.replace('📍','').trim();else if(l.startsWith('💰'))p.pris=l.replace('💰','').trim();else if(l.startsWith('🎫'))p.link=l.replace('🎫','').trim();});return p;}).filter(e=>e.dato);}
+function parseEvents(text){return String(text||'').split('\n\n').filter(e=>e.trim()).map(event=>{const p={};event.split('\n').forEach(l=>{if(l.startsWith('🗓'))p.dato=l.replace('🗓','').trim();else if(l.startsWith('📌'))p.navn=l.replace('📌','').trim();else if(l.startsWith('🕗'))p.tid=l.replace('🕗','').trim();else if(l.startsWith('💃'))p.type=l.replace('💃','').trim();else if(l.startsWith('📍'))p.sted=l.replace('📍','').trim();else if(l.startsWith('💰'))p.pris=l.replace('💰','').trim();else if(l.startsWith('🎫'))p.link=l.replace('🎫','').trim();else if(l.startsWith('🖼'))p.billede=l.replace('🖼','').trim();});return p;}).filter(e=>e.dato);}
 
 // CALENDAR FUNCTIONS
 function createGoogleCalUrl(event){
@@ -632,6 +637,7 @@ let currentEvents = [];
 function renderEvents(events){
   currentEvents = events;
   return events.map((e,i)=>`<div class="event-card">
+    ${e.billede?`<img src="${esc(e.billede)}" alt="${esc(e.navn||'Event')}" class="event-image" onerror="this.style.display='none'">`:''}
     <div class="event-row title"><span class="icon">📅</span><span>${esc(e.dato)}</span></div>
     ${e.navn?`<div class="event-row title"><span class="icon">📌</span><span>${esc(e.navn)}</span></div>`:''}
     ${e.tid?`<div class="event-row"><span class="icon">🕐</span><span>${esc(e.tid)}</span></div>`:''}
@@ -839,6 +845,7 @@ function saveFormState(){
       mobilepayPris:fields.mobilepayPris.value,
       mobilepayInfo:fields.mobilepayInfo.value,
       link:fields.link.value,
+      billede:fields.billede.value,
       recurring:recurring.checked,
       step:step2.style.display==='block'?2:1
     }));
@@ -870,6 +877,7 @@ function restoreFormState(){
     fields.mobilepayPris.value=s.mobilepayPris||'';
     fields.mobilepayInfo.value=s.mobilepayInfo||'';
     fields.link.value=s.link||'';
+    fields.billede.value=s.billede||'';
     recurring.checked=s.recurring||false;
     $('prisFields').style.display=s.prisType==='angiv'?'block':'none';
     $('mobilepayFields').style.display=s.prisType==='mobilepay'?'block':'none';
@@ -905,6 +913,7 @@ function clearFields(){
   fields.mobilepayPris.value='';
   fields.mobilepayInfo.value='';
   fields.link.value='';
+  fields.billede.value='';
   $('prisFields').style.display='block';
   $('mobilepayFields').style.display='none';
   warnings.classList.remove('show');
@@ -1503,6 +1512,7 @@ $('adminSubmitBtn').onclick=async()=>{
   params.set('by',fields.by.value);
   params.set('pris',fields.pris.value);
   params.set('link',fields.link.value||'');
+  params.set('billede',fields.billede.value||'');
   params.set('recurring',recurring.checked);
   params.set('kilde',localStorage.getItem('dancemap_admin_name')||'Admin');
   params.set('_',Date.now());
