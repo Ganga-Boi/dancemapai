@@ -84,6 +84,18 @@
     .mute-btn svg{width:28px;height:28px}
     .mute-btn .tooltip{position:absolute;bottom:56px;right:0;background:rgba(0,0,0,0.8);color:white;padding:6px 10px;border-radius:6px;font-size:11px;white-space:nowrap;opacity:0;transition:opacity 0.2s;pointer-events:none}
     .mute-btn:hover .tooltip{opacity:1}
+    .eq-bar{transform-origin:bottom}
+    .mute-btn.playing .eq-bar:nth-child(1){animation:eqBounce 0.4s ease-in-out infinite alternate}
+    .mute-btn.playing .eq-bar:nth-child(2){animation:eqBounce 0.5s ease-in-out infinite alternate 0.1s}
+    .mute-btn.playing .eq-bar:nth-child(3){animation:eqBounce 0.35s ease-in-out infinite alternate 0.2s}
+    .mute-btn.playing .eq-bar:nth-child(4){animation:eqBounce 0.45s ease-in-out infinite alternate 0.05s}
+    @keyframes eqBounce{0%{transform:scaleY(0.3)}100%{transform:scaleY(1)}}
+    .eq-bar{transform-origin:bottom}
+    .eq-bar-1{animation:eqBounce 0.4s ease-in-out infinite alternate}
+    .eq-bar-2{animation:eqBounce 0.5s ease-in-out infinite alternate 0.1s}
+    .eq-bar-3{animation:eqBounce 0.35s ease-in-out infinite alternate 0.2s}
+    .eq-bar-4{animation:eqBounce 0.45s ease-in-out infinite alternate 0.05s}
+    @keyframes eqBounce{0%{transform:scaleY(0.3)}100%{transform:scaleY(1)}}
     .icon{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-right:8px;flex-shrink:0}
     .icon svg{width:18px;height:18px;flex-shrink:0}
     .event-actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #444c56}
@@ -194,10 +206,10 @@
 <!-- Mute knap -->
 <button id="muteBtn" class="mute-btn" onclick="toggleMute()">
   <svg id="muteIcon" viewBox="0 0 48 48">
-    <rect x="10" y="20" width="5" height="16" rx="2" fill="white"/>
-    <rect x="18" y="12" width="5" height="24" rx="2" fill="white"/>
-    <rect x="26" y="16" width="5" height="20" rx="2" fill="white"/>
-    <rect x="34" y="22" width="5" height="14" rx="2" fill="white"/>
+    <rect class="eq-bar" x="10" y="20" width="5" height="16" rx="2" fill="white"/>
+    <rect class="eq-bar" x="18" y="12" width="5" height="24" rx="2" fill="white"/>
+    <rect class="eq-bar" x="26" y="16" width="5" height="20" rx="2" fill="white"/>
+    <rect class="eq-bar" x="34" y="22" width="5" height="14" rx="2" fill="white"/>
   </svg>
   <span class="tooltip" id="muteTooltip">Slå lyd fra</span>
 </button>
@@ -383,8 +395,8 @@ window.onunhandledrejection = function(event) {
   console.error('Unhandled promise rejection:', event.reason);
 };
 
-const FRONTEND_VERSION = 'v6.9.0-2025-01-19';
-const FORM_VERSION = '6.9.0';
+const FRONTEND_VERSION = 'v6.9.1-2025-01-19';
+const FORM_VERSION = '6.9.1';
 
 // ═══════════════════════════════════════════════════════════
 // API URL
@@ -847,6 +859,10 @@ try {
 // Initialiser mute-knap ved load
 function initMuteButton(){
   updateMuteUI();
+  // Hvis muted ved start, fjern playing klassen
+  if(isMuted && $('muteBtn')){
+    $('muteBtn').classList.remove('playing');
+  }
 }
 
 function updateMuteUI(){
@@ -855,25 +871,27 @@ function updateMuteUI(){
   const tooltip = $('muteTooltip');
   if(icon && btn && tooltip){
     if(isMuted){
-      // Muted: lave bars, faded
+      // Muted: lave bars, faded, ingen animation
       icon.innerHTML = `
-        <rect x="10" y="30" width="5" height="6" rx="2" fill="white" opacity="0.4"/>
-        <rect x="18" y="30" width="5" height="6" rx="2" fill="white" opacity="0.4"/>
-        <rect x="26" y="30" width="5" height="6" rx="2" fill="white" opacity="0.4"/>
-        <rect x="34" y="30" width="5" height="6" rx="2" fill="white" opacity="0.4"/>
+        <rect class="eq-bar" x="10" y="30" width="5" height="6" rx="2" fill="white" opacity="0.4"/>
+        <rect class="eq-bar" x="18" y="30" width="5" height="6" rx="2" fill="white" opacity="0.4"/>
+        <rect class="eq-bar" x="26" y="30" width="5" height="6" rx="2" fill="white" opacity="0.4"/>
+        <rect class="eq-bar" x="34" y="30" width="5" height="6" rx="2" fill="white" opacity="0.4"/>
         <line x1="10" y1="10" x2="38" y2="38" stroke="#ff6b6b" stroke-width="3" stroke-linecap="round"/>
       `;
       btn.style.opacity = '0.6';
+      btn.classList.remove('playing');
       tooltip.textContent = 'Slå lyd til';
     } else {
-      // Lyd til: høje bars, animeret look
+      // Lyd til: høje bars med animation
       icon.innerHTML = `
-        <rect x="10" y="20" width="5" height="16" rx="2" fill="white"/>
-        <rect x="18" y="12" width="5" height="24" rx="2" fill="white"/>
-        <rect x="26" y="16" width="5" height="20" rx="2" fill="white"/>
-        <rect x="34" y="22" width="5" height="14" rx="2" fill="white"/>
+        <rect class="eq-bar" x="10" y="20" width="5" height="16" rx="2" fill="white"/>
+        <rect class="eq-bar" x="18" y="12" width="5" height="24" rx="2" fill="white"/>
+        <rect class="eq-bar" x="26" y="16" width="5" height="20" rx="2" fill="white"/>
+        <rect class="eq-bar" x="34" y="22" width="5" height="14" rx="2" fill="white"/>
       `;
       btn.style.opacity = '1';
+      btn.classList.add('playing');
       tooltip.textContent = 'Slå lyd fra';
     }
   }
