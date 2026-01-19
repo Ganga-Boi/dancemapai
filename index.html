@@ -83,6 +83,11 @@
     .lightbox-caption{text-align:center;color:white;margin-top:16px;font-size:14px;opacity:0.8}
     .lightbox-zoom{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.15);border:none;color:white;padding:8px 16px;border-radius:20px;font-size:12px;cursor:pointer;backdrop-filter:blur(10px);transition:all 0.2s}
     .lightbox-zoom:hover{background:rgba(255,255,255,0.25)}
+    .mute-btn{position:fixed;bottom:20px;right:20px;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#1e1e2e,#2a2a3e);border:2px solid rgba(255,255,255,0.1);color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(0,0,0,0.3);transition:all 0.2s;z-index:100}
+    .mute-btn:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(0,0,0,0.4)}
+    .mute-btn.muted{background:linear-gradient(135deg,#4a4a5e,#3a3a4e);opacity:0.7}
+    .mute-btn .tooltip{position:absolute;bottom:56px;right:0;background:rgba(0,0,0,0.8);color:white;padding:6px 10px;border-radius:6px;font-size:11px;white-space:nowrap;opacity:0;transition:opacity 0.2s;pointer-events:none}
+    .mute-btn:hover .tooltip{opacity:1}
     .event-actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #444c56}
     .cal-btn{flex:1;padding:8px 12px;border-radius:8px;border:1px solid #444c56;background:transparent;color:#8b949e;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s}
     .cal-btn:hover{background:#444c56;color:#e6edf3}
@@ -185,6 +190,12 @@
     <button class="lightbox-zoom" onclick="window.open($('lightboxImg').src,'_blank')">🔍 Åbn i fuld størrelse</button>
   </div>
 </div>
+
+<!-- Mute knap -->
+<button id="muteBtn" class="mute-btn" onclick="toggleMute()">
+  <span id="muteIcon">🔊</span>
+  <span class="tooltip" id="muteTooltip">Slå lyd fra</span>
+</button>
 
 <div id="welcomeOverlay" class="welcome-overlay">
   <div class="welcome-modal">
@@ -367,8 +378,8 @@ window.onunhandledrejection = function(event) {
   console.error('Unhandled promise rejection:', event.reason);
 };
 
-const FRONTEND_VERSION = 'v6.7.1-2025-01-19';
-const FORM_VERSION = '6.7.1';
+const FRONTEND_VERSION = 'v6.7.2-2025-01-19';
+const FORM_VERSION = '6.7.2';
 
 // ═══════════════════════════════════════════════════════════
 // API URL
@@ -802,6 +813,8 @@ input.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();doSearch();}};
 
 // FILTER SEARCH - for Salsa/Bachata buttons with music
 let salsaSound, bachataSound;
+let isMuted = localStorage.getItem('dm_muted') === 'true';
+
 try {
   salsaSound = new Audio('/Salsa.mp3');
   bachataSound = new Audio('/Bachata.mp3');
@@ -811,18 +824,56 @@ try {
   console.log('Audio not available');
 }
 
+// Initialiser mute-knap ved load
+function initMuteButton(){
+  updateMuteUI();
+}
+
+function updateMuteUI(){
+  const icon = $('muteIcon');
+  const btn = $('muteBtn');
+  const tooltip = $('muteTooltip');
+  if(icon && btn && tooltip){
+    if(isMuted){
+      icon.textContent = '🔇';
+      btn.classList.add('muted');
+      tooltip.textContent = 'Slå lyd til';
+    } else {
+      icon.textContent = '🔊';
+      btn.classList.remove('muted');
+      tooltip.textContent = 'Slå lyd fra';
+    }
+  }
+}
+
+function toggleMute(){
+  isMuted = !isMuted;
+  localStorage.setItem('dm_muted', isMuted);
+  updateMuteUI();
+  // Stop lyd hvis muted
+  if(isMuted){
+    if(salsaSound) salsaSound.pause();
+    if(bachataSound) bachataSound.pause();
+  }
+}
+
+// Kald ved page load
+setTimeout(initMuteButton, 100);
+
 function filterSearch(type){
-  // Stop any playing sound and play new one
+  // Stop any playing sound and play new one (if not muted)
   try {
     if(salsaSound) salsaSound.pause();
     if(bachataSound) bachataSound.pause();
     
-    if(type === 'salsa' && salsaSound){
-      salsaSound.currentTime = 0;
-      salsaSound.play().catch(()=>{});
-    } else if(type === 'bachata' && bachataSound){
-      bachataSound.currentTime = 0;
-      bachataSound.play().catch(()=>{});
+    if(!isMuted){
+      if(type === 'salsa' && salsaSound){
+        salsaSound.currentTime = 0;
+        salsaSound.play().catch(()=>{});
+      } else if(type === 'bachata' && bachataSound){
+        bachataSound.currentTime = 0;
+        bachataSound.play().catch(()=>{});
+      }
     }
   } catch(e) {}
   
