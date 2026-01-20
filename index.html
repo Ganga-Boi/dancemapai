@@ -25,13 +25,13 @@
     .splash-icon{width:120px;height:120px}
     .splash-icon svg{width:100%;height:100%;overflow:visible}
     .splash .anim-part{opacity:0}
-    .splash .fade-in{animation:splashFadeIn 0.3s ease-out forwards}
-    .splash .roll-in{animation:splashRollIn 0.6s cubic-bezier(0.25,0.46,0.45,0.94) forwards}
-    .splash .drop-in{animation:splashDropIn 0.25s ease-out forwards}
-    .splash .slide-left{animation:splashSlideLeft 0.25s ease-out forwards}
-    .splash .slide-right{animation:splashSlideRight 0.25s ease-out forwards}
-    .splash .slide-up{animation:splashSlideUp 0.2s ease-out forwards}
-    .splash .pop-in{animation:splashPopIn 0.15s ease-out forwards}
+    .splash .fade-in{animation:splashFadeIn 0.5s ease-out forwards}
+    .splash .roll-in{animation:splashRollIn 0.8s cubic-bezier(0.25,0.46,0.45,0.94) forwards}
+    .splash .drop-in{animation:splashDropIn 0.4s ease-out forwards}
+    .splash .slide-left{animation:splashSlideLeft 0.4s ease-out forwards}
+    .splash .slide-right{animation:splashSlideRight 0.4s ease-out forwards}
+    .splash .slide-up{animation:splashSlideUp 0.35s ease-out forwards}
+    .splash .pop-in{animation:splashPopIn 0.3s ease-out forwards}
     @keyframes splashFadeIn{0%{opacity:0}100%{opacity:1}}
     @keyframes splashRollIn{0%{transform:translateX(-400px) rotate(-720deg);opacity:0}10%{opacity:1}100%{transform:translateX(0) rotate(0deg);opacity:1}}
     @keyframes splashDropIn{0%{transform:translateY(-50px);opacity:0}70%{transform:translateY(4px);opacity:1}100%{transform:translateY(0);opacity:1}}
@@ -39,7 +39,7 @@
     @keyframes splashSlideRight{0%{transform:translateX(200px);opacity:0}70%{transform:translateX(-6px);opacity:1}100%{transform:translateX(0);opacity:1}}
     @keyframes splashSlideUp{0%{transform:translateY(40px);opacity:0}70%{transform:translateY(-3px);opacity:1}100%{transform:translateY(0);opacity:1}}
     @keyframes splashPopIn{0%{transform:scale(0);opacity:0}70%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
-    .splash.assembled .splash-icon svg{animation:splashGlow 1s ease-in-out}
+    .splash.assembled .splash-icon svg{animation:splashGlow 1.5s ease-in-out}
     @keyframes splashGlow{0%,100%{filter:drop-shadow(0 0 10px rgba(30,136,229,0.5))}50%{filter:drop-shadow(0 0 30px rgba(30,136,229,0.9))}}
     .header-outside{display:flex;align-items:center;gap:14px;margin-bottom:16px;width:100%;max-width:400px;cursor:pointer}
     .card{background:#161b22;border-radius:20px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;flex-direction:column;max-height:70vh;position:relative}
@@ -442,8 +442,8 @@ window.onunhandledrejection = function(event) {
   console.error('Unhandled promise rejection:', event.reason);
 };
 
-const FRONTEND_VERSION = 'v6.9.4-2025-01-20';
-const FORM_VERSION = '6.9.4';
+const FRONTEND_VERSION = 'v6.9.5-2025-01-20';
+const FORM_VERSION = '6.9.5';
 
 // ═══════════════════════════════════════════════════════════
 // API URL
@@ -1895,7 +1895,7 @@ if('serviceWorker' in navigator){
   }
   
   const shuffled = shuffle(parts);
-  const delay = 60; // ms mellem hver del
+  const delay = 120; // ms mellem hver del (før: 60)
   
   // Animér hver del
   shuffled.forEach((part, i) => {
@@ -1906,7 +1906,7 @@ if('serviceWorker' in navigator){
   });
   
   // Tilføj glow og fade ud
-  const totalTime = shuffled.length * delay + 400;
+  const totalTime = shuffled.length * delay + 800;
   setTimeout(() => {
     splash.classList.add('assembled');
   }, totalTime);
@@ -1914,11 +1914,11 @@ if('serviceWorker' in navigator){
   setTimeout(() => {
     splash.classList.add('fade-out');
     sessionStorage.setItem('dm_splash_shown', 'true');
-  }, totalTime + 600);
+  }, totalTime + 1000);
   
   setTimeout(() => {
     splash.style.display = 'none';
-  }, totalTime + 1100);
+  }, totalTime + 1500);
 })();
 </script>
 </body>
