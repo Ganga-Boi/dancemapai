@@ -25,13 +25,13 @@
     .splash-icon{width:120px;height:120px}
     .splash-icon svg{width:100%;height:100%;overflow:visible}
     .splash .anim-part{opacity:0}
-    .splash .fade-in{animation:splashFadeIn 0.5s ease-out forwards}
-    .splash .roll-in{animation:splashRollIn 0.8s cubic-bezier(0.25,0.46,0.45,0.94) forwards}
-    .splash .drop-in{animation:splashDropIn 0.4s ease-out forwards}
-    .splash .slide-left{animation:splashSlideLeft 0.4s ease-out forwards}
-    .splash .slide-right{animation:splashSlideRight 0.4s ease-out forwards}
-    .splash .slide-up{animation:splashSlideUp 0.35s ease-out forwards}
-    .splash .pop-in{animation:splashPopIn 0.3s ease-out forwards}
+    .splash .fade-in{animation:splashFadeIn 0.6s ease-out forwards}
+    .splash .roll-in{animation:splashRollIn 1s cubic-bezier(0.25,0.46,0.45,0.94) forwards}
+    .splash .drop-in{animation:splashDropIn 0.5s ease-out forwards}
+    .splash .slide-left{animation:splashSlideLeft 0.5s ease-out forwards}
+    .splash .slide-right{animation:splashSlideRight 0.5s ease-out forwards}
+    .splash .slide-up{animation:splashSlideUp 0.45s ease-out forwards}
+    .splash .pop-in{animation:splashPopIn 0.4s ease-out forwards}
     @keyframes splashFadeIn{0%{opacity:0}100%{opacity:1}}
     @keyframes splashRollIn{0%{transform:translateX(-400px) rotate(-720deg);opacity:0}10%{opacity:1}100%{transform:translateX(0) rotate(0deg);opacity:1}}
     @keyframes splashDropIn{0%{transform:translateY(-50px);opacity:0}70%{transform:translateY(4px);opacity:1}100%{transform:translateY(0);opacity:1}}
@@ -39,13 +39,12 @@
     @keyframes splashSlideRight{0%{transform:translateX(200px);opacity:0}70%{transform:translateX(-6px);opacity:1}100%{transform:translateX(0);opacity:1}}
     @keyframes splashSlideUp{0%{transform:translateY(40px);opacity:0}70%{transform:translateY(-3px);opacity:1}100%{transform:translateY(0);opacity:1}}
     @keyframes splashPopIn{0%{transform:scale(0);opacity:0}70%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
-    .splash.assembled .splash-icon svg{animation:splashGlow 1.5s ease-in-out}
+    .splash.assembled .splash-icon svg{animation:splashGlow 2s ease-in-out}
     @keyframes splashGlow{0%,100%{filter:drop-shadow(0 0 10px rgba(30,136,229,0.5))}50%{filter:drop-shadow(0 0 30px rgba(30,136,229,0.9))}}
     .header-outside{display:flex;align-items:center;gap:14px;margin-bottom:16px;width:100%;max-width:400px;cursor:pointer}
     .card{background:#161b22;border-radius:20px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;flex-direction:column;max-height:70vh;position:relative}
     .card::before{content:'';position:absolute;inset:-2px;border-radius:22px;background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);z-index:-1;opacity:0.8}
-    .logo{width:52px;height:52px;position:relative}.logo img{width:52px;height:52px;object-fit:cover;border-radius:12px;animation:logoDance 2s ease-in-out infinite}
-    @keyframes logoDance{0%,100%{transform:rotate(-3deg) scale(1);filter:drop-shadow(0 0 8px rgba(102,126,234,0.3))}25%{transform:rotate(3deg) scale(1.05);filter:drop-shadow(0 0 12px rgba(118,75,162,0.5))}50%{transform:rotate(-3deg) scale(1);filter:drop-shadow(0 0 8px rgba(240,147,251,0.3))}75%{transform:rotate(3deg) scale(1.05);filter:drop-shadow(0 0 12px rgba(102,126,234,0.5))}}
+    .logo{width:52px;height:52px;position:relative}.logo img{width:52px;height:52px;object-fit:cover;border-radius:12px}
     .welcome-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s ease-out}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     .welcome-modal{background:rgba(22,27,34,0.95);border-radius:20px;padding:40px 30px;max-width:360px;width:100%;text-align:center;position:relative;animation:scaleIn 0.3s ease-out}
@@ -63,15 +62,11 @@
     .welcome-start:hover{transform:scale(1.02);box-shadow:0 4px 20px rgba(102,126,234,0.4)}
     
     /* LOGO - clean */
-    .logo{width:52px;height:52px;position:relative;border-radius:50%}.logo img{width:44px;height:44px;object-fit:cover;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;border-radius:12px;animation:logoDanceCenter 2s ease-in-out infinite}
-    @keyframes logoDanceCenter{0%,100%{transform:translate(-50%,-50%) rotate(-3deg) scale(1)}25%{transform:translate(-50%,-50%) rotate(3deg) scale(1.05)}50%{transform:translate(-50%,-50%) rotate(-3deg) scale(1)}75%{transform:translate(-50%,-50%) rotate(3deg) scale(1.05)}}
+    .logo{width:52px;height:52px;position:relative;border-radius:50%}.logo img{width:44px;height:44px;object-fit:cover;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;border-radius:12px}
     
     /* HEADER TEXT */
     .header-text{flex:1}
-    .header-text h1{font-size:18px;font-weight:600;color:#e6edf3;margin-bottom:2px}
-    .animated-title{display:flex}
-    .animated-title .letter{display:inline-block;animation:wave 2s ease-in-out infinite;animation-delay:calc(var(--i)*0.1s);background:linear-gradient(135deg,#667eea,#764ba2,#f093fb,#667eea);background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-    @keyframes wave{0%,100%{transform:translateY(0);background-position:0% 50%}50%{transform:translateY(-3px);background-position:100% 50%}}
+    .header-text h1{font-size:18px;font-weight:600;color:#ffffff;margin-bottom:2px}
     .header-text .sub{font-size:13px;color:#7d8590}
     
     /* FILTER BUTTONS - Clean with gradient border */
@@ -285,9 +280,7 @@ if(localStorage.getItem('dancemap_welcomed')){
     <img src="/dancemap-icon.svg" alt="DanceMap" />
   </div>
   <div class="header-text">
-    <h1 class="animated-title">
-      <span class="letter" style="--i:0">D</span><span class="letter" style="--i:1">a</span><span class="letter" style="--i:2">n</span><span class="letter" style="--i:3">c</span><span class="letter" style="--i:4">e</span><span class="letter" style="--i:5">M</span><span class="letter" style="--i:6">a</span><span class="letter" style="--i:7">p</span>
-    </h1>
+    <h1>DanceMap</h1>
     <div class="sub">Salsa og Bachata events i København</div>
     <div class="version-display" id="versionDisplay"></div>
   </div>
@@ -442,8 +435,8 @@ window.onunhandledrejection = function(event) {
   console.error('Unhandled promise rejection:', event.reason);
 };
 
-const FRONTEND_VERSION = 'v6.9.5-2025-01-20';
-const FORM_VERSION = '6.9.5';
+const FRONTEND_VERSION = 'v6.9.6-2025-01-20';
+const FORM_VERSION = '6.9.6';
 
 // ═══════════════════════════════════════════════════════════
 // API URL
@@ -1895,7 +1888,7 @@ if('serviceWorker' in navigator){
   }
   
   const shuffled = shuffle(parts);
-  const delay = 120; // ms mellem hver del (før: 60)
+  const delay = 180; // ms mellem hver del (før: 120)
   
   // Animér hver del
   shuffled.forEach((part, i) => {
@@ -1906,7 +1899,7 @@ if('serviceWorker' in navigator){
   });
   
   // Tilføj glow og fade ud
-  const totalTime = shuffled.length * delay + 800;
+  const totalTime = shuffled.length * delay + 1000;
   setTimeout(() => {
     splash.classList.add('assembled');
   }, totalTime);
@@ -1914,11 +1907,11 @@ if('serviceWorker' in navigator){
   setTimeout(() => {
     splash.classList.add('fade-out');
     sessionStorage.setItem('dm_splash_shown', 'true');
-  }, totalTime + 1000);
+  }, totalTime + 1500);
   
   setTimeout(() => {
     splash.style.display = 'none';
-  }, totalTime + 1500);
+  }, totalTime + 2000);
 })();
 </script>
 </body>
