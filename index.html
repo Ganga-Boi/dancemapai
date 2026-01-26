@@ -435,8 +435,8 @@ window.onunhandledrejection = function(event) {
   console.error('Unhandled promise rejection:', event.reason);
 };
 
-const FRONTEND_VERSION = 'v6.9.6-2025-01-20';
-const FORM_VERSION = '6.9.6';
+const FRONTEND_VERSION = 'v6.9.7-2026-01-26';
+const FORM_VERSION = '6.9.7';
 
 // ═══════════════════════════════════════════════════════════
 // API URL
@@ -996,7 +996,7 @@ function filterSearch(type){
   doSearch();
 }
 
-// HEADER CLICK: 1x = reset chat, 3x = admin
+// HEADER CLICK: 1x = refresh page, 3x = admin
 let clicks=0,clickTimer;
 document.querySelector('.header-outside').onclick=()=>{
   clicks++;
@@ -1008,9 +1008,8 @@ document.querySelector('.header-outside').onclick=()=>{
   } else {
     clickTimer=setTimeout(()=>{
       if(clicks===1){
-        chat.innerHTML='';
-        input.value='';
-        lastQ='';page=0;hasMore=false;
+        // Refresh hele siden
+        location.reload();
       }
       clicks=0;
     },400);
