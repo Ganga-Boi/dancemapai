@@ -1,1917 +1,220 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="da">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>DanceMap</title>
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#6366f1" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="DanceMap" />
-  <link rel="apple-touch-icon" href="/icon-192.png" />
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WYGJJJV2E6"></script>
-  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-WYGJJJV2E6');</script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}html,body{height:100%}
-    button{font-family:inherit}
-    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px}
-    
-    /* SPLASH SCREEN */
-    .splash{position:fixed;inset:0;background:linear-gradient(135deg,#0d1117 0%,#1a1a2e 100%);z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity 0.5s ease-out}
-    .splash.fade-out{opacity:0;pointer-events:none}
-    .splash-icon{width:120px;height:120px}
-    .splash-icon svg{width:100%;height:100%;overflow:visible}
-    .splash .anim-part{opacity:0}
-    .splash .fade-in{animation:splashFadeIn 0.6s ease-out forwards}
-    .splash .roll-in{animation:splashRollIn 1s cubic-bezier(0.25,0.46,0.45,0.94) forwards}
-    .splash .drop-in{animation:splashDropIn 0.5s ease-out forwards}
-    .splash .slide-left{animation:splashSlideLeft 0.5s ease-out forwards}
-    .splash .slide-right{animation:splashSlideRight 0.5s ease-out forwards}
-    .splash .slide-up{animation:splashSlideUp 0.45s ease-out forwards}
-    .splash .pop-in{animation:splashPopIn 0.4s ease-out forwards}
-    @keyframes splashFadeIn{0%{opacity:0}100%{opacity:1}}
-    @keyframes splashRollIn{0%{transform:translateX(-400px) rotate(-720deg);opacity:0}10%{opacity:1}100%{transform:translateX(0) rotate(0deg);opacity:1}}
-    @keyframes splashDropIn{0%{transform:translateY(-50px);opacity:0}70%{transform:translateY(4px);opacity:1}100%{transform:translateY(0);opacity:1}}
-    @keyframes splashSlideLeft{0%{transform:translateX(-200px);opacity:0}70%{transform:translateX(6px);opacity:1}100%{transform:translateX(0);opacity:1}}
-    @keyframes splashSlideRight{0%{transform:translateX(200px);opacity:0}70%{transform:translateX(-6px);opacity:1}100%{transform:translateX(0);opacity:1}}
-    @keyframes splashSlideUp{0%{transform:translateY(40px);opacity:0}70%{transform:translateY(-3px);opacity:1}100%{transform:translateY(0);opacity:1}}
-    @keyframes splashPopIn{0%{transform:scale(0);opacity:0}70%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
-    .splash.assembled .splash-icon svg{animation:splashGlow 2s ease-in-out}
-    @keyframes splashGlow{0%,100%{filter:drop-shadow(0 0 10px rgba(30,136,229,0.5))}50%{filter:drop-shadow(0 0 30px rgba(30,136,229,0.9))}}
-    .header-outside{display:flex;align-items:center;gap:14px;margin-bottom:16px;width:100%;max-width:400px;cursor:pointer}
-    .card{background:#161b22;border-radius:20px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;flex-direction:column;max-height:70vh;position:relative}
-    .card::before{content:'';position:absolute;inset:-2px;border-radius:22px;background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);z-index:-1;opacity:0.8}
-    .logo{width:52px;height:52px;position:relative}.logo img{width:52px;height:52px;object-fit:cover;border-radius:12px}
-    .welcome-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.3s ease-out}
-    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    .welcome-modal{background:rgba(22,27,34,0.95);border-radius:20px;padding:40px 30px;max-width:360px;width:100%;text-align:center;position:relative;animation:scaleIn 0.3s ease-out}
-    .welcome-modal::before{content:'';position:absolute;inset:-2px;border-radius:22px;background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);z-index:-1;opacity:0.8}
-    @keyframes scaleIn{from{transform:scale(0.9);opacity:0}to{transform:scale(1);opacity:1}}
-    .welcome-close{position:absolute;top:16px;right:16px;width:40px;height:40px;border:none;background:rgba(255,255,255,0.1);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
-    .welcome-close:hover{background:rgba(255,255,255,0.2)}
-    .welcome-close svg{width:20px;height:20px;stroke:#8b949e}
-    .welcome-icon{width:80px;height:80px;margin:0 auto 20px}
-    .welcome-icon img{width:100%;height:100%;border-radius:16px}
-    .welcome-modal h2{font-size:22px;font-weight:600;color:#e6edf3;margin-bottom:16px}
-    .welcome-modal p{font-size:14px;color:#8b949e;line-height:1.6;margin-bottom:12px}
-    .welcome-note{font-size:12px;color:#6366f1;font-style:italic;margin:20px 0}
-    .welcome-start{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s}
-    .welcome-start:hover{transform:scale(1.02);box-shadow:0 4px 20px rgba(102,126,234,0.4)}
-    
-    /* LOGO - clean */
-    .logo{width:52px;height:52px;position:relative;border-radius:50%}.logo img{width:44px;height:44px;object-fit:cover;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;border-radius:12px}
-    
-    /* HEADER TEXT */
-    .header-text{flex:1}
-    .header-text h1{font-size:18px;font-weight:600;color:#ffffff;margin-bottom:2px}
-    .header-text .sub{font-size:13px;color:#7d8590}
-    
-    /* FILTER BUTTONS - Clean with gradient border */
-    .filter-buttons{display:flex;gap:12px;padding:16px 20px}
-    .filter-btn{flex:1;padding:14px 20px;border-radius:12px;border:none;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;color:white;position:relative;overflow:hidden}
-    .filter-btn.salsa{background:linear-gradient(135deg,#2d2d3a 0%,#667eea 50%,#764ba2 100%)}
-    .filter-btn.bachata{background:linear-gradient(135deg,#f5576c 0%,#f093fb 50%,#f5af19 100%)}
-    .filter-btn:hover{transform:scale(1.02);box-shadow:0 4px 20px rgba(0,0,0,0.3)}
-    .filter-btn:active{transform:scale(0.98);opacity:0.9}
-    .filter-btn.clicked{opacity:0.7;transform:scale(0.98)}
-    .header-text .version-display{font-size:10px;color:#484f58;margin-top:2px}
-    .chat{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;min-height:150px}
-    .msg{display:flex;flex-direction:column}.msg.user{align-items:flex-end}.msg.bot{align-items:flex-start}
-    .bubble{padding:12px 16px;border-radius:16px;font-size:15px;line-height:1.5;max-width:90%}
-    .msg.user .bubble{background:#2d333b;color:#e6edf3;border-bottom-right-radius:4px}
-    .msg.bot .bubble{background:#21262d;color:#c9d1d9;border-bottom-left-radius:4px}
-    .events{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-    .event-card{background:#1a1a2e;border-radius:16px;padding:16px 18px;position:relative;z-index:1;border:2px solid transparent;background-clip:padding-box}
-    .event-card::before{content:'';position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px;background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);border-radius:18px;z-index:-1;opacity:0.6}
-    .event-card:hover::before{opacity:1}
-    .event-image{width:100%;border-radius:12px;margin-bottom:12px;max-height:200px;object-fit:cover;cursor:pointer;transition:all 0.3s ease;box-shadow:0 4px 15px rgba(0,0,0,0.2);position:relative}
-    .event-image:hover{transform:scale(1.03);box-shadow:0 8px 25px rgba(0,0,0,0.3)}
-    .event-card:has(.event-image) .event-image{border:2px solid rgba(255,255,255,0.1)}
-    .image-hint{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.6);color:white;padding:4px 8px;border-radius:6px;font-size:11px;opacity:0;transition:opacity 0.2s}
-    .event-card:hover .image-hint{opacity:1}
-    .lightbox{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:5000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:all 0.3s ease}
-    .lightbox.show{opacity:1;visibility:visible}
-    .lightbox-content{position:relative;max-width:95vw;max-height:90vh;transform:scale(0.8);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1)}
-    .lightbox.show .lightbox-content{transform:scale(1)}
-    .lightbox img{max-width:100%;max-height:85vh;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 100px rgba(99,102,241,0.2);display:block}
-    .lightbox-close{position:absolute;top:-15px;right:-15px;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(99,102,241,0.4);transition:all 0.2s;z-index:10}
-    .lightbox-close:hover{transform:scale(1.1) rotate(90deg);box-shadow:0 6px 20px rgba(99,102,241,0.6)}
-    .lightbox-caption{text-align:center;color:white;margin-top:16px;font-size:14px;opacity:0.8}
-    .lightbox-zoom{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.15);border:none;color:white;padding:8px 16px;border-radius:20px;font-size:12px;cursor:pointer;backdrop-filter:blur(10px);transition:all 0.2s}
-    .lightbox-zoom:hover{background:rgba(255,255,255,0.25)}
-    .mute-btn{position:fixed;bottom:20px;right:20px;width:48px;height:48px;border-radius:50%;background:#0B3A66;border:3px solid #1E88E5;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(0,0,0,0.3);transition:all 0.2s;z-index:100;padding:0}
-    .mute-btn:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(0,0,0,0.4)}
-    .mute-btn svg{width:28px;height:28px}
-    .mute-btn .tooltip{position:absolute;bottom:56px;right:0;background:rgba(0,0,0,0.8);color:white;padding:6px 10px;border-radius:6px;font-size:11px;white-space:nowrap;opacity:0;transition:opacity 0.2s;pointer-events:none}
-    .mute-btn:hover .tooltip{opacity:1}
-    .eq-bar{transform-origin:bottom}
-    .mute-btn.playing .eq-bar:nth-child(1){animation:eqBounce 0.4s ease-in-out infinite alternate}
-    .mute-btn.playing .eq-bar:nth-child(2){animation:eqBounce 0.5s ease-in-out infinite alternate 0.1s}
-    .mute-btn.playing .eq-bar:nth-child(3){animation:eqBounce 0.35s ease-in-out infinite alternate 0.2s}
-    .mute-btn.playing .eq-bar:nth-child(4){animation:eqBounce 0.45s ease-in-out infinite alternate 0.05s}
-    @keyframes eqBounce{0%{transform:scaleY(0.3)}100%{transform:scaleY(1)}}
-    .eq-bar{transform-origin:bottom}
-    .eq-bar-1{animation:eqBounce 0.4s ease-in-out infinite alternate}
-    .eq-bar-2{animation:eqBounce 0.5s ease-in-out infinite alternate 0.1s}
-    .eq-bar-3{animation:eqBounce 0.35s ease-in-out infinite alternate 0.2s}
-    .eq-bar-4{animation:eqBounce 0.45s ease-in-out infinite alternate 0.05s}
-    @keyframes eqBounce{0%{transform:scaleY(0.3)}100%{transform:scaleY(1)}}
-    .icon{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin-right:8px;flex-shrink:0}
-    .icon svg{width:18px;height:18px;flex-shrink:0}
-    .event-actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #444c56}
-    .cal-btn{flex:1;padding:8px 12px;border-radius:8px;border:1px solid #444c56;background:transparent;color:#8b949e;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s}
-    .cal-btn:hover{background:#444c56;color:#e6edf3}
-    .cal-btn.google{border-color:#4285f4;color:#4285f4}.cal-btn.google:hover{background:rgba(66,133,244,0.15)}
-    .cal-btn.apple{border-color:#a2aaad;color:#a2aaad}.cal-btn.apple:hover{background:rgba(162,170,173,0.15)}
-    body.light-mode .event-card{background:#ffffff}
-    body.light-mode .event-card::before{opacity:0.4}
-    body.light-mode .event-card:hover::before{opacity:0.7}
-    body.light-mode .event-actions{border-color:#d1d5da}
-    body.light-mode .cal-btn{border-color:#d1d5da;color:#57606a}
-    body.light-mode .cal-btn:hover{background:#e8ebef}
-    .ticket-link{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;text-decoration:none;font-weight:500;border-radius:8px;font-size:13px;transition:all 0.2s}
-    .ticket-link:hover{transform:scale(1.02);box-shadow:0 4px 15px rgba(99,102,241,0.4);color:white}
-    body.light-mode .ticket-link{background:linear-gradient(135deg,#4f46e5,#7c3aed)}
-    body.light-mode .ticket-link:hover{color:white}
-    .event-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:14px;color:#c9d1d9}
-    .event-row:last-child{margin-bottom:0}.event-row .icon{width:20px;text-align:center;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center}
-    .event-row.title{font-weight:600;color:#e6edf3;font-size:15px}
-    .more-btn{margin-top:12px;padding:10px 16px;border-radius:10px;border:1px solid #30363d;background:transparent;color:#7d8590;font-size:14px;cursor:pointer}
-    .more-btn:hover{background:#21262d;color:#c9d1d9}
-    .submit-footer{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-top:1px solid #21262d;font-size:13px;color:#7d8590;background:#161b22;flex-shrink:0;border-radius:0 0 20px 20px}
-    .submit-footer a{color:#6366f1;text-decoration:none;font-weight:500;transition:color 0.2s}
-    .submit-footer a:hover{color:#818cf8}
-    .input-area{display:none;padding:16px 20px;border-top:1px solid #21262d;gap:12px;position:sticky;bottom:0;background:#0d1117;z-index:10}
-    .input-area input{flex:1;padding:14px 18px;border-radius:12px;border:1px solid #30363d;background:#0d1117;font-size:15px;font-family:inherit;color:#e6edf3;outline:none}
-    .input-area input:focus{border-color:#6366f1}.input-area input::placeholder{color:#7d8590}
-    .send-btn{width:48px;height:48px;border-radius:12px;border:none;background:#6366f1;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .send-btn:active{transform:scale(0.95)}.send-btn:disabled{opacity:0.5}.send-btn svg{width:20px;height:20px}
-    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100;align-items:center;justify-content:center;padding:16px}
-    .modal-overlay.open{display:flex}.modal{background:#161b22;border-radius:20px;width:100%;max-width:400px;padding:24px;max-height:90vh;overflow-y:auto}
-    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-    .modal-header h2{font-size:18px;font-weight:600;color:#e6edf3}.modal-close{background:none;border:none;color:#7d8590;font-size:28px;cursor:pointer}
-    .upload-btn{width:100%;padding:16px;border-radius:12px;border:2px dashed #30363d;background:transparent;color:#7d8590;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;transition:all 0.2s}
-    .upload-btn:hover{border-color:#6366f1;color:#c9d1d9}
-    .upload-zone{border:2px dashed #30363d;border-radius:12px;padding:30px;text-align:center;transition:all 0.2s;margin-bottom:16px;background:rgba(99,102,241,0.05)}
-    .upload-zone.drag-over{border-color:#6366f1;background:rgba(99,102,241,0.15);transform:scale(1.02)}
-    .upload-zone-text{color:#8b949e;font-size:14px;line-height:1.6}
-    .upload-zone-text strong{color:#e6edf3;display:block;font-size:16px;margin-bottom:8px}
-    .upload-zone-shortcut{display:inline-block;background:#21262d;padding:4px 8px;border-radius:6px;font-family:monospace;font-size:12px;margin:0 4px}
-    .image-preview{max-width:100%;max-height:150px;border-radius:12px;margin-bottom:12px;display:none}
-    .ocr-status{font-size:14px;color:#7d8590;text-align:center;padding:12px}
-    .form-group{margin-bottom:16px}.form-group label{display:block;font-size:13px;margin-bottom:8px;color:#7d8590}
-    .form-group textarea{width:100%;min-height:150px;padding:14px;border-radius:12px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:14px;font-family:inherit;outline:none;resize:vertical}
-    .form-group textarea:focus{border-color:#6366f1}
-    .checkbox-group{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:14px;background:#0d1117;border-radius:10px}
-    .checkbox-group input[type="checkbox"]{width:20px;height:20px;accent-color:#6366f1}
-    .checkbox-group label{font-size:14px;color:#c9d1d9;cursor:pointer}
-    .submit-btn{width:100%;padding:16px;border-radius:12px;border:none;background:#6366f1;color:white;font-size:15px;font-weight:500;cursor:pointer}
-    .submit-btn:disabled{opacity:0.5}
-    .submit-status{text-align:center;padding:12px;font-size:14px;margin-top:12px;border-radius:10px}
-    .submit-status.success{color:#3fb950;background:rgba(63,185,80,0.1)}
-    .submit-status.error{color:#f85149;background:rgba(248,81,73,0.1)}
-    .back-btn{background:none;border:none;color:#7d8590;font-size:14px;cursor:pointer;margin-bottom:16px;padding:0}.back-btn:hover{color:#c9d1d9}
-    .field-row{margin-bottom:14px}.field-row label{display:block;font-size:12px;margin-bottom:6px;color:#7d8590}
-    .field-row input,.field-row select{width:100%;padding:12px 14px;border-radius:10px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:14px;font-family:inherit;outline:none}
-    .field-row input:focus,.field-row select:focus{border-color:#6366f1}
-    .field-row.two-col{display:flex;gap:12px}.field-row.two-col>div{flex:1}
-    .field-warnings{margin-bottom:14px;padding:12px;background:rgba(248,81,73,0.1);border-radius:10px;font-size:13px;color:#f85149;display:none}
-    .field-warnings.show{display:block}
-    .admin-intro{font-size:13px;color:#7d8590;margin-bottom:16px;line-height:1.5}
-    .preview-card{background:#21262d;border-radius:12px;padding:14px 16px;margin-bottom:16px}
-    .preview-label{font-size:11px;color:#7d8590;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px}
-    .preview-content{font-size:14px;color:#c9d1d9;line-height:1.6}
-    .preview-content .line{display:flex;gap:8px;margin-bottom:4px}.preview-content .line:last-child{margin-bottom:0}
-    .preview-content .icon{width:20px;text-align:center;display:inline-flex;align-items:center;justify-content:center}
-    .version-info{font-size:10px;color:#484f58;text-align:center;margin-top:8px}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}.loading-text{animation:pulse 1.5s ease-in-out infinite}
-    .admin-tabs{display:flex;gap:8px;margin-bottom:16px}
-    .admin-tab{flex:1;padding:10px;border:1px solid #30363d;background:transparent;color:#7d8590;border-radius:8px;cursor:pointer;font-size:14px}
-    .admin-tab.active{background:#6366f1;color:white;border-color:#6366f1}
-    .pending-list{display:flex;flex-direction:column;gap:12px;max-height:420px;overflow-y:auto;margin-bottom:16px}
-    .pending-item{background:#21262d;border-radius:10px;padding:14px}
-    .pending-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-    .pending-item-title{font-weight:600;color:#e6edf3}
-    .pending-item-details{font-size:13px;color:#c9d1d9;line-height:1.5}
-    .pending-item-row{display:flex;gap:8px;margin-bottom:4px}.pending-item-row span:first-child{width:20px}
-    .pending-actions{display:flex;gap:10px;margin-top:10px}
-    .pending-approve-btn{padding:10px 12px;background:#238636;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px}
-    .pending-approve-btn:disabled{opacity:0.5}
-    .pending-empty{text-align:center;color:#7d8590;padding:40px 20px}
-    .offline-banner{position:fixed;top:0;left:0;right:0;background:#da3633;color:white;text-align:center;padding:8px;font-size:13px;z-index:3000;display:none}
-    .offline-banner.show{display:block}
-    .slide-notification{position:fixed;top:-100px;left:16px;right:16px;background:white;color:#1a1a1a;padding:14px 24px;font-size:14px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.3);z-index:2500;transition:top 0.4s ease-out;text-align:center;border-radius:12px}
-    .slide-notification.show{top:20px}
-    .slide-notification .count{font-weight:700}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DanceMap</title>
+
+<style>
+:root{
+  --bg:#0b0f14;
+  --card:#141a22;
+  --border:#6b4cff;
+  --salsa1:#5b6cff;
+  --salsa2:#8b5cff;
+  --bachata1:#ff6aa2;
+  --bachata2:#ffb86b;
+  --text:#e8ebf0;
+  --muted:#9aa4b2;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  background:radial-gradient(1200px 600px at 50% -10%, #141a22 0%, var(--bg) 60%);
+  color:var(--text);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.app{
+  width:420px;
+  max-width:92vw;
+}
+.header{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-bottom:16px;
+}
+.logo{
+  width:42px;height:42px;border-radius:50%;
+  border:2px solid #2f9bff;
+  display:grid;place-items:center;
+}
+.title{
+  font-size:20px;font-weight:700;
+}
+.subtitle{
+  font-size:13px;color:var(--muted);
+}
+.badge{
+  color:#ff9f1a;font-size:12px;margin-top:2px;
+}
+.card{
+  background:linear-gradient(180deg,#141a22,#11161d);
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.06);
+  padding:16px;
+  box-shadow:0 20px 60px rgba(0,0,0,.45);
+  position:relative;
+}
+.card:before{
+  content:"";
+  position:absolute;inset:-1px;
+  border-radius:22px;
+  background:linear-gradient(90deg,var(--border),#ff7ad9);
+  z-index:-1;
+  opacity:.35;
+}
+.tabs{
+  display:flex;gap:12px;margin-bottom:16px;
+}
+.tab{
+  flex:1;
+  padding:12px 0;
+  border-radius:14px;
+  text-align:center;
+  cursor:pointer;
+  font-weight:600;
+  user-select:none;
+}
+.tab.salsa{
+  background:linear-gradient(90deg,var(--salsa1),var(--salsa2));
+}
+.tab.bachata{
+  background:linear-gradient(90deg,var(--bachata1),var(--bachata2));
+}
+.events{
+  min-height:120px;
+}
+.event{
+  background:#0f141b;
+  border-radius:14px;
+  padding:12px;
+  margin-bottom:10px;
+  font-size:14px;
+  white-space:pre-line;
+}
+.empty{
+  background:#0f141b;
+  border-radius:14px;
+  padding:14px;
+  color:var(--muted);
+}
+.footer{
+  text-align:center;
+  font-size:13px;
+  color:var(--muted);
+  margin-top:12px;
+}
+.footer a{color:#7aa2ff;text-decoration:none}
+</style>
 </head>
+
 <body>
-
-<!-- SPLASH SCREEN -->
-<div class="splash" id="splash">
-  <div class="splash-icon" id="splashIcon">
-    <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-      <circle class="anim-part" id="sp-ring" cx="256" cy="256" r="240" fill="#0b3c6f" stroke="#1e88e5" stroke-width="32"/>
-      <rect class="anim-part" id="sp-head" x="132" y="170" rx="48" ry="48" width="248" height="170" fill="#0b3c6f" stroke="#ffffff" stroke-width="22"/>
-      <circle class="anim-part" id="sp-antenna" cx="256" cy="132" r="16" fill="#ffffff"/>
-      <ellipse class="anim-part" id="sp-earL" cx="116" cy="255" rx="18" ry="28" fill="#ffffff"/>
-      <ellipse class="anim-part" id="sp-earR" cx="396" cy="255" rx="18" ry="28" fill="#ffffff"/>
-      <circle class="anim-part" id="sp-eyeL" cx="210" cy="255" r="22" fill="#ffffff"/>
-      <circle class="anim-part" id="sp-eyeR" cx="302" cy="255" r="22" fill="#ffffff"/>
-      <path class="anim-part" id="sp-chin" d="M192 360 L320 360 L256 420 Z" fill="#ffffff"/>
-      <circle class="anim-part" id="sp-chinDot" cx="256" cy="382" r="14" fill="#0b3c6f"/>
-    </svg>
-  </div>
-</div>
-
-<!-- Offline banner -->
-<div id="offlineBanner" class="offline-banner">Ingen forbindelse - viser cached data</div>
-
-<!-- Slide-in notification -->
-<div id="slideNotification" class="slide-notification"></div>
-
-<!-- Lightbox for billeder -->
-<div id="lightbox" class="lightbox" onclick="if(event.target===this)closeLightbox()">
-  <div class="lightbox-content">
-    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-    <img id="lightboxImg" src="" alt="Event flyer" />
-    <div id="lightboxCaption" class="lightbox-caption"></div>
-    <button class="lightbox-zoom" onclick="window.open($('lightboxImg').src,'_blank')">🔍 Åbn i fuld størrelse</button>
-  </div>
-</div>
-
-<!-- Mute knap -->
-<button id="muteBtn" class="mute-btn" onclick="toggleMute()">
-  <svg id="muteIcon" viewBox="0 0 48 48">
-    <rect class="eq-bar" x="10" y="20" width="5" height="16" rx="2" fill="white"/>
-    <rect class="eq-bar" x="18" y="12" width="5" height="24" rx="2" fill="white"/>
-    <rect class="eq-bar" x="26" y="16" width="5" height="20" rx="2" fill="white"/>
-    <rect class="eq-bar" x="34" y="22" width="5" height="14" rx="2" fill="white"/>
-  </svg>
-  <span class="tooltip" id="muteTooltip">Slå lyd fra</span>
-</button>
-
-<div id="welcomeOverlay" class="welcome-overlay">
-  <div class="welcome-modal">
-    <button class="welcome-close" onclick="closeWelcome()" aria-label="Luk">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M18 6L6 18M6 6l12 12"/>
-      </svg>
-    </button>
-    <div class="welcome-icon"><img src="/dancemap-icon.svg" alt="DanceMap" /></div>
-    <h2>Velkommen til DanceMap</h2>
-    <p>Slip for at søge gennem Facebook events og opslag for at finde salsa og bachata i København.</p>
-    <p>Vi samler det hele ét sted, så du altid ved hvad der sker.</p>
-    <div class="welcome-note">Opdateres løbende med nye events</div>
-    <button class="welcome-start" onclick="closeWelcome()">Kom i gang</button>
-  </div>
-</div>
-<script>
-if(localStorage.getItem('dancemap_welcomed')){
-  document.getElementById('welcomeOverlay').style.display='none';
-}
-</script>
-
-<div class="header-outside">
-  <div class="logo">
-    <img src="/dancemap-icon.svg" alt="DanceMap" />
-  </div>
-  <div class="header-text">
-    <h1>DanceMap</h1>
-    <div class="sub">Salsa og Bachata events i København</div>
-    <div class="version-display" id="versionDisplay"></div>
-  </div>
-</div>
-
-<div class="card">
-  <div class="filter-buttons">
-    <button class="filter-btn salsa" onclick="filterSearch('salsa')">Salsa</button>
-    <button class="filter-btn bachata" onclick="filterSearch('bachata')">Bachata</button>
-  </div>
-  <div id="chat" class="chat"></div>
-  <div class="submit-footer">
-    <span>Kender du et event?</span>
-    <a href="/submit.html">➕ Tilføj her</a>
-  </div>
-  <div class="input-area">
-    <input id="q" type="text" placeholder="Skriv fx: salsa eller bachata" autocomplete="off" enterkeyhint="search" />
-    <button id="sendBtn" class="send-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-      </svg>
-    </button>
-  </div>
-</div>
-
-<div class="modal-overlay" id="adminModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h2>Admin</h2>
-      <button class="modal-close" id="closeAdmin">&times;</button>
+<div class="app">
+  <div class="header">
+    <div class="logo">🤖</div>
+    <div>
+      <div class="title">DanceMap</div>
+      <div class="subtitle">Salsa og Bachata events i København</div>
+      <div class="badge">Ny version tilgængelig</div>
     </div>
-    <div class="admin-tabs">
-      <button class="admin-tab active" id="tabAdd">Tilføj Event</button>
-      <button class="admin-tab" id="tabPending">Godkend Events</button>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <div class="tab salsa" onclick="loadEvents('salsa')">Salsa</div>
+      <div class="tab bachata" onclick="loadEvents('bachata')">Bachata</div>
     </div>
-    <div id="adminAddView">
-      <div id="adminWelcome" style="background:linear-gradient(135deg,#238636 0%,#2ea043 100%);border-radius:12px;padding:16px;margin-bottom:16px;display:none;">
-        <div style="font-size:15px;color:white;font-weight:500;" id="welcomeText"></div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.8);margin-top:4px;">Sammen får vi DanceMap til at vokse! 💃</div>
-      </div>
-      
-      <!-- UPLOAD ZONE - Drag, paste, eller klik -->
-      <div class="upload-zone" id="uploadZone">
-        <div class="upload-zone-text">
-          <strong>📸 Drop flyer(s) her</strong>
-          <span class="upload-zone-shortcut">Ctrl+V</span> paste screenshot<br>
-          <span class="upload-zone-shortcut">Træk</span> én eller flere filer • <span class="upload-zone-shortcut">Klik</span> for at vælge
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <button type="button" class="upload-btn" id="clearAllBtn" style="flex:1;margin-bottom:0;border-color:#da3633;color:#da3633;">🗑️ Ryd alt og start forfra</button>
-      </div>
-      
-      <!-- ALTID SYNLIG: Tekst paste område -->
-      <div style="margin-bottom:12px;">
-        <textarea id="adminPayload" placeholder="📋 Paste FB tekst her - parser automatisk! (Dobbeltklik for at parse igen)" style="width:100%;min-height:60px;padding:12px;border-radius:10px;border:1px solid #30363d;background:#0d1117;color:#e6edf3;font-size:14px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
-        <div id="parseStatus" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:13px;"></div>
-      </div>
-      
-      <input type="file" id="fileInput" accept="image/*" style="display:none" />
-      <img id="imagePreview" class="image-preview" />
-      <div id="ocrStatus" class="ocr-status" style="display:none"></div>
-      
-      <div id="adminStep1" style="display:none;">
-        <!-- Tom - alt er flyttet op -->
-      </div>
-      
-      <div id="adminStep2" style="display:none">
-        <button type="button" class="back-btn" id="backBtn">← Skjul felter</button>
-        <div class="field-row"><label>Dato *</label><input type="date" id="fieldDato" required /></div>
-        <div class="field-row"><label>Event navn *</label><input type="text" id="fieldNavn" placeholder="Fx Salsa Social" /></div>
-        <div class="field-row two-col">
-          <div><label>Start *</label><input type="time" id="fieldStart" required /></div>
-          <div><label>Slut *</label><input type="time" id="fieldSlut" /></div>
-        </div>
-        <div class="field-row"><label>Dansetype * (vælg én eller flere)</label>
-          <div id="danceTypeGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Salsa" style="accent-color:#6366f1;"> Salsa</label>
-            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Bachata" style="accent-color:#6366f1;"> Bachata</label>
-            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Kizomba" style="accent-color:#6366f1;"> Kizomba</label>
-            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Zouk" style="accent-color:#6366f1;"> Zouk</label>
-            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Tango" style="accent-color:#6366f1;"> Tango</label>
-            <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#0d1117;border-radius:8px;cursor:pointer;font-size:13px;color:#c9d1d9;"><input type="checkbox" name="dansetype" value="Swing" style="accent-color:#6366f1;"> Swing</label>
-          </div>
-          <input type="hidden" id="fieldDans" />
-        </div>
-        <div class="field-row"><label>Sted *</label><input type="text" id="fieldSted" placeholder="Fx Kedelhallen" required /></div>
-        <div class="field-row"><label>Adresse *</label><input type="text" id="fieldAdresse" placeholder="Fx Nyelandsvej 75A" /></div>
-        <div class="field-row"><label>By *</label><input type="text" id="fieldBy" value="København" /></div>
-        <div class="field-row"><label>Pristype</label>
-          <select id="fieldPrisType"><option value="angiv">Angiv priser</option><option value="gratis">Gratis</option><option value="mobilepay">MobilePay</option><option value="kontakt">Kontakt arrangør</option></select>
-        </div>
-        <div id="prisFields">
-          <div class="field-row two-col">
-            <div><label>Online (kr)</label><input type="text" id="fieldPrisOnline" placeholder="50" /></div>
-            <div><label>Drop-in (kr)</label><input type="text" id="fieldPrisDropin" placeholder="70" /></div>
-          </div>
-        </div>
-        <div id="mobilepayFields" style="display:none;">
-          <div class="field-row two-col">
-            <div><label>Pris (kr) *</label><input type="text" id="fieldMobilepayPris" placeholder="50" /></div>
-            <div><label>MobilePay nr/boks</label><input type="text" id="fieldMobilepay" placeholder="12345" /></div>
-          </div>
-          <div class="field-row">
-            <label>Betalingsinfo (vises til brugere)</label>
-            <input type="text" id="fieldMobilepayInfo" placeholder="Fx: Skriv dit navn i beskeden" />
-          </div>
-        </div>
-        <input type="hidden" id="fieldPris" />
-        <div class="field-row">
-          <label>🎫 Billetlink (valgfrit)</label>
-          <input type="url" id="fieldLink" placeholder="https://billetto.dk/..." />
-        </div>
-        <div class="field-row">
-          <label>🖼 Flyer/billede URL (valgfrit)</label>
-          <input type="url" id="fieldBillede" placeholder="https://... (link til billede)" />
-        </div>
-        <div id="fieldWarnings" class="field-warnings"></div>
-        <div id="previewCard" class="preview-card">
-          <div class="preview-label">Forhåndsvisning</div>
-          <div id="previewContent" class="preview-content"></div>
-        </div>
-        <div class="checkbox-group">
-          <input type="checkbox" id="recurringCheck" />
-          <label for="recurringCheck">Gentager ugentligt</label>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <button type="button" class="submit-btn" id="adminSubmitBtn" style="flex:1;">Tilføj Event (pending)</button>
-          <button type="button" class="submit-btn" id="skipBtn" style="flex:0 0 auto;background:#30363d;display:none;">Skip ➜</button>
-        </div>
-      </div>
-      <div id="adminStatus" class="submit-status" style="display:none"></div>
-      <div id="backendVersion" class="version-info"></div>
-    </div>
-    <div id="adminPendingView" style="display:none">
-      <div id="pendingList" class="pending-list"></div>
-      <div id="pendingEmpty" class="pending-empty">Ingen events afventer godkendelse</div>
-      <button type="button" class="submit-btn" id="refreshPending">Opdater liste</button>
+
+    <div id="events" class="events"></div>
+
+    <div class="footer">
+      Kender du et event? <a href="submit.html">＋ Tilføj her</a>
     </div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════════
-// GLOBAL ERROR HANDLER - fanger alle uncaught errors
-// ═══════════════════════════════════════════════════════════
-window.onerror = function(msg, url, line, col, error) {
-  console.error('Global error:', msg, 'at', url, line, col);
-  return false; // Lad browseren også logge fejlen
-};
-window.onunhandledrejection = function(event) {
-  console.error('Unhandled promise rejection:', event.reason);
-};
+/* ─────────────────────────────────────────────
+   KONFIG
+───────────────────────────────────────────── */
+const API = 'DIN_APPS_SCRIPT_URL/exec'; // ← behold din rigtige URL her
 
-const FRONTEND_VERSION = 'v6.9.7-2026-01-26';
-const FORM_VERSION = '6.9.7';
-
-// ═══════════════════════════════════════════════════════════
-// API URL
-// ═══════════════════════════════════════════════════════════
-const API = 'https://script.google.com/macros/s/AKfycbyNGuntMdNwytrMako2GD5QHDcwQ8JPP_YsgDy6sgLLo3dNIaZ1-gif68Af--kHS_y0/exec';
-
-// Clear old form state if version changed
-(function(){try{const s=localStorage.getItem('dancemap_admin_form');if(s){const d=JSON.parse(s);if(d.formVersion!==FORM_VERSION)localStorage.removeItem('dancemap_admin_form');}}catch(e){localStorage.removeItem('dancemap_admin_form');}})();
-
-const $=id=>document.getElementById(id);
-const chat=$('chat'),input=$('q'),sendBtn=$('sendBtn');
-const modal=$('adminModal'),payload=$('adminPayload'),status=$('adminStatus');
-const recurring=$('recurringCheck'),preview=$('imagePreview'),ocrStatus=$('ocrStatus');
-const step2=$('adminStep2'),warnings=$('fieldWarnings');
-
-let lastQ='',page=0,hasMore=false,loading=false,moreBtn=null;
-
-const fields={dato:$('fieldDato'),navn:$('fieldNavn'),start:$('fieldStart'),slut:$('fieldSlut'),dans:$('fieldDans'),sted:$('fieldSted'),adresse:$('fieldAdresse'),by:$('fieldBy'),pris:$('fieldPris'),prisType:$('fieldPrisType'),prisOnline:$('fieldPrisOnline'),prisDropin:$('fieldPrisDropin'),mobilepay:$('fieldMobilepay'),mobilepayPris:$('fieldMobilepayPris'),mobilepayInfo:$('fieldMobilepayInfo'),link:$('fieldLink'),billede:$('fieldBillede')};
-
-// ═══════════════════════════════════════════════════════════
-// ONLINE/OFFLINE DETECTION
-// ═══════════════════════════════════════════════════════════
-const offlineBanner = $('offlineBanner');
-function updateOnlineStatus() {
-  if (navigator.onLine) {
-    offlineBanner.classList.remove('show');
-  } else {
-    offlineBanner.classList.add('show');
-  }
-}
-window.addEventListener('online', updateOnlineStatus);
-window.addEventListener('offline', updateOnlineStatus);
-updateOnlineStatus();
-
-// ═══════════════════════════════════════════════════════════
-// JSONP MED TIMEOUT - forhindrer uendelig hæng
-// ═══════════════════════════════════════════════════════════
-function jsonp(url, timeoutMs = 15000) {
-  return new Promise((resolve, reject) => {
-    const cb = 'cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-    let timeoutId;
-    let completed = false;
-    
-    const cleanup = () => {
-      completed = true;
-      clearTimeout(timeoutId);
+/* ─────────────────────────────────────────────
+   JSONP
+───────────────────────────────────────────── */
+function jsonp(url, timeout=15000){
+  return new Promise((resolve,reject)=>{
+    const cb='cb_'+Math.random().toString(36).slice(2);
+    const s=document.createElement('script');
+    const t=setTimeout(()=>{
+      cleanup();reject(new Error('timeout'));
+    },timeout);
+    function cleanup(){
       delete window[cb];
-      if (script.parentNode) script.remove();
-    };
-    
-    window[cb] = data => {
-      if (completed) return;
-      cleanup();
-      resolve(data);
-    };
-    
-    const script = document.createElement('script');
-    script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
-    
-    script.onerror = () => {
-      if (completed) return;
-      cleanup();
-      reject(new Error('Network error'));
-    };
-    
-    timeoutId = setTimeout(() => {
-      if (completed) return;
-      cleanup();
-      reject(new Error('Request timeout'));
-    }, timeoutMs);
-    
-    document.body.appendChild(script);
+      if(s.parentNode)s.parentNode.removeChild(s);
+      clearTimeout(t);
+    }
+    window[cb]=data=>{cleanup();resolve(data);};
+    s.src=url+(url.includes('?')?'&':'?')+'callback='+cb;
+    document.body.appendChild(s);
   });
 }
 
-// ═══════════════════════════════════════════════════════════
-// VERSION CHECK - INGEN AUTO-REFRESH (undgår loop)
-// ═══════════════════════════════════════════════════════════
-let versionChecked = false;
-async function checkVersion() {
-  if (versionChecked) return; // Kun check én gang per session
-  versionChecked = true;
-  
-  try {
-    const data = await jsonp(API + '?action=ping&_=' + Date.now(), 10000);
-    const adminEl = $('backendVersion'), frontEl = $('versionDisplay');
-    
-    if (data.version) {
-      const backendMajor = data.version.match(/v?(\d+\.\d+)/)?.[1] || '';
-      const frontendMajor = FRONTEND_VERSION.match(/v?(\d+\.\d+)/)?.[1] || '';
-      const match = backendMajor === frontendMajor;
-      
-      if (adminEl) {
-        adminEl.textContent = match ? 'Version ' + frontendMajor : 'Backend: ' + data.version;
-        adminEl.style.color = match ? '#3fb950' : '#f0883e';
-      }
-      if (frontEl) {
-        frontEl.textContent = 'Version ' + frontendMajor;
-        frontEl.style.color = '#484f58';
-      }
-      
-      // INGEN auto-refresh - vis bare info til bruger
-      if (!match && frontEl) {
-        frontEl.textContent = 'Ny version tilgængelig';
-        frontEl.style.color = '#f0883e';
-        frontEl.style.cursor = 'pointer';
-        frontEl.title = 'Klik for at opdatere';
-        frontEl.onclick = () => location.reload(true);
-      }
-    }
-  } catch (e) {
-    console.log('Version check failed (offline?):', e.message);
-    const frontEl = $('versionDisplay');
-    if (frontEl) {
-      frontEl.textContent = FRONTEND_VERSION.match(/v?(\d+\.\d+)/)?.[0] || 'v6.5';
-      frontEl.style.color = '#484f58';
-    }
+/* ─────────────────────────────────────────────
+   SEARCH – TILPASSET BACKEND v3.7.x
+───────────────────────────────────────────── */
+async function search(query){
+  const data = await jsonp(
+    API+'?query='+encodeURIComponent(query)+'&_='+Date.now()
+  );
+
+  // 🔑 KRITISK FIX: backend → frontend-format
+  if(data && Array.isArray(data.events)){
+    data.text = data.events.map(e=>{
+      return [
+        e.Dato && '🗓 '+e.Dato,
+        e.Navn && '📌 '+e.Navn,
+        (e.Starttid||e.Sluttid) && '🕗 '+[e.Starttid,e.Sluttid].filter(Boolean).join('–'),
+        e.Dansetype && '💃 '+e.Dansetype,
+        e.Sted && '📍 '+e.Sted,
+        e.Pris && '💰 '+e.Pris,
+        e.Link && '🎫 '+e.Link
+      ].filter(Boolean).join('\n');
+    }).join('\n\n');
   }
-}
-// Check version efter siden er loadet
-setTimeout(checkVersion, 1000);
-
-// Dansetype checkboxes handler
-function getSelectedDanceTypes(){
-  const checked=document.querySelectorAll('input[name="dansetype"]:checked');
-  return Array.from(checked).map(c=>c.value);
-}
-function setSelectedDanceTypes(types){
-  document.querySelectorAll('input[name="dansetype"]').forEach(c=>c.checked=false);
-  if(!types)return;
-  const arr=Array.isArray(types)?types:types.split(/\s*[&,]\s*/);
-  arr.forEach(t=>{
-    const cb=document.querySelector(`input[name="dansetype"][value="${t.trim()}"]`);
-    if(cb)cb.checked=true;
-  });
-}
-function updateDansField(){
-  const types=getSelectedDanceTypes();
-  fields.dans.value=types.join(' & ');
-}
-document.querySelectorAll('input[name="dansetype"]').forEach(cb=>{
-  cb.addEventListener('change',()=>{updateDansField();updatePreview();saveFormState();});
-});
-
-function esc(t){return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-
-// PRIS
-$('fieldPrisType').onchange=function(){
-  $('prisFields').style.display=this.value==='angiv'?'block':'none';
-  $('mobilepayFields').style.display=this.value==='mobilepay'?'block':'none';
-  if(this.value!=='angiv'){fields.prisOnline.value='';fields.prisDropin.value='';}
-  if(this.value!=='mobilepay'){fields.mobilepay.value='';fields.mobilepayPris.value='';}
-  updatePrisField();updatePreview();
-};
-
-function updatePrisField(){
-  const pt=fields.prisType.value;
-  if(pt==='gratis')fields.pris.value='Gratis';
-  else if(pt==='kontakt')fields.pris.value='Kontakt arrangør';
-  else if(pt==='mobilepay'){
-    const pris=fields.mobilepayPris.value.trim();
-    const mp=fields.mobilepay.value.trim();
-    const info=fields.mobilepayInfo.value.trim();
-    let val='';
-    if(pris)val=pris+' kr';
-    if(mp)val+=(val?' via ':'')+' MobilePay: '+mp;
-    else if(pris)val+=' (MobilePay)';
-    if(info)val+=(val?' – ':'')+info;
-    fields.pris.value=val||'MobilePay';
-  }
-  else{
-    const o=fields.prisOnline.value.trim(),d=fields.prisDropin.value.trim();
-    if(o&&d)fields.pris.value=o+' kr (online) / '+d+' kr (drop-in)';
-    else if(o)fields.pris.value=o+' kr (online)';
-    else if(d)fields.pris.value=d+' kr (drop-in)';
-    else fields.pris.value='';
-  }
+  return data;
 }
 
-// ═══════════════════════════════════════════════════════════
-// SEARCH CACHE - hurtigere resultater
-// ═══════════════════════════════════════════════════════════
-const SEARCH_CACHE_KEY = 'dancemap_search_cache';
-const CACHE_MAX_AGE = 5 * 60 * 1000; // 5 minutter
-
-function getSearchCache(query) {
-  try {
-    const cache = JSON.parse(localStorage.getItem(SEARCH_CACHE_KEY) || '{}');
-    const entry = cache[query.toLowerCase()];
-    if (entry && (Date.now() - entry.timestamp) < CACHE_MAX_AGE) {
-      return entry.data;
-    }
-  } catch(e) {}
-  return null;
-}
-
-function setSearchCache(query, data) {
-  try {
-    const cache = JSON.parse(localStorage.getItem(SEARCH_CACHE_KEY) || '{}');
-    // Behold kun de 20 nyeste søgninger
-    const keys = Object.keys(cache);
-    if (keys.length > 20) {
-      const oldest = keys.sort((a,b) => cache[a].timestamp - cache[b].timestamp)[0];
-      delete cache[oldest];
-    }
-    cache[query.toLowerCase()] = { data, timestamp: Date.now() };
-    localStorage.setItem(SEARCH_CACHE_KEY, JSON.stringify(cache));
-  } catch(e) {}
-}
-
-function parseEvents(text){return String(text||'').split('\n\n').filter(e=>e.trim()).map(event=>{const p={};event.split('\n').forEach(l=>{if(l.startsWith('🗓'))p.dato=l.replace('🗓','').trim();else if(l.startsWith('📌'))p.navn=l.replace('📌','').trim();else if(l.startsWith('🕗'))p.tid=l.replace('🕗','').trim();else if(l.startsWith('💃'))p.type=l.replace('💃','').trim();else if(l.startsWith('📍'))p.sted=l.replace('📍','').trim();else if(l.startsWith('💰'))p.pris=l.replace('💰','').trim();else if(l.startsWith('🎫'))p.link=l.replace('🎫','').trim();else if(l.startsWith('🖼'))p.billede=l.replace('🖼','').trim();});return p;}).filter(e=>e.dato);}
-
-// CALENDAR FUNCTIONS
-function createGoogleCalUrl(event){
-  const title = encodeURIComponent(event.navn || 'Dance Event');
-  const location = encodeURIComponent(event.sted || '');
-  const details = encodeURIComponent(`${event.type || ''}\n${event.pris || ''}`);
-  
-  const dateMatch = event.dato && event.dato.match(/(\d{1,2})\.?\s*(\w+)/i);
-  const timeMatch = event.tid && event.tid.match(/(\d{1,2})[:\.]?(\d{2})?/);
-  
-  if(!dateMatch) return null;
-  
-  const months = {'jan':0,'feb':1,'mar':2,'apr':3,'maj':4,'jun':5,'jul':6,'aug':7,'sep':8,'okt':9,'nov':10,'dec':11};
-  const day = parseInt(dateMatch[1]);
-  const monthStr = dateMatch[2].toLowerCase().substring(0,3);
-  const month = months[monthStr] ?? new Date().getMonth();
-  const year = new Date().getFullYear();
-  
-  let startHour = 19, startMin = 0;
-  if(timeMatch){
-    startHour = parseInt(timeMatch[1]);
-    startMin = parseInt(timeMatch[2] || 0);
-  }
-  
-  const start = new Date(year, month, day, startHour, startMin);
-  const end = new Date(start.getTime() + 3*60*60*1000);
-  
-  const formatDate = d => d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
-  
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${formatDate(start)}/${formatDate(end)}&details=${details}&location=${location}`;
-}
-
-function createIcsFile(event){
-  const dateMatch = event.dato && event.dato.match(/(\d{1,2})\.?\s*(\w+)/i);
-  const timeMatch = event.tid && event.tid.match(/(\d{1,2})[:\.]?(\d{2})?/);
-  
-  if(!dateMatch) return;
-  
-  const months = {'jan':0,'feb':1,'mar':2,'apr':3,'maj':4,'jun':5,'jul':6,'aug':7,'sep':8,'okt':9,'nov':10,'dec':11};
-  const day = parseInt(dateMatch[1]);
-  const monthStr = dateMatch[2].toLowerCase().substring(0,3);
-  const month = months[monthStr] ?? new Date().getMonth();
-  const year = new Date().getFullYear();
-  
-  let startHour = 19, startMin = 0;
-  if(timeMatch){
-    startHour = parseInt(timeMatch[1]);
-    startMin = parseInt(timeMatch[2] || 0);
-  }
-  
-  const start = new Date(year, month, day, startHour, startMin);
-  const end = new Date(start.getTime() + 3*60*60*1000);
-  
-  const formatDate = d => d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
-  
-  const ics = `BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-DTSTART:${formatDate(start)}
-DTEND:${formatDate(end)}
-SUMMARY:${event.navn || 'Dance Event'}
-LOCATION:${event.sted || ''}
-DESCRIPTION:${event.type || ''} - ${event.pris || ''}
-END:VEVENT
-END:VCALENDAR`;
-  
-  const blob = new Blob([ics], {type: 'text/calendar'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${(event.navn || 'event').replace(/\s+/g, '_')}.ics`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// Store events for calendar access
-let currentEvents = [];
-
-// SVG Ikoner der matcher DanceMap tema
-const ICONS = {
-  calendar: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>`,
-  pin: `<svg width="18" height="18" viewBox="0 0 24 24" fill="#1E88E5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`,
-  clock: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>`,
-  location: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
-  price: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>`,
-  dance: `<svg width="18" height="18" viewBox="0 0 24 24" fill="#1E88E5"><circle cx="12" cy="4" r="2.5"/><path d="M17 22l-3-3v-4l3-4-2-1-4 4-4-4-2 1 3 4v4l-3 3h2l2-2 2 2h2l2-2 2 2z"/></svg>`,
-  title: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
-  inbox: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><polyline points="22,12 16,12 14,15 10,15 8,12 2,12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>`,
-  ticket: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><path d="M2 9a3 3 0 013-3h14a3 3 0 013 3v0a3 3 0 01-3 3v0a3 3 0 013 3v0a3 3 0 01-3 3H5a3 3 0 01-3-3v0a3 3 0 013-3v0a3 3 0 01-3-3z"/><path d="M13 6v4m0 4v4"/></svg>`
-};
-
-function renderEvents(events){
-  currentEvents = events;
-  return events.map((e,i)=>`<div class="event-card">
-    ${e.billede?`<div style="position:relative"><img src="${esc(e.billede)}" alt="${esc(e.navn||'Event')}" class="event-image" onclick="openLightbox('${esc(e.billede)}','${esc(e.navn||'Event flyer')}')" onerror="this.parentElement.style.display='none'"><span class="image-hint">👆 Klik for at forstørre</span></div>`:''}
-    <div class="event-row title"><span class="icon">${ICONS.calendar}</span><span>${esc(e.dato)}</span></div>
-    ${e.navn?`<div class="event-row title"><span class="icon">${ICONS.title}</span><span>${esc(e.navn)}</span></div>`:''}
-    ${e.tid?`<div class="event-row"><span class="icon">${ICONS.clock}</span><span>${esc(e.tid)}</span></div>`:''}
-    ${e.type?`<div class="event-row"><span class="icon">${ICONS.dance}</span><span>${esc(e.type)}</span></div>`:''}
-    ${e.sted?`<div class="event-row"><span class="icon">${ICONS.location}</span><span>${esc(e.sted)}</span></div>`:''}
-    ${e.pris?`<div class="event-row"><span class="icon">${ICONS.price}</span><span>${esc(e.pris)}</span></div>`:''}
-    ${e.link?`<div class="event-row" style="margin-top:8px"><a href="${esc(e.link)}" target="_blank" class="ticket-link"><span class="icon" style="margin-right:6px">${ICONS.ticket}</span>Køb billet her</a></div>`:''}
-    <div class="event-actions">
-      <button class="cal-btn google" onclick="window.open(createGoogleCalUrl(currentEvents[${i}]),'_blank')"><span class="icon" style="margin-right:4px">${ICONS.calendar}</span>Google</button>
-      <button class="cal-btn apple" onclick="createIcsFile(currentEvents[${i}])"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="margin-right:4px"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>Apple</button>
-    </div>
-  </div>`).join('');
-}
-
-function openLightbox(src,caption){
-  $('lightboxImg').src=src;
-  $('lightboxCaption').textContent=caption||'';
-  $('lightbox').classList.add('show');
-  document.body.style.overflow='hidden';
-}
-
-function closeLightbox(){
-  $('lightbox').classList.remove('show');
-  document.body.style.overflow='';
-}
-
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('lightbox').classList.contains('show'))closeLightbox();});
-
-function addMsg(text,isUser,showMore=false){
-  if(moreBtn){moreBtn.remove();moreBtn=null;}
-  const loadingMsg=chat.querySelector('.loading-msg');
-  if(loadingMsg)loadingMsg.remove();
-  
-  const msg=document.createElement('div');
-  msg.className='msg '+(isUser?'user':'bot');
-  
-  if(isUser){
-    msg.innerHTML=`<div class="bubble">${esc(text)}</div>`;
-  }else{
-    const events=parseEvents(text);
-    msg.innerHTML=events.length>0
-      ?`<div class="bubble">Her er events:<div class="events">${renderEvents(events)}</div></div>`
-      :`<div class="bubble">${esc(text)}</div>`;
-  }
-  
-  chat.appendChild(msg);
-  
-  if(showMore){
-    moreBtn=document.createElement('button');
-    moreBtn.className='more-btn';
-    moreBtn.textContent='Vis flere';
-    moreBtn.onclick=loadMore;
-    chat.appendChild(moreBtn);
-  }
-  
-  chat.scrollTop=chat.scrollHeight;
-}
-
-function showLoading(){
-  const msg=document.createElement('div');
-  msg.className='msg bot loading-msg';
-  msg.innerHTML=`<div class="bubble loading-text">Søger events...</div>`;
-  chat.appendChild(msg);
-  chat.scrollTop=chat.scrollHeight;
-}
-
-async function search(q,p){
-  return await jsonp(API+'?query='+encodeURIComponent(q)+'&page='+p+'&_='+Date.now(), 20000);
-}
-
-async function doSearch(){
-  const q=input.value.trim();
-  if(!q||loading)return;
-  
-  addMsg(q,true);
-  input.value='';
-  lastQ=q;page=0;hasMore=false;loading=true;
-  sendBtn.disabled=true;
-  
-  // Check cache først (instant resultat!)
-  const cached = getSearchCache(q + '_0');
-  if(cached){
-    hasMore=!!cached.hasMore;
-    addMsg(cached.text||'Ingen resultater.',false,hasMore);
-    loading=false;sendBtn.disabled=false;
-    // Opdater cache i baggrunden (fire and forget)
-    search(q,0).then(data=>{setSearchCache(q+'_0',data);}).catch(()=>{});
-    return;
-  }
-  
-  showLoading();
-  
+/* ─────────────────────────────────────────────
+   UI
+───────────────────────────────────────────── */
+async function loadEvents(type){
+  const box=document.getElementById('events');
+  box.innerHTML='';
   try{
-    const data=await search(q,0);
-    hasMore=!!data.hasMore;
-    setSearchCache(q+'_0',data);
-    addMsg(data.text||'Ingen resultater.',false,hasMore);
-  }catch(e){
-    console.error('Search error:', e);
-    addMsg('Kunne ikke søge. Tjek din forbindelse og prøv igen.',false);
-  }finally{
-    loading=false;
-    sendBtn.disabled=false;
-  }
-}
-
-async function loadMore(){
-  if(loading||!hasMore)return;
-  page++;loading=true;
-  if(moreBtn)moreBtn.disabled=true;
-  
-  // Check cache
-  const cached = getSearchCache(lastQ+'_'+page);
-  if(cached){
-    hasMore=!!cached.hasMore;
-    addMsg(cached.text,false,hasMore);
-    loading=false;if(moreBtn)moreBtn.disabled=false;
-    search(lastQ,page).then(data=>{setSearchCache(lastQ+'_'+page,data);}).catch(()=>{});
-    return;
-  }
-  
-  showLoading();
-  try{
-    const data=await search(lastQ,page);
-    hasMore=!!data.hasMore;
-    setSearchCache(lastQ+'_'+page,data);
-    addMsg(data.text,false,hasMore);
-  }catch(e){
-    addMsg('Fejl ved indlæsning.',false);
-    hasMore=false;
-  }finally{
-    loading=false;
-    if(moreBtn)moreBtn.disabled=false;
-  }
-}
-
-sendBtn.onclick=doSearch;
-input.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();doSearch();}};
-
-// FILTER SEARCH - for Salsa/Bachata buttons with music
-let salsaSound, bachataSound;
-let isMuted = localStorage.getItem('dm_muted') === 'true';
-let lastPlayedType = null;
-
-try {
-  salsaSound = new Audio('/Salsa.mp3');
-  bachataSound = new Audio('/Bachata.mp3');
-  salsaSound.volume = 0.3;
-  bachataSound.volume = 0.3;
-} catch(e) {
-  console.log('Audio not available');
-}
-
-// Initialiser mute-knap ved load
-function initMuteButton(){
-  updateMuteUI();
-  // Hvis muted ved start, fjern playing klassen
-  if(isMuted && $('muteBtn')){
-    $('muteBtn').classList.remove('playing');
-  }
-}
-
-function updateMuteUI(){
-  const icon = $('muteIcon');
-  const btn = $('muteBtn');
-  const tooltip = $('muteTooltip');
-  if(icon && btn && tooltip){
-    if(isMuted){
-      // Muted: lave bars, faded, ingen animation
-      icon.innerHTML = `
-        <rect class="eq-bar" x="10" y="30" width="5" height="6" rx="2" fill="white" opacity="0.4"/>
-        <rect class="eq-bar" x="18" y="30" width="5" height="6" rx="2" fill="white" opacity="0.4"/>
-        <rect class="eq-bar" x="26" y="30" width="5" height="6" rx="2" fill="white" opacity="0.4"/>
-        <rect class="eq-bar" x="34" y="30" width="5" height="6" rx="2" fill="white" opacity="0.4"/>
-        <line x1="10" y1="10" x2="38" y2="38" stroke="#ff6b6b" stroke-width="3" stroke-linecap="round"/>
-      `;
-      btn.style.opacity = '0.6';
-      btn.classList.remove('playing');
-      tooltip.textContent = 'Slå lyd til';
-    } else {
-      // Lyd til: høje bars med animation
-      icon.innerHTML = `
-        <rect class="eq-bar" x="10" y="20" width="5" height="16" rx="2" fill="white"/>
-        <rect class="eq-bar" x="18" y="12" width="5" height="24" rx="2" fill="white"/>
-        <rect class="eq-bar" x="26" y="16" width="5" height="20" rx="2" fill="white"/>
-        <rect class="eq-bar" x="34" y="22" width="5" height="14" rx="2" fill="white"/>
-      `;
-      btn.style.opacity = '1';
-      btn.classList.add('playing');
-      tooltip.textContent = 'Slå lyd fra';
-    }
-  }
-}
-
-function toggleMute(){
-  isMuted = !isMuted;
-  localStorage.setItem('dm_muted', isMuted);
-  updateMuteUI();
-  
-  if(isMuted){
-    // Stop lyd
-    if(salsaSound) salsaSound.pause();
-    if(bachataSound) bachataSound.pause();
-  } else {
-    // Genoptag sidst spillede musik
-    if(lastPlayedType){
-      try {
-        if(lastPlayedType === 'salsa' && salsaSound){
-          salsaSound.currentTime = 0;
-          salsaSound.play().catch(()=>{});
-        } else if(lastPlayedType === 'bachata' && bachataSound){
-          bachataSound.currentTime = 0;
-          bachataSound.play().catch(()=>{});
-        }
-      } catch(e) {}
-    }
-  }
-}
-
-// Kald ved page load
-setTimeout(initMuteButton, 100);
-
-function filterSearch(type){
-  // Husk hvilken type der blev spillet
-  lastPlayedType = type;
-  
-  // Tilføj clicked effekt
-  const btn = document.querySelector(`.filter-btn.${type}`);
-  if(btn){
-    btn.classList.add('clicked');
-    setTimeout(()=>btn.classList.remove('clicked'), 300);
-  }
-  
-  // Stop any playing sound and play new one (if not muted)
-  try {
-    if(salsaSound) salsaSound.pause();
-    if(bachataSound) bachataSound.pause();
-    
-    if(!isMuted){
-      if(type === 'salsa' && salsaSound){
-        salsaSound.currentTime = 0;
-        salsaSound.play().catch(()=>{});
-      } else if(type === 'bachata' && bachataSound){
-        bachataSound.currentTime = 0;
-        bachataSound.play().catch(()=>{});
-      }
-    }
-  } catch(e) {}
-  
-  input.value=type;
-  doSearch();
-}
-
-// HEADER CLICK: 1x = refresh page, 3x = admin
-let clicks=0,clickTimer;
-document.querySelector('.header-outside').onclick=()=>{
-  clicks++;
-  clearTimeout(clickTimer);
-  
-  if(clicks===3){
-    clicks=0;
-    openAdmin();
-  } else {
-    clickTimer=setTimeout(()=>{
-      if(clicks===1){
-        // Refresh hele siden
-        location.reload();
-      }
-      clicks=0;
-    },400);
-  }
-};
-
-function openAdmin(){
-  const welcomeOverlay = $('welcomeOverlay');
-  if(welcomeOverlay && welcomeOverlay.style.display !== 'none') closeWelcome();
-  modal.classList.add('open');
-  status.style.display='none';
-  preview.style.display='none';
-  ocrStatus.style.display='none';
-  warnings.classList.remove('show');
-  restoreFormState();
-  showAdminWelcome();
-}
-
-function saveFormState(){
-  try {
-    localStorage.setItem('dancemap_admin_form',JSON.stringify({
-      formVersion:FORM_VERSION,
-      payload:payload.value,
-      dato:fields.dato.value,
-      navn:fields.navn.value,
-      start:fields.start.value,
-      slut:fields.slut.value,
-      dansTypes:getSelectedDanceTypes(),
-      sted:fields.sted.value,
-      adresse:fields.adresse.value,
-      by:fields.by.value,
-      prisType:fields.prisType.value,
-      prisOnline:fields.prisOnline.value,
-      prisDropin:fields.prisDropin.value,
-      mobilepay:fields.mobilepay.value,
-      mobilepayPris:fields.mobilepayPris.value,
-      mobilepayInfo:fields.mobilepayInfo.value,
-      link:fields.link.value,
-      billede:fields.billede.value,
-      recurring:recurring.checked,
-      step:step2.style.display==='block'?2:1
-    }));
-  } catch(e) {
-    console.log('Could not save form state');
-  }
-}
-
-function restoreFormState(){
-  try{
-    const saved=localStorage.getItem('dancemap_admin_form');
-    if(!saved){step2.style.display='none';payload.value='';clearFields();return;}
-    const s=JSON.parse(saved);
-    payload.value=s.payload||'';
-    fields.dato.value=s.dato||'';
-    fields.navn.value=s.navn||'';
-    fields.start.value=s.start||'';
-    fields.slut.value=s.slut||'';
-    if(s.dansTypes)setSelectedDanceTypes(s.dansTypes);
-    else if(s.dans)setSelectedDanceTypes([s.dans]);
-    updateDansField();
-    fields.sted.value=s.sted||'';
-    fields.adresse.value=s.adresse||'';
-    fields.by.value=s.by||'København';
-    fields.prisType.value=s.prisType||'angiv';
-    fields.prisOnline.value=s.prisOnline||'';
-    fields.prisDropin.value=s.prisDropin||'';
-    fields.mobilepay.value=s.mobilepay||'';
-    fields.mobilepayPris.value=s.mobilepayPris||'';
-    fields.mobilepayInfo.value=s.mobilepayInfo||'';
-    fields.link.value=s.link||'';
-    fields.billede.value=s.billede||'';
-    recurring.checked=s.recurring||false;
-    $('prisFields').style.display=s.prisType==='angiv'?'block':'none';
-    $('mobilepayFields').style.display=s.prisType==='mobilepay'?'block':'none';
-    if(s.step===2){
-      step2.style.display='block';
-      updatePrisField();
-      updatePreview();
-    }else{
-      step2.style.display='none';
-    }
-  }catch(e){
-    step2.style.display='none';
-  }
-}
-
-function clearFormState(){localStorage.removeItem('dancemap_admin_form');}
-
-function clearFields(){
-  fields.dato.value='';
-  fields.navn.value='';
-  fields.start.value='';
-  fields.slut.value='';
-  document.querySelectorAll('input[name="dansetype"]').forEach(c=>c.checked=false);
-  fields.dans.value='';
-  fields.sted.value='';
-  fields.adresse.value='';
-  fields.by.value='København';
-  fields.pris.value='';
-  fields.prisType.value='angiv';
-  fields.prisOnline.value='';
-  fields.prisDropin.value='';
-  fields.mobilepay.value='';
-  fields.mobilepayPris.value='';
-  fields.mobilepayInfo.value='';
-  fields.link.value='';
-  fields.billede.value='';
-  $('prisFields').style.display='block';
-  $('mobilepayFields').style.display='none';
-  warnings.classList.remove('show');
-  $('previewContent').innerHTML='';
-  $('previewCard').style.borderColor='';
-}
-
-$('closeAdmin').onclick=()=>{saveFormState();modal.classList.remove('open');};
-$('backBtn').onclick=()=>{step2.style.display='none';status.style.display='none';saveFormState();};
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('open')){saveFormState();modal.classList.remove('open');}});
-payload.addEventListener('input',saveFormState);
-
-// PARSE TEXT
-const MONTHS={'januar':'01','february':'02','februar':'02','marts':'03','march':'03','april':'04','maj':'05','may':'05','juni':'06','june':'06','juli':'07','july':'07','august':'08','september':'09','oktober':'10','october':'10','november':'11','december':'12','jan':'01','feb':'02','mar':'03','apr':'04','jun':'06','jul':'07','aug':'08','sep':'09','okt':'10','oct':'10','nov':'11','dec':'12','january':'01'};
-const DANCE_ALIASES={'rueda de casino':'Salsa','rueda':'Salsa','cuban':'Salsa','cubansk':'Salsa','bachata':'Bachata','salsa':'Salsa','kizomba':'Kizomba','tango':'Tango','zouk':'Zouk','swing':'Swing','latin':'Latin'};
-const VENUES=['kaffesalonen','kedelhallen','copenhagen salsa academy','csa','kulturhuset','dgi-byen'];
-const VENUE_ADDRESSES={'kaffesalonen':{adresse:'Peblinge Dossering 7',by:'København'},'kedelhallen':{adresse:'Nyelandsvej 75A',by:'Frederiksberg'},'copenhagen salsa academy':{adresse:'Kastanie Allé 20',by:'Vanløse'},'csa':{adresse:'Kastanie Allé 20',by:'Vanløse'},'kulturhuset':{adresse:'Islands Brygge 18',by:'København'},'dgi-byen':{adresse:'Tietgensgade 65',by:'København'}};
-
-function parseTextToFields(txt){
-  const t=txt.toLowerCase();
-  const r={dato:'',navn:'',start:'',slut:'',dans:'Salsa',sted:'',adresse:'',by:'København',pris:'',prisType:'angiv',prisOnline:'',prisDropin:'',link:''};
-  
-  // === DATO ===
-  const isoMatch=txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);
-  if(isoMatch){
-    r.dato=isoMatch[0];
-  }else{
-    const engMatch=txt.match(/(?:saturday|sunday|monday|tuesday|wednesday|thursday|friday)?\s*(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?(?:\s*,?\s*(20\d{2}))?/i);
-    if(engMatch){
-      const year=engMatch[3]||new Date().getFullYear();
-      r.dato=`${year}-${MONTHS[engMatch[1].toLowerCase()]}-${engMatch[2].padStart(2,'0')}`;
-    }else{
-      const dkMatch=txt.match(/\b(\d{1,2})\.?\s*(januar|februar|marts|april|maj|juni|juli|august|september|oktober|november|december|jan|feb|mar|apr|maj|jun|jul|aug|sep|okt|nov|dec)\.?\s*(20\d{2})?\b/i);
-      if(dkMatch){
-        const year=dkMatch[3]||new Date().getFullYear();
-        r.dato=`${year}-${MONTHS[dkMatch[2].toLowerCase()]}-${dkMatch[1].padStart(2,'0')}`;
-      }
-    }
-  }
-  
-  // === TIDER ===
-  const allTimes=txt.match(/\b([0-2]?\d)[:\.]([0-5]\d)\b/g)||[];
-  if(allTimes.length>0){
-    const timeToMinutes=t=>{const[h,m]=t.replace('.',':').split(':').map(Number);return h<6?(h+24)*60+m:h*60+m;};
-    const sorted=[...new Set(allTimes)].map(t=>t.replace('.',':')).sort((a,b)=>timeToMinutes(a)-timeToMinutes(b));
-    r.start=sorted[0].replace(/^(\d):/,'0$1:');
-    if(sorted.length>1)r.slut=sorted[sorted.length-1].replace(/^(\d):/,'0$1:');
-  }
-  
-  // === DANSETYPE ===
-  const percentMatch=txt.match(/(\d+)\s*%\s*(salsa|bachata|kizomba|zouk|tango|swing)/gi);
-  if(percentMatch){
-    let maxPercent=0;let mainDance='Salsa';
-    percentMatch.forEach(m=>{
-      const[,pct,dance]=m.match(/(\d+)\s*%\s*(\w+)/i);
-      if(parseInt(pct)>maxPercent){maxPercent=parseInt(pct);mainDance=dance.charAt(0).toUpperCase()+dance.slice(1).toLowerCase();}
-    });
-    r.dans=mainDance;
-  }else{
-    for(const a of Object.keys(DANCE_ALIASES).sort((a,b)=>b.length-a.length)){
-      if(t.includes(a)){r.dans=DANCE_ALIASES[a];break;}
-    }
-  }
-  
-  // === STED & ADRESSE ===
-  const addressMatch=txt.match(/address[:\s]+([^,\n]+)/i);
-  if(addressMatch){
-    let fullAddr=addressMatch[1].trim();
-    fullAddr=fullAddr.replace(/[.ℹ︎]+.*$/,'').trim();
-    r.adresse=fullAddr;
-    r.sted=fullAddr.split('(')[0].trim();
-  }
-  const zipMatch=txt.match(/\b(\d{4})\s+([A-Za-zæøåÆØÅ][A-Za-zæøåÆØÅ]+)\b/);
-  if(zipMatch&&parseInt(zipMatch[1])>=1000&&parseInt(zipMatch[1])<=9999){
-    r.by=zipMatch[2].trim();
-  }
-  if(!r.sted){
-    for(const v of VENUES){
-      if(t.includes(v)){
-        r.sted=v.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
-        if(VENUE_ADDRESSES[v]){r.adresse=VENUE_ADDRESSES[v].adresse;r.by=VENUE_ADDRESSES[v].by;}
-        break;
-      }
-    }
-  }
-  
-  // === PRISER ===
-  if(/\bgratis\b/i.test(txt)||/\bfree\b/i.test(txt)){
-    r.prisType='gratis';r.pris='Gratis';
-  }else{
-    const prisMatch=txt.match(/(\d+)[,.]?-?\s*(?:kr|dkk)/gi);
-    if(prisMatch){
-      const nums=prisMatch.map(p=>parseInt(p.match(/\d+/)[0])).filter(n=>n>0&&n<2000);
-      if(nums.length>0){
-        const min=Math.min(...nums);
-        const max=Math.max(...nums);
-        r.prisOnline=String(min);
-        r.prisDropin=String(max);
-      }
-    }
-  }
-  
-  // === LINK ===
-  const linkMatch=txt.match(/https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi);
-  if(linkMatch){
-    const ticketLink=linkMatch.find(l=>/billetto|ticketmaster|tikkio|eventbrite|place2book|bookwhen/i.test(l));
-    const foundLink=ticketLink||linkMatch[0];
-    r.link=foundLink.includes('...')?'':foundLink;
-  }
-  
-  // === NAVN ===
-  const starTitle=txt.match(/[☆★]\s*([^☆★\n]{10,}?)\s*[☆★]/);
-  if(starTitle&&!starTitle[1].includes('kr')&&!starTitle[1].includes('ENTRANCE')){
-    r.navn=starTitle[1].trim();
-  }else{
-    const inviteMatch=txt.match(/invites?\s+(?:you\s+)?(?:everyone\s+)?to\s+([^!.\n]+)/i);
-    if(inviteMatch){
-      r.navn=inviteMatch[1].trim();
-    }else{
-      const orgMatch=txt.match(/^(?:Begivenhed af\s+)?([^\n]+)/i);
-      if(orgMatch&&orgMatch[1].length<60)r.navn=orgMatch[1].trim();
-    }
-  }
-  
-  return r;
-}
-
-function validateFields(){
-  const e=[];
-  if(!fields.dato.value)e.push('❌ Dato mangler');
-  if(!fields.navn.value)e.push('❌ Navn mangler');
-  if(!fields.start.value)e.push('❌ Starttid mangler');
-  if(!fields.slut.value)e.push('❌ Sluttid mangler');
-  if(getSelectedDanceTypes().length===0)e.push('❌ Vælg mindst én dansetype');
-  if(!fields.sted.value)e.push('❌ Sted mangler');
-  if(!fields.adresse.value)e.push('❌ Adresse mangler');
-  if(!fields.by.value)e.push('❌ By mangler');
-  if(fields.prisType.value==='angiv'&&!fields.prisOnline.value&&!fields.prisDropin.value)e.push('❌ Angiv mindst én pris');
-  if(fields.prisType.value==='mobilepay'&&!fields.mobilepayPris.value)e.push('❌ Angiv MobilePay pris');
-  return{errors:e};
-}
-
-function updatePreview(){
-  updateDansField();
-  updatePrisField();
-  const dage=['Søn','Man','Tir','Ons','Tor','Fre','Lør'];
-  const mdr=['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
-  let datoStr='—';
-  if(fields.dato.value){
-    const d=new Date(fields.dato.value);
-    if(!isNaN(d.getTime())){
-      datoStr=dage[d.getDay()]+' '+d.getDate()+'. '+mdr[d.getMonth()];
-      if(recurring.checked)datoStr+=' 🔁';
-    }
-  }
-  let tidStr=fields.start.value||'—';
-  if(fields.slut.value)tidStr+='–'+fields.slut.value;
-  let stedStr=fields.sted.value||'—';
-  if(fields.adresse.value)stedStr+=', '+fields.adresse.value;
-  if(fields.by.value)stedStr+=', '+fields.by.value;
-  const dansStr=fields.dans.value||'—';
-  const previewEl=$('previewContent');
-  previewEl.innerHTML=`<div class="line"><span class="icon">${ICONS.calendar}</span><span>${esc(datoStr)}</span></div><div class="line"><span class="icon">${ICONS.title}</span><span>${esc(fields.navn.value||'—')}</span></div><div class="line"><span class="icon">${ICONS.clock}</span><span>${esc(tidStr)}</span></div><div class="line"><span class="icon">${ICONS.dance}</span><span>${esc(dansStr)}</span></div><div class="line"><span class="icon">${ICONS.location}</span><span>${esc(stedStr)}</span></div><div class="line"><span class="icon">${ICONS.price}</span><span>${esc(fields.pris.value||'—')}</span></div>`;
-  const{errors}=validateFields();
-  const pc=$('previewCard');
-  if(errors.length===0){
-    pc.querySelector('.preview-label').textContent='✅ Klar til indsendelse';
-    pc.style.borderColor='#3fb950';
-    warnings.classList.remove('show');
-  }else{
-    pc.querySelector('.preview-label').textContent='Forhåndsvisning';
-    pc.style.borderColor='';
-  }
-}
-
-Object.values(fields).forEach(f=>{
-  if(f?.addEventListener){
-    f.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
-    f.addEventListener('change',()=>{updatePrisField();updatePreview();saveFormState();});
-  }
-});
-recurring.addEventListener('change',()=>{updatePreview();saveFormState();});
-if(fields.mobilepay)fields.mobilepay.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
-if(fields.mobilepayPris)fields.mobilepayPris.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
-if(fields.mobilepayInfo)fields.mobilepayInfo.addEventListener('input',()=>{updatePrisField();updatePreview();saveFormState();});
-
-// AUTO-PARSE
-function autoParse(){
-  const txt=payload.value.trim();
-  if(!txt)return;
-  
-  const p=parseTextToFields(txt);
-  const found=[];
-  const missing=[];
-  
-  if(p.dato){
-    if(!fields.dato.value){fields.dato.value=p.dato;found.push('📅 Dato');}
-  }else{missing.push('Dato');}
-  
-  if(p.navn){
-    if(!fields.navn.value){fields.navn.value=p.navn;found.push('📌 Navn');}
-  }else{missing.push('Navn');}
-  
-  if(p.start){
-    if(!fields.start.value){fields.start.value=p.start;found.push('🕐 Start');}
-  }else{missing.push('Starttid');}
-  
-  if(p.slut){
-    if(!fields.slut.value){fields.slut.value=p.slut;found.push('🕐 Slut');}
-  }else{missing.push('Sluttid');}
-  
-  if(p.dans && getSelectedDanceTypes().length===0){
-    setSelectedDanceTypes([p.dans]);updateDansField();found.push('💃 '+p.dans);
-  }
-  
-  if(p.sted){
-    if(!fields.sted.value){fields.sted.value=p.sted;found.push('📍 Sted');}
-  }else{missing.push('Sted');}
-  
-  if(p.adresse){
-    if(!fields.adresse.value){fields.adresse.value=p.adresse;}
-  }else{missing.push('Adresse');}
-  
-  if(p.by){
-    if(!fields.by.value){fields.by.value=p.by;}
-  }
-  
-  if(p.link){
-    if(p.link.includes('...')){
-      warnings.innerHTML=`⚠️ <strong>Billetlink afkortet!</strong> Højreklik på linket i FB → "Kopiér linkadresse"`;
-      warnings.classList.add('show');
-      missing.push('Billetlink (afkortet)');
-    }else if(!fields.link.value){
-      fields.link.value=p.link;
-      found.push('🎫 Billetlink');
-    }
-  }
-  
-  if(p.prisOnline || p.prisDropin){
-    if(!fields.prisOnline.value && !fields.prisDropin.value){
-      fields.prisOnline.value=p.prisOnline||'';
-      fields.prisDropin.value=p.prisDropin||'';
-      found.push('💰 Pris');
-    }
-  }else{missing.push('Pris');}
-  
-  const parseStatus=$('parseStatus');
-  if(found.length>0){
-    let html='<div style="color:#3fb950;margin-bottom:4px;">✅ Fundet: '+found.join(', ')+'</div>';
-    if(missing.length>0){
-      html+='<div style="color:#f0883e;">⚠️ Udfyld manuelt: '+missing.join(', ')+'</div>';
-    }
-    parseStatus.innerHTML=html;
-    parseStatus.style.display='block';
-    parseStatus.style.background='rgba(63,185,80,0.1)';
-    parseStatus.style.border='1px solid rgba(63,185,80,0.3)';
-  }else{
-    parseStatus.innerHTML='<div style="color:#f85149;">❌ Kunne ikke finde data i teksten</div>';
-    parseStatus.style.display='block';
-    parseStatus.style.background='rgba(248,81,73,0.1)';
-    parseStatus.style.border='1px solid rgba(248,81,73,0.3)';
-  }
-  
-  updatePrisField();updatePreview();step2.style.display='block';saveFormState();
-}
-
-payload.addEventListener('paste',()=>{
-  setTimeout(autoParse,100);
-});
-payload.addEventListener('dblclick',autoParse);
-
-// CLAUDE VISION
-function simplifyPrice(pris){
-  if(!pris)return'';
-  const p=pris.toLowerCase();
-  if(p.includes('free')||p.includes('gratis'))return'Gratis';
-  const prices=pris.match(/\d+\s*(kr|dkk)?/gi)||[];
-  if(prices.length===0)return pris;
-  const nums=prices.map(x=>parseInt(x.match(/\d+/)[0])).filter(n=>n>0);
-  if(nums.length===0)return pris;
-  const min=Math.min(...nums);
-  const max=Math.max(...nums);
-  if(min===max)return min+' kr';
-  return min+'–'+max+' kr';
-}
-
-// KENDTE VENUES
-const knownVenues = {
-  'la hacienda': { sted: 'La Hacienda', adresse: 'Kultorvet 11', by: 'København K' },
-  'rumba': { sted: 'Rumba', adresse: 'Vester Voldgade 85', by: 'København V' },
-  'mambo': { sted: 'Mambo', adresse: 'Vester Voldgade 85', by: 'København V' },
-  'dansehallerne': { sted: 'Dansehallerne', adresse: 'Pasteursvej 20', by: 'København V' },
-  'pumpehuset': { sted: 'Pumpehuset', adresse: 'Studiestræde 52', by: 'København K' },
-  'the latin club': { sted: 'The Latin Club', adresse: 'Nørre Voldgade 2', by: 'København K' },
-  'latin club': { sted: 'The Latin Club', adresse: 'Nørre Voldgade 2', by: 'København K' },
-  'danceact': { sted: 'DanceAct', adresse: 'Smallegade 34', by: 'Frederiksberg' },
-  'salsa latina': { sted: 'Salsa Latina', adresse: 'Griffenfeldsgade 20', by: 'København N' },
-  'krudttønden': { sted: 'Krudttønden', adresse: 'Serridslevvej 2', by: 'København Ø' },
-  'vega': { sted: 'VEGA', adresse: 'Enghavevej 40', by: 'København V' },
-  'kulturhuset indre by': { sted: 'Kulturhuset Indre By', adresse: 'Charlotte Ammundsens Plads 3', by: 'København K' },
-  'stairway': { sted: 'Stairway', adresse: 'Store Regnegade 12', by: 'København K' },
-  'jazzhouse': { sted: 'JazzHouse', adresse: 'Niels Hemmingsens Gade 10', by: 'København K' },
-  'jazz house': { sted: 'JazzHouse', adresse: 'Niels Hemmingsens Gade 10', by: 'København K' },
-  'alice': { sted: 'Alice', adresse: 'Nørre Allé 7', by: 'København N' },
-  'uffa': { sted: 'UFFA', adresse: 'Flensborggade 33', by: 'København V' }
-};
-
-function matchVenue(stedInput) {
-  if (!stedInput) return null;
-  const normalized = stedInput.toLowerCase().trim();
-  if (knownVenues[normalized]) return knownVenues[normalized];
-  for (const [key, venue] of Object.entries(knownVenues)) {
-    if (normalized.includes(key) || key.includes(normalized)) {
-      return venue;
-    }
-  }
-  return null;
-}
-
-function autoFillVenue() {
-  const match = matchVenue(fields.sted.value);
-  if (match) {
-    fields.sted.value = match.sted;
-    if (!fields.adresse.value) fields.adresse.value = match.adresse;
-    if (!fields.by.value) fields.by.value = match.by;
-    updatePreview();
-    saveFormState();
-  }
-}
-
-fields.sted.addEventListener('blur', autoFillVenue);
-fields.sted.addEventListener('change', autoFillVenue);
-
-async function processImageWithClaude(file){
-  ocrStatus.style.display='block';
-  ocrStatus.innerHTML='🤖 <span class="loading-text">Claude analyserer billede...</span>';
-  try{
-    const base64=await fileToBase64(file);
-    const mediaType=file.type||'image/png';
-    const response=await fetch('/api/parse-image',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({image:base64,mediaType:mediaType})
-    });
-    const result=await response.json();
-    if(!result.success){ocrStatus.innerHTML='❌ '+(result.error||'Fejl');ocrStatus.style.color='#f85149';return;}
-    const d=result.data;
-    if(d.dato && !fields.dato.value)fields.dato.value=d.dato;
-    if(d.navn && !fields.navn.value)fields.navn.value=d.navn;
-    if(d.starttid && !fields.start.value)fields.start.value=d.starttid;
-    if(d.sluttid && !fields.slut.value)fields.slut.value=d.sluttid;
-    if(d.dansetype && getSelectedDanceTypes().length===0){setSelectedDanceTypes(d.dansetype.split(/\s*[&,\/]\s*/));updateDansField();}
-    if(d.sted && !fields.sted.value)fields.sted.value=d.sted;
-    if(d.adresse && !fields.adresse.value)fields.adresse.value=d.adresse;
-    if(d.by && !fields.by.value)fields.by.value=d.by;
-    autoFillVenue();
-    if(d.pris && fields.prisType.value==='angiv' && !fields.prisOnline.value && !fields.prisDropin.value){
-      const simplePris=simplifyPrice(d.pris);
-      if(simplePris.toLowerCase()==='gratis'){
-        fields.prisType.value='gratis';
-        $('prisFields').style.display='none';
-      }else{
-        fields.prisType.value='angiv';
-        $('prisFields').style.display='block';
-        const prisMatch=simplePris.match(/(\d+)/g);
-        if(prisMatch){
-          if(prisMatch.length>=2){
-            fields.prisOnline.value=prisMatch[0];
-            fields.prisDropin.value=prisMatch[1];
-          }else{
-            fields.prisDropin.value=prisMatch[0];
-          }
-        }
-      }
-    }
-    updatePrisField();updatePreview();
-    const confidence=Math.round((result.confidence||0.8)*100);
-    ocrStatus.innerHTML=`✅ Parsed med ${confidence}% sikkerhed`;
-    ocrStatus.style.color=confidence>80?'#3fb950':'#f0883e';
-    step2.style.display='block';
-    const{errors}=validateFields();
-    if(errors.length){warnings.innerHTML=errors.join('<br>');warnings.classList.add('show');}
-    saveFormState();
-    await checkForDuplicates();
-    setTimeout(()=>ocrStatus.style.display='none',3000);
-  }catch(err){
-    console.error('Claude Vision error:',err);
-    ocrStatus.innerHTML='❌ '+(err.message||'Netværksfejl');
-    ocrStatus.style.color='#f85149';
-  }
-}
-
-async function checkForDuplicates(){
-  const params=new URLSearchParams();
-  params.set('action','check-duplicate');
-  params.set('dato',fields.dato.value);
-  params.set('navn',fields.navn.value);
-  params.set('starttid',fields.start.value);
-  params.set('sted',fields.sted.value);
-  params.set('dansetype',fields.dans.value);
-  params.set('_',Date.now());
-  try{
-    const result=await jsonp(API+'?'+params.toString(), 10000);
-    if(result.success&&result.matches&&result.matches.length>0){
-      const match=result.matches[0];
-      if(result.isDuplicate){
-        warnings.innerHTML=`⚠️ <strong>Mulig dublet fundet!</strong><br><br>📅 ${esc(match.dato)}<br>📌 ${esc(match.navn)}<br>🕗 ${esc(match.starttid)}<br>📍 ${esc(match.sted)}<br><span style="color:#7d8590">(${match.reasons.join(', ')})</span><br><br><span style="color:#f85149">Status: ${match.status}</span>`;
-        warnings.classList.add('show');
-        $('previewCard').style.borderColor='#f85149';
-        $('previewCard').querySelector('.preview-label').textContent='⛔ Sandsynlig dublet';
-      }else if(result.isLikelyDuplicate){
-        warnings.innerHTML=`⚠️ <strong>Lignende event findes:</strong><br><br>📅 ${esc(match.dato)}<br>📌 ${esc(match.navn)}<br>📍 ${esc(match.sted)}<br><span style="color:#7d8590">(${match.reasons.join(', ')})</span><br><br><span style="color:#f0883e">Du kan stadig tilføje eventet hvis det er forskelligt.</span>`;
-        warnings.classList.add('show');
-        $('previewCard').style.borderColor='#f0883e';
-        $('previewCard').querySelector('.preview-label').textContent='⚠️ Tjek for dublet';
-      }
-    }
-  }catch(err){console.log('Duplicate check failed:',err);}
-}
-
-function fileToBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});}
-
-// RYD ALT
-$('clearAllBtn').onclick=()=>{
-  if(confirm('Ryd alle felter og start forfra?')){
-    clearFields();
-    clearFormState();
-    payload.value='';
-    preview.style.display='none';
-    ocrStatus.style.display='none';
-    step2.style.display='none';
-    status.style.display='none';
-    warnings.classList.remove('show');
-  }
-};
-
-// ADMIN WELCOME
-function showAdminWelcome(){
-  const name=localStorage.getItem('dancemap_admin_name');
-  if(name){
-    $('adminWelcome').style.display='block';
-    $('welcomeText').textContent='Velkommen '+name+'! 🎉';
-  }else{
-    const entered=prompt('Hvad hedder du? (vises når du åbner admin)');
-    if(entered&&entered.trim()){
-      localStorage.setItem('dancemap_admin_name',entered.trim());
-      $('adminWelcome').style.display='block';
-      $('welcomeText').textContent='Velkommen '+entered.trim()+'! 🎉';
-    }
-  }
-}
-
-$('fileInput').onchange=e=>{
-  const f=e.target.files[0];
-  if(f?.type.startsWith('image/')){
-    preview.src=URL.createObjectURL(f);
-    preview.style.display='block';
-    processImageWithClaude(f);
-  }
-  e.target.value='';
-};
-
-modal.onpaste=e=>{
-  const items=e.clipboardData?.items||[];
-  for(const item of items){
-    if(item.type.startsWith('image/')){
-      e.preventDefault();
-      const f=item.getAsFile();
-      preview.src=URL.createObjectURL(f);
-      preview.style.display='block';
-      processImageWithClaude(f);
+    const data=await search(type);
+    if(!data.text){
+      box.innerHTML='<div class="empty">Ingen events fundet for "'+type+'"</div>';
       return;
     }
-  }
-};
-
-// UPLOAD ZONE
-const uploadZone=$('uploadZone');
-if(uploadZone){
-  uploadZone.onclick=()=>$('fileInput').click();
-  uploadZone.ondragover=e=>{e.preventDefault();uploadZone.classList.add('drag-over');};
-  uploadZone.ondragleave=e=>{e.preventDefault();uploadZone.classList.remove('drag-over');};
-  uploadZone.ondrop=e=>{
-    e.preventDefault();
-    uploadZone.classList.remove('drag-over');
-    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
-    if(files.length === 1) {
-      preview.src=URL.createObjectURL(files[0]);
-      preview.style.display='block';
-      processImageWithClaude(files[0]);
-    } else if(files.length > 1) {
-      addToQueue(files);
-    }
-  };
-}
-
-// BATCH QUEUE
-let flyerQueue = [];
-let queueIndex = 0;
-
-function addToQueue(files) {
-  flyerQueue = files;
-  queueIndex = 0;
-  updateQueueStatus();
-  processNextInQueue();
-}
-
-function processNextInQueue() {
-  if (queueIndex < flyerQueue.length) {
-    const file = flyerQueue[queueIndex];
-    preview.src = URL.createObjectURL(file);
-    preview.style.display = 'block';
-    processImageWithClaude(file);
-    updateQueueStatus();
-  } else {
-    flyerQueue = [];
-    queueIndex = 0;
-    updateQueueStatus();
-  }
-}
-
-function updateQueueStatus() {
-  const skipBtn = $('skipBtn');
-  if (flyerQueue.length > 1) {
-    ocrStatus.style.display = 'block';
-    ocrStatus.innerHTML = `📚 Flyer ${queueIndex + 1} af ${flyerQueue.length}`;
-    ocrStatus.style.color = '#6366f1';
-    if(skipBtn) skipBtn.style.display = 'block';
-  } else {
-    if(skipBtn) skipBtn.style.display = 'none';
-  }
-}
-
-if($('skipBtn')) {
-  $('skipBtn').onclick = () => nextInQueue();
-}
-
-function nextInQueue() {
-  queueIndex++;
-  clearFields();
-  preview.style.display = 'none';
-  step2.style.display = 'none';
-  warnings.classList.remove('show');
-  processNextInQueue();
-}
-
-// KEYBOARD SHORTCUTS
-document.addEventListener('keydown', e => {
-  if (!modal.classList.contains('open')) return;
-  if (e.ctrlKey && e.key === 'Enter') {
-    e.preventDefault();
-    $('adminSubmitBtn').click();
-  }
-  if (e.key === 'Escape') {
-    e.preventDefault();
-    saveFormState();
-    modal.classList.remove('open');
-  }
-  if (e.ctrlKey && e.key === 'n' && flyerQueue.length > 1) {
-    e.preventDefault();
-    nextInQueue();
-  }
-});
-
-// Show keyboard hints
-if(uploadZone) {
-  const hints = document.createElement('div');
-  hints.style.cssText = 'margin-top:12px;font-size:11px;color:#484f58;text-align:center;';
-  hints.innerHTML = '⌨️ <b>Ctrl+Enter</b> = Submit • <b>Esc</b> = Luk • <b>Ctrl+N</b> = Næste i kø';
-  uploadZone.parentNode.insertBefore(hints, uploadZone.nextSibling);
-}
-
-// ADMIN SUBMIT
-let isSubmitting=false;
-$('adminSubmitBtn').onclick=async()=>{
-  if(isSubmitting)return;
-  const{errors}=validateFields();
-  if(errors.length){
-    warnings.innerHTML=errors.join('<br>');
-    warnings.classList.add('show');
-    status.style.display='block';
-    status.textContent='Udfyld alle felter';
-    status.className='submit-status error';
-    return;
-  }
-  warnings.classList.remove('show');
-  const params=new URLSearchParams();
-  params.set('action','admin-import');
-  params.set('dato',fields.dato.value);
-  params.set('navn',fields.navn.value);
-  params.set('starttid',fields.start.value);
-  params.set('sluttid',fields.slut.value);
-  params.set('dansetype',fields.dans.value);
-  params.set('sted',fields.sted.value);
-  params.set('adresse',fields.adresse.value);
-  params.set('by',fields.by.value);
-  params.set('pris',fields.pris.value);
-  params.set('link',fields.link.value||'');
-  params.set('billede',fields.billede.value||'');
-  params.set('recurring',recurring.checked);
-  params.set('kilde',localStorage.getItem('dancemap_admin_name')||'Admin');
-  params.set('_',Date.now());
-  const btn=$('adminSubmitBtn');
-  btn.disabled=true;btn.textContent='Sender...';
-  isSubmitting=true;
-  status.style.display='none';
-  try{
-    const data=await jsonp(API+'?'+params.toString(), 20000);
-    status.style.display='block';
-    if(data.success){
-      status.textContent='✅ Event tilføjet (pending)';
-      status.className='submit-status success';
-      $('previewCard').style.borderColor='#3fb950';
-      clearFields();clearFormState();step2.style.display='none';payload.value='';preview.style.display='none';recurring.checked=false;
-      if(flyerQueue.length > 1 && queueIndex < flyerQueue.length - 1) {
-        setTimeout(() => {
-          nextInQueue();
-          status.style.display = 'none';
-        }, 1000);
-      }
-    }
-    else if(data.error==='DUPLICATE'){
-      status.textContent='⚠️ Dublet fundet';
-      status.className='submit-status error';
-      $('previewCard').style.borderColor='#f85149';
-    }
-    else{
-      status.textContent=data.text||'❌ Fejl';
-      status.className='submit-status error';
-    }
+    data.text.split(/\n\n+/).forEach(block=>{
+      const d=document.createElement('div');
+      d.className='event';
+      d.textContent=block;
+      box.appendChild(d);
+    });
   }catch(e){
-    status.style.display='block';
-    status.textContent='❌ Teknisk fejl - prøv igen';
-    status.className='submit-status error';
-  }
-  btn.disabled=false;btn.textContent='Tilføj Event (pending)';
-  isSubmitting=false;
-};
-
-async function loadWeekCount(){
-  try{
-    const d=await jsonp(API+'?action=weekcount&_='+Date.now(), 10000);
-    if(d.success&&d.count>0){
-      // Slide-in notification (kun én gang per uge)
-      const lastShown = localStorage.getItem('dm_notif_time_v3');
-      const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-      if(!lastShown || parseInt(lastShown) < weekAgo){
-        localStorage.setItem('dm_notif_time_v3', Date.now().toString());
-        const notif=$('slideNotification');
-        notif.innerHTML='<span class="count">'+d.count+'</span> salsa og bachata events de næste 7 dage';
-        setTimeout(()=>notif.classList.add('show'),1500);
-        setTimeout(()=>notif.classList.remove('show'),6500);
-        notif.onclick=()=>notif.classList.remove('show');
-      }
-    }
-  }catch(e){
-    console.log('Week count failed (offline?)');
-  }
-}
-loadWeekCount();
-
-// WELCOME BANNER
-function closeWelcome(){
-  const welcomeOverlay=$('welcomeOverlay');
-  if(!welcomeOverlay)return;
-  welcomeOverlay.style.transform='translateY(-100%)';
-  welcomeOverlay.style.transition='transform 0.3s ease-in';
-  setTimeout(()=>{
-    welcomeOverlay.style.display='none';
-    localStorage.setItem('dancemap_welcomed','true');
-  },300);
-}
-
-function showWelcome(){
-  const welcomeOverlay=$('welcomeOverlay');
-  if(!welcomeOverlay)return;
-  localStorage.removeItem('dancemap_welcomed');
-  welcomeOverlay.style.transform='';
-  welcomeOverlay.style.transition='';
-  welcomeOverlay.style.display='flex';
-}
-
-// ADMIN TABS
-const tabAdd=$('tabAdd'),tabPending=$('tabPending');
-const adminAddView=$('adminAddView'),adminPendingView=$('adminPendingView');
-tabAdd.onclick=()=>{tabAdd.classList.add('active');tabPending.classList.remove('active');adminAddView.style.display='block';adminPendingView.style.display='none';};
-tabPending.onclick=()=>{tabPending.classList.add('active');tabAdd.classList.remove('active');adminAddView.style.display='none';adminPendingView.style.display='block';loadPendingList();};
-
-async function loadPendingList(){
-  const list=$('pendingList'),empty=$('pendingEmpty');
-  list.innerHTML='<div style="color:#7d8590;text-align:center;padding:20px;">Henter...</div>';
-  empty.style.display='none';
-  try{
-    const data=await jsonp(API+'?action=list-pending&_='+Date.now(), 15000);
-    if(!data.success||!data.events?.length){list.innerHTML='';empty.style.display='block';return;}
-    list.innerHTML=data.events.map(e=>`<div class="pending-item" data-row="${e.row}"><div class="pending-item-header"><span class="pending-item-title">${esc(e.navn)}</span></div><div class="pending-item-details"><div class="pending-item-row"><span class="icon">${ICONS.calendar}</span><span>${esc(e.dato)}</span></div><div class="pending-item-row"><span class="icon">${ICONS.clock}</span><span>${esc(e.starttid)}–${esc(e.sluttid)}</span></div><div class="pending-item-row"><span class="icon">${ICONS.dance}</span><span>${esc(e.dansetype)}</span></div><div class="pending-item-row"><span class="icon">${ICONS.location}</span><span>${esc(e.sted)}, ${esc(e.adresse)}, ${esc(e.by)}</span></div><div class="pending-item-row"><span class="icon">${ICONS.price}</span><span>${esc(e.pris)}</span></div>${e.insertedAt?`<div class="pending-item-row" style="font-size:11px;color:#7d8590"><span class="icon">${ICONS.inbox}</span><span>Tilføjet: ${esc(e.insertedAt)}</span></div>`:''}</div><div class="pending-actions"><button class="pending-approve-btn" onclick="changeStatus(${e.row},'active')">Godkend ✓</button><button style="padding:10px 12px;background:#da3633;color:white;border:none;border-radius:8px;cursor:pointer;font-size:13px;" onclick="deleteEvent(${e.row})">Afvis ✕</button></div></div>`).join('');
-    empty.style.display='none';
-  }catch(e){
-    list.innerHTML='<div style="color:#f85149;text-align:center;padding:20px;">Kunne ikke hente liste</div>';
+    box.innerHTML='<div class="empty">Fejl ved hentning af events</div>';
   }
 }
 
-async function changeStatus(row,nextStatus){
-  const item=document.querySelector(`.pending-item[data-row="${row}"]`);
-  const btn=item?.querySelector('.pending-approve-btn');
-  if(btn){btn.disabled=true;btn.textContent='Opdaterer...';}
-  try{
-    const data=await jsonp(API+'?action=update-status&row='+row+'&status='+encodeURIComponent(nextStatus)+'&_='+Date.now(), 15000);
-    if(data?.success&&nextStatus==='active'){
-      if(item){item.style.background='#238636';if(btn)btn.textContent='✓ Godkendt';setTimeout(()=>item.remove(),600);}
-      loadWeekCount();
-    }
-    else{if(btn){btn.disabled=false;btn.textContent='Fejl';}}
-  }catch(e){if(btn){btn.disabled=false;btn.textContent='Fejl';}}
-}
-
-async function deleteEvent(row){
-  if(!confirm('Er du sikker på du vil afvise dette event?'))return;
-  const item=document.querySelector(`.pending-item[data-row="${row}"]`);
-  try{
-    const data=await jsonp(API+'?action=delete-row&row='+row+'&_='+Date.now(), 15000);
-    if(data?.success){if(item){item.style.background='#da3633';item.style.opacity='0.5';setTimeout(()=>item.remove(),400);}}
-  }catch(e){}
-}
-
-$('refreshPending').onclick=loadPendingList;
-
-// SERVICE WORKER - med error handling
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/sw.js').catch(err=>{
-    console.log('Service worker registration failed:', err);
-  });
-}
-
-// ═══════════════════════════════════════════════════════════
-// SPLASH SCREEN ANIMATION
-// ═══════════════════════════════════════════════════════════
-(function runSplash(){
-  const splash = $('splash');
-  if(!splash) return;
-  
-  // Skip splash hvis allerede set denne session
-  if(sessionStorage.getItem('dm_splash_shown')){
-    splash.style.display = 'none';
-    return;
-  }
-  
-  const parts = [
-    { id: 'sp-ring', anim: 'fade-in' },
-    { id: 'sp-head', anim: 'drop-in' },
-    { id: 'sp-antenna', anim: 'drop-in' },
-    { id: 'sp-earL', anim: 'slide-left' },
-    { id: 'sp-earR', anim: 'slide-right' },
-    { id: 'sp-eyeL', anim: 'pop-in' },
-    { id: 'sp-eyeR', anim: 'pop-in' },
-    { id: 'sp-chin', anim: 'slide-up' },
-    { id: 'sp-chinDot', anim: 'pop-in' }
-  ];
-  
-  // Shuffle array
-  function shuffle(arr){
-    const a = [...arr];
-    for(let i = a.length - 1; i > 0; i--){
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-  }
-  
-  const shuffled = shuffle(parts);
-  const delay = 180; // ms mellem hver del (før: 120)
-  
-  // Animér hver del
-  shuffled.forEach((part, i) => {
-    setTimeout(() => {
-      const el = $(part.id);
-      if(el) el.classList.add(part.anim);
-    }, i * delay);
-  });
-  
-  // Tilføj glow og fade ud
-  const totalTime = shuffled.length * delay + 1000;
-  setTimeout(() => {
-    splash.classList.add('assembled');
-  }, totalTime);
-  
-  setTimeout(() => {
-    splash.classList.add('fade-out');
-    sessionStorage.setItem('dm_splash_shown', 'true');
-  }, totalTime + 1500);
-  
-  setTimeout(() => {
-    splash.style.display = 'none';
-  }, totalTime + 2000);
-})();
+// default
+loadEvents('salsa');
 </script>
 </body>
 </html>
