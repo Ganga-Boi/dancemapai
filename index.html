@@ -398,6 +398,10 @@ if(localStorage.getItem('dancemap_welcomed')){
           <label>🖼 Flyer/billede URL (valgfrit)</label>
           <input type="url" id="fieldBillede" placeholder="https://... (link til billede)" />
         </div>
+        <div class="field-row">
+          <label>🎤 Arrangør (valgfrit)</label>
+          <input type="text" id="fieldArrangor" placeholder="Fx Copenhagen Salsa Academy" />
+        </div>
         <div id="fieldWarnings" class="field-warnings"></div>
         <div id="previewCard" class="preview-card">
           <div class="preview-label">Forhåndsvisning</div>
@@ -435,8 +439,8 @@ window.onunhandledrejection = function(event) {
   console.error('Unhandled promise rejection:', event.reason);
 };
 
-const FRONTEND_VERSION = 'v6.9.8-2026-02-05';
-const FORM_VERSION = '6.9.8';
+const FRONTEND_VERSION = 'v6.9.9-2026-02-05';
+const FORM_VERSION = '6.9.9';
 
 // ═══════════════════════════════════════════════════════════
 // API URL
@@ -454,7 +458,7 @@ const step2=$('adminStep2'),warnings=$('fieldWarnings');
 
 let lastQ='',page=0,hasMore=false,loading=false,moreBtn=null;
 
-const fields={dato:$('fieldDato'),navn:$('fieldNavn'),start:$('fieldStart'),slut:$('fieldSlut'),dans:$('fieldDans'),sted:$('fieldSted'),adresse:$('fieldAdresse'),by:$('fieldBy'),pris:$('fieldPris'),prisType:$('fieldPrisType'),prisOnline:$('fieldPrisOnline'),prisDropin:$('fieldPrisDropin'),mobilepay:$('fieldMobilepay'),mobilepayPris:$('fieldMobilepayPris'),mobilepayInfo:$('fieldMobilepayInfo'),link:$('fieldLink'),billede:$('fieldBillede')};
+const fields={dato:$('fieldDato'),navn:$('fieldNavn'),start:$('fieldStart'),slut:$('fieldSlut'),dans:$('fieldDans'),sted:$('fieldSted'),adresse:$('fieldAdresse'),by:$('fieldBy'),pris:$('fieldPris'),prisType:$('fieldPrisType'),prisOnline:$('fieldPrisOnline'),prisDropin:$('fieldPrisDropin'),mobilepay:$('fieldMobilepay'),mobilepayPris:$('fieldMobilepayPris'),mobilepayInfo:$('fieldMobilepayInfo'),link:$('fieldLink'),billede:$('fieldBillede'),arrangor:$('fieldArrangor')};
 
 // ═══════════════════════════════════════════════════════════
 // ONLINE/OFFLINE DETECTION
@@ -645,7 +649,7 @@ function setSearchCache(query, data) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// CHANGE 1: parseEvents - nu med 🎤 arrangør og 🔗 link
+// parseEvents - med 🎤 arrangør og 🔗 link
 // ═══════════════════════════════════════════════════════════
 function parseEvents(text){return String(text||'').split('\n\n').filter(e=>e.trim()).map(event=>{const p={};event.split('\n').forEach(l=>{if(l.startsWith('🗓'))p.dato=l.replace('🗓','').trim();else if(l.startsWith('📌'))p.navn=l.replace('📌','').trim();else if(l.startsWith('🕗'))p.tid=l.replace('🕗','').trim();else if(l.startsWith('💃'))p.type=l.replace('💃','').trim();else if(l.startsWith('📍'))p.sted=l.replace('📍','').trim();else if(l.startsWith('💰'))p.pris=l.replace('💰','').trim();else if(l.startsWith('🎫'))p.link=l.replace('🎫','').trim();else if(l.startsWith('🎤'))p.arrangor=l.replace('🎤','').trim();else if(l.startsWith('🔗'))p.link=l.replace('🔗','').trim();else if(l.startsWith('🖼'))p.billede=l.replace('🖼','').trim();});return p;}).filter(e=>e.dato);}
 
@@ -727,7 +731,7 @@ END:VCALENDAR`;
 let currentEvents = [];
 
 // ═══════════════════════════════════════════════════════════
-// CHANGE 2: ICONS - tilføjet arrangor ikon
+// ICONS - inkl. arrangor og ticket
 // ═══════════════════════════════════════════════════════════
 const ICONS = {
   calendar: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>`,
@@ -743,7 +747,7 @@ const ICONS = {
 };
 
 // ═══════════════════════════════════════════════════════════
-// CHANGE 3: renderEvents - tilføjet arrangør række
+// renderEvents - med arrangør, billede og billetlink
 // ═══════════════════════════════════════════════════════════
 function renderEvents(events){
   currentEvents = events;
@@ -1042,6 +1046,7 @@ function saveFormState(){
       mobilepayInfo:fields.mobilepayInfo.value,
       link:fields.link.value,
       billede:fields.billede.value,
+      arrangor:fields.arrangor.value,
       recurring:recurring.checked,
       step:step2.style.display==='block'?2:1
     }));
@@ -1074,6 +1079,7 @@ function restoreFormState(){
     fields.mobilepayInfo.value=s.mobilepayInfo||'';
     fields.link.value=s.link||'';
     fields.billede.value=s.billede||'';
+    fields.arrangor.value=s.arrangor||'';
     recurring.checked=s.recurring||false;
     $('prisFields').style.display=s.prisType==='angiv'?'block':'none';
     $('mobilepayFields').style.display=s.prisType==='mobilepay'?'block':'none';
@@ -1110,6 +1116,7 @@ function clearFields(){
   fields.mobilepayInfo.value='';
   fields.link.value='';
   fields.billede.value='';
+  fields.arrangor.value='';
   $('prisFields').style.display='block';
   $('mobilepayFields').style.display='none';
   warnings.classList.remove('show');
@@ -1130,7 +1137,7 @@ const VENUE_ADDRESSES={'kaffesalonen':{adresse:'Peblinge Dossering 7',by:'Køben
 
 function parseTextToFields(txt){
   const t=txt.toLowerCase();
-  const r={dato:'',navn:'',start:'',slut:'',dans:'Salsa',sted:'',adresse:'',by:'København',pris:'',prisType:'angiv',prisOnline:'',prisDropin:'',link:''};
+  const r={dato:'',navn:'',start:'',slut:'',dans:'Salsa',sted:'',adresse:'',by:'København',pris:'',prisType:'angiv',prisOnline:'',prisDropin:'',link:'',arrangor:''};
   
   const isoMatch=txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);
   if(isoMatch){
@@ -1214,6 +1221,10 @@ function parseTextToFields(txt){
     r.link=foundLink.includes('...')?'':foundLink;
   }
   
+  // Arrangør parsing
+  const orgByMatch=txt.match(/(?:Begivenhed af|Event by|Hosted by|Arrangør|Organizer|Organiseret af)\s+([^\n.!]+)/i);
+  if(orgByMatch)r.arrangor=orgByMatch[1].trim();
+
   const starTitle=txt.match(/[☆★]\s*([^☆★\n]{10,}?)\s*[☆★]/);
   if(starTitle&&!starTitle[1].includes('kr')&&!starTitle[1].includes('ENTRANCE')){
     r.navn=starTitle[1].trim();
@@ -1265,7 +1276,7 @@ function updatePreview(){
   if(fields.by.value)stedStr+=', '+fields.by.value;
   const dansStr=fields.dans.value||'—';
   const previewEl=$('previewContent');
-  previewEl.innerHTML=`<div class="line"><span class="icon">${ICONS.calendar}</span><span>${esc(datoStr)}</span></div><div class="line"><span class="icon">${ICONS.title}</span><span>${esc(fields.navn.value||'—')}</span></div><div class="line"><span class="icon">${ICONS.clock}</span><span>${esc(tidStr)}</span></div><div class="line"><span class="icon">${ICONS.dance}</span><span>${esc(dansStr)}</span></div><div class="line"><span class="icon">${ICONS.location}</span><span>${esc(stedStr)}</span></div><div class="line"><span class="icon">${ICONS.price}</span><span>${esc(fields.pris.value||'—')}</span></div>`;
+  previewEl.innerHTML=`<div class="line"><span class="icon">${ICONS.calendar}</span><span>${esc(datoStr)}</span></div><div class="line"><span class="icon">${ICONS.title}</span><span>${esc(fields.navn.value||'—')}</span></div><div class="line"><span class="icon">${ICONS.clock}</span><span>${esc(tidStr)}</span></div><div class="line"><span class="icon">${ICONS.dance}</span><span>${esc(dansStr)}</span></div><div class="line"><span class="icon">${ICONS.location}</span><span>${esc(stedStr)}</span></div><div class="line"><span class="icon">${ICONS.price}</span><span>${esc(fields.pris.value||'—')}</span></div>${fields.arrangor.value?`<div class="line"><span class="icon">${ICONS.arrangor}</span><span>${esc(fields.arrangor.value)}</span></div>`:''}`;
   const{errors}=validateFields();
   const pc=$('previewCard');
   if(errors.length===0){
@@ -1328,6 +1339,10 @@ function autoParse(){
   
   if(p.by){
     if(!fields.by.value){fields.by.value=p.by;}
+  }
+
+  if(p.arrangor){
+    if(!fields.arrangor.value){fields.arrangor.value=p.arrangor;found.push('🎤 Arrangør');}
   }
   
   if(p.link){
@@ -1457,6 +1472,7 @@ async function processImageWithClaude(file){
     if(d.sted && !fields.sted.value)fields.sted.value=d.sted;
     if(d.adresse && !fields.adresse.value)fields.adresse.value=d.adresse;
     if(d.by && !fields.by.value)fields.by.value=d.by;
+    if(d.arrangor && !fields.arrangor.value)fields.arrangor.value=d.arrangor;
     autoFillVenue();
     if(d.pris && fields.prisType.value==='angiv' && !fields.prisOnline.value && !fields.prisDropin.value){
       const simplePris=simplifyPrice(d.pris);
@@ -1700,6 +1716,7 @@ $('adminSubmitBtn').onclick=async()=>{
   params.set('pris',fields.pris.value);
   params.set('link',fields.link.value||'');
   params.set('billede',fields.billede.value||'');
+  params.set('arrangor',fields.arrangor.value||'');
   params.set('recurring',recurring.checked);
   params.set('kilde',localStorage.getItem('dancemap_admin_name')||'Admin');
   params.set('_',Date.now());
