@@ -429,14 +429,14 @@ if(localStorage.getItem('dancemap_welcomed')){
 // ═══════════════════════════════════════════════════════════
 window.onerror = function(msg, url, line, col, error) {
   console.error('Global error:', msg, 'at', url, line, col);
-  return false; // Lad browseren også logge fejlen
+  return false;
 };
 window.onunhandledrejection = function(event) {
   console.error('Unhandled promise rejection:', event.reason);
 };
 
-const FRONTEND_VERSION = 'v6.9.7-2026-01-26';
-const FORM_VERSION = '6.9.7';
+const FRONTEND_VERSION = 'v6.9.8-2026-02-05';
+const FORM_VERSION = '6.9.8';
 
 // ═══════════════════════════════════════════════════════════
 // API URL
@@ -472,7 +472,7 @@ window.addEventListener('offline', updateOnlineStatus);
 updateOnlineStatus();
 
 // ═══════════════════════════════════════════════════════════
-// JSONP MED TIMEOUT - forhindrer uendelig hæng
+// JSONP MED TIMEOUT
 // ═══════════════════════════════════════════════════════════
 function jsonp(url, timeoutMs = 15000) {
   return new Promise((resolve, reject) => {
@@ -513,11 +513,11 @@ function jsonp(url, timeoutMs = 15000) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// VERSION CHECK - INGEN AUTO-REFRESH (undgår loop)
+// VERSION CHECK
 // ═══════════════════════════════════════════════════════════
 let versionChecked = false;
 async function checkVersion() {
-  if (versionChecked) return; // Kun check én gang per session
+  if (versionChecked) return;
   versionChecked = true;
   
   try {
@@ -538,7 +538,6 @@ async function checkVersion() {
         frontEl.style.color = '#484f58';
       }
       
-      // INGEN auto-refresh - vis bare info til bruger
       if (!match && frontEl) {
         frontEl.textContent = 'Ny version tilgængelig';
         frontEl.style.color = '#f0883e';
@@ -551,12 +550,11 @@ async function checkVersion() {
     console.log('Version check failed (offline?):', e.message);
     const frontEl = $('versionDisplay');
     if (frontEl) {
-      frontEl.textContent = FRONTEND_VERSION.match(/v?(\d+\.\d+)/)?.[0] || 'v6.5';
+      frontEl.textContent = FRONTEND_VERSION.match(/v?(\d+\.\d+)/)?.[0] || 'v6.9';
       frontEl.style.color = '#484f58';
     }
   }
 }
-// Check version efter siden er loadet
 setTimeout(checkVersion, 1000);
 
 // Dansetype checkboxes handler
@@ -617,10 +615,10 @@ function updatePrisField(){
 }
 
 // ═══════════════════════════════════════════════════════════
-// SEARCH CACHE - hurtigere resultater
+// SEARCH CACHE
 // ═══════════════════════════════════════════════════════════
 const SEARCH_CACHE_KEY = 'dancemap_search_cache';
-const CACHE_MAX_AGE = 5 * 60 * 1000; // 5 minutter
+const CACHE_MAX_AGE = 5 * 60 * 1000;
 
 function getSearchCache(query) {
   try {
@@ -636,7 +634,6 @@ function getSearchCache(query) {
 function setSearchCache(query, data) {
   try {
     const cache = JSON.parse(localStorage.getItem(SEARCH_CACHE_KEY) || '{}');
-    // Behold kun de 20 nyeste søgninger
     const keys = Object.keys(cache);
     if (keys.length > 20) {
       const oldest = keys.sort((a,b) => cache[a].timestamp - cache[b].timestamp)[0];
@@ -647,7 +644,10 @@ function setSearchCache(query, data) {
   } catch(e) {}
 }
 
-function parseEvents(text){return String(text||'').split('\n\n').filter(e=>e.trim()).map(event=>{const p={};event.split('\n').forEach(l=>{if(l.startsWith('🗓'))p.dato=l.replace('🗓','').trim();else if(l.startsWith('📌'))p.navn=l.replace('📌','').trim();else if(l.startsWith('🕗'))p.tid=l.replace('🕗','').trim();else if(l.startsWith('💃'))p.type=l.replace('💃','').trim();else if(l.startsWith('📍'))p.sted=l.replace('📍','').trim();else if(l.startsWith('💰'))p.pris=l.replace('💰','').trim();else if(l.startsWith('🎫'))p.link=l.replace('🎫','').trim();else if(l.startsWith('🖼'))p.billede=l.replace('🖼','').trim();});return p;}).filter(e=>e.dato);}
+// ═══════════════════════════════════════════════════════════
+// CHANGE 1: parseEvents - nu med 🎤 arrangør og 🔗 link
+// ═══════════════════════════════════════════════════════════
+function parseEvents(text){return String(text||'').split('\n\n').filter(e=>e.trim()).map(event=>{const p={};event.split('\n').forEach(l=>{if(l.startsWith('🗓'))p.dato=l.replace('🗓','').trim();else if(l.startsWith('📌'))p.navn=l.replace('📌','').trim();else if(l.startsWith('🕗'))p.tid=l.replace('🕗','').trim();else if(l.startsWith('💃'))p.type=l.replace('💃','').trim();else if(l.startsWith('📍'))p.sted=l.replace('📍','').trim();else if(l.startsWith('💰'))p.pris=l.replace('💰','').trim();else if(l.startsWith('🎫'))p.link=l.replace('🎫','').trim();else if(l.startsWith('🎤'))p.arrangor=l.replace('🎤','').trim();else if(l.startsWith('🔗'))p.link=l.replace('🔗','').trim();else if(l.startsWith('🖼'))p.billede=l.replace('🖼','').trim();});return p;}).filter(e=>e.dato);}
 
 // CALENDAR FUNCTIONS
 function createGoogleCalUrl(event){
@@ -726,7 +726,9 @@ END:VCALENDAR`;
 // Store events for calendar access
 let currentEvents = [];
 
-// SVG Ikoner der matcher DanceMap tema
+// ═══════════════════════════════════════════════════════════
+// CHANGE 2: ICONS - tilføjet arrangor ikon
+// ═══════════════════════════════════════════════════════════
 const ICONS = {
   calendar: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>`,
   pin: `<svg width="18" height="18" viewBox="0 0 24 24" fill="#1E88E5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`,
@@ -736,9 +738,13 @@ const ICONS = {
   dance: `<svg width="18" height="18" viewBox="0 0 24 24" fill="#1E88E5"><circle cx="12" cy="4" r="2.5"/><path d="M17 22l-3-3v-4l3-4-2-1-4 4-4-4-2 1 3 4v4l-3 3h2l2-2 2 2h2l2-2 2 2z"/></svg>`,
   title: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
   inbox: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><polyline points="22,12 16,12 14,15 10,15 8,12 2,12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>`,
+  arrangor: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
   ticket: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"><path d="M2 9a3 3 0 013-3h14a3 3 0 013 3v0a3 3 0 01-3 3v0a3 3 0 013 3v0a3 3 0 01-3 3H5a3 3 0 01-3-3v0a3 3 0 013-3v0a3 3 0 01-3-3z"/><path d="M13 6v4m0 4v4"/></svg>`
 };
 
+// ═══════════════════════════════════════════════════════════
+// CHANGE 3: renderEvents - tilføjet arrangør række
+// ═══════════════════════════════════════════════════════════
 function renderEvents(events){
   currentEvents = events;
   return events.map((e,i)=>`<div class="event-card">
@@ -749,6 +755,7 @@ function renderEvents(events){
     ${e.type?`<div class="event-row"><span class="icon">${ICONS.dance}</span><span>${esc(e.type)}</span></div>`:''}
     ${e.sted?`<div class="event-row"><span class="icon">${ICONS.location}</span><span>${esc(e.sted)}</span></div>`:''}
     ${e.pris?`<div class="event-row"><span class="icon">${ICONS.price}</span><span>${esc(e.pris)}</span></div>`:''}
+    ${e.arrangor?`<div class="event-row"><span class="icon">${ICONS.arrangor}</span><span>${esc(e.arrangor)}</span></div>`:''}
     ${e.link?`<div class="event-row" style="margin-top:8px"><a href="${esc(e.link)}" target="_blank" class="ticket-link"><span class="icon" style="margin-right:6px">${ICONS.ticket}</span>Køb billet her</a></div>`:''}
     <div class="event-actions">
       <button class="cal-btn google" onclick="window.open(createGoogleCalUrl(currentEvents[${i}]),'_blank')"><span class="icon" style="margin-right:4px">${ICONS.calendar}</span>Google</button>
@@ -822,13 +829,11 @@ async function doSearch(){
   lastQ=q;page=0;hasMore=false;loading=true;
   sendBtn.disabled=true;
   
-  // Check cache først (instant resultat!)
   const cached = getSearchCache(q + '_0');
   if(cached){
     hasMore=!!cached.hasMore;
     addMsg(cached.text||'Ingen resultater.',false,hasMore);
     loading=false;sendBtn.disabled=false;
-    // Opdater cache i baggrunden (fire and forget)
     search(q,0).then(data=>{setSearchCache(q+'_0',data);}).catch(()=>{});
     return;
   }
@@ -854,7 +859,6 @@ async function loadMore(){
   page++;loading=true;
   if(moreBtn)moreBtn.disabled=true;
   
-  // Check cache
   const cached = getSearchCache(lastQ+'_'+page);
   if(cached){
     hasMore=!!cached.hasMore;
@@ -882,7 +886,7 @@ async function loadMore(){
 sendBtn.onclick=doSearch;
 input.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();doSearch();}};
 
-// FILTER SEARCH - for Salsa/Bachata buttons with music
+// FILTER SEARCH
 let salsaSound, bachataSound;
 let isMuted = localStorage.getItem('dm_muted') === 'true';
 let lastPlayedType = null;
@@ -896,10 +900,8 @@ try {
   console.log('Audio not available');
 }
 
-// Initialiser mute-knap ved load
 function initMuteButton(){
   updateMuteUI();
-  // Hvis muted ved start, fjern playing klassen
   if(isMuted && $('muteBtn')){
     $('muteBtn').classList.remove('playing');
   }
@@ -911,7 +913,6 @@ function updateMuteUI(){
   const tooltip = $('muteTooltip');
   if(icon && btn && tooltip){
     if(isMuted){
-      // Muted: lave bars, faded, ingen animation
       icon.innerHTML = `
         <rect class="eq-bar" x="10" y="30" width="5" height="6" rx="2" fill="white" opacity="0.4"/>
         <rect class="eq-bar" x="18" y="30" width="5" height="6" rx="2" fill="white" opacity="0.4"/>
@@ -923,7 +924,6 @@ function updateMuteUI(){
       btn.classList.remove('playing');
       tooltip.textContent = 'Slå lyd til';
     } else {
-      // Lyd til: høje bars med animation
       icon.innerHTML = `
         <rect class="eq-bar" x="10" y="20" width="5" height="16" rx="2" fill="white"/>
         <rect class="eq-bar" x="18" y="12" width="5" height="24" rx="2" fill="white"/>
@@ -943,11 +943,9 @@ function toggleMute(){
   updateMuteUI();
   
   if(isMuted){
-    // Stop lyd
     if(salsaSound) salsaSound.pause();
     if(bachataSound) bachataSound.pause();
   } else {
-    // Genoptag sidst spillede musik
     if(lastPlayedType){
       try {
         if(lastPlayedType === 'salsa' && salsaSound){
@@ -962,21 +960,17 @@ function toggleMute(){
   }
 }
 
-// Kald ved page load
 setTimeout(initMuteButton, 100);
 
 function filterSearch(type){
-  // Husk hvilken type der blev spillet
   lastPlayedType = type;
   
-  // Tilføj clicked effekt
   const btn = document.querySelector(`.filter-btn.${type}`);
   if(btn){
     btn.classList.add('clicked');
     setTimeout(()=>btn.classList.remove('clicked'), 300);
   }
   
-  // Stop any playing sound and play new one (if not muted)
   try {
     if(salsaSound) salsaSound.pause();
     if(bachataSound) bachataSound.pause();
@@ -996,7 +990,7 @@ function filterSearch(type){
   doSearch();
 }
 
-// HEADER CLICK: 1x = refresh page, 3x = admin
+// HEADER CLICK
 let clicks=0,clickTimer;
 document.querySelector('.header-outside').onclick=()=>{
   clicks++;
@@ -1008,7 +1002,6 @@ document.querySelector('.header-outside').onclick=()=>{
   } else {
     clickTimer=setTimeout(()=>{
       if(clicks===1){
-        // Refresh hele siden
         location.reload();
       }
       clicks=0;
@@ -1139,7 +1132,6 @@ function parseTextToFields(txt){
   const t=txt.toLowerCase();
   const r={dato:'',navn:'',start:'',slut:'',dans:'Salsa',sted:'',adresse:'',by:'København',pris:'',prisType:'angiv',prisOnline:'',prisDropin:'',link:''};
   
-  // === DATO ===
   const isoMatch=txt.match(/\b(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/);
   if(isoMatch){
     r.dato=isoMatch[0];
@@ -1157,7 +1149,6 @@ function parseTextToFields(txt){
     }
   }
   
-  // === TIDER ===
   const allTimes=txt.match(/\b([0-2]?\d)[:\.]([0-5]\d)\b/g)||[];
   if(allTimes.length>0){
     const timeToMinutes=t=>{const[h,m]=t.replace('.',':').split(':').map(Number);return h<6?(h+24)*60+m:h*60+m;};
@@ -1166,7 +1157,6 @@ function parseTextToFields(txt){
     if(sorted.length>1)r.slut=sorted[sorted.length-1].replace(/^(\d):/,'0$1:');
   }
   
-  // === DANSETYPE ===
   const percentMatch=txt.match(/(\d+)\s*%\s*(salsa|bachata|kizomba|zouk|tango|swing)/gi);
   if(percentMatch){
     let maxPercent=0;let mainDance='Salsa';
@@ -1181,7 +1171,6 @@ function parseTextToFields(txt){
     }
   }
   
-  // === STED & ADRESSE ===
   const addressMatch=txt.match(/address[:\s]+([^,\n]+)/i);
   if(addressMatch){
     let fullAddr=addressMatch[1].trim();
@@ -1203,7 +1192,6 @@ function parseTextToFields(txt){
     }
   }
   
-  // === PRISER ===
   if(/\bgratis\b/i.test(txt)||/\bfree\b/i.test(txt)){
     r.prisType='gratis';r.pris='Gratis';
   }else{
@@ -1219,7 +1207,6 @@ function parseTextToFields(txt){
     }
   }
   
-  // === LINK ===
   const linkMatch=txt.match(/https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi);
   if(linkMatch){
     const ticketLink=linkMatch.find(l=>/billetto|ticketmaster|tikkio|eventbrite|place2book|bookwhen/i.test(l));
@@ -1227,7 +1214,6 @@ function parseTextToFields(txt){
     r.link=foundLink.includes('...')?'':foundLink;
   }
   
-  // === NAVN ===
   const starTitle=txt.match(/[☆★]\s*([^☆★\n]{10,}?)\s*[☆★]/);
   if(starTitle&&!starTitle[1].includes('kr')&&!starTitle[1].includes('ENTRANCE')){
     r.navn=starTitle[1].trim();
@@ -1403,7 +1389,6 @@ function simplifyPrice(pris){
   return min+'–'+max+' kr';
 }
 
-// KENDTE VENUES
 const knownVenues = {
   'la hacienda': { sted: 'La Hacienda', adresse: 'Kultorvet 11', by: 'København K' },
   'rumba': { sted: 'Rumba', adresse: 'Vester Voldgade 85', by: 'København V' },
@@ -1681,7 +1666,6 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// Show keyboard hints
 if(uploadZone) {
   const hints = document.createElement('div');
   hints.style.cssText = 'margin-top:12px;font-size:11px;color:#484f58;text-align:center;';
@@ -1760,7 +1744,6 @@ async function loadWeekCount(){
   try{
     const d=await jsonp(API+'?action=weekcount&_='+Date.now(), 10000);
     if(d.success&&d.count>0){
-      // Slide-in notification (kun én gang per uge)
       const lastShown = localStorage.getItem('dm_notif_time_v3');
       const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
       if(!lastShown || parseInt(lastShown) < weekAgo){
@@ -1844,7 +1827,7 @@ async function deleteEvent(row){
 
 $('refreshPending').onclick=loadPendingList;
 
-// SERVICE WORKER - med error handling
+// SERVICE WORKER
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('/sw.js').catch(err=>{
     console.log('Service worker registration failed:', err);
@@ -1858,7 +1841,6 @@ if('serviceWorker' in navigator){
   const splash = $('splash');
   if(!splash) return;
   
-  // Skip splash hvis allerede set denne session
   if(sessionStorage.getItem('dm_splash_shown')){
     splash.style.display = 'none';
     return;
@@ -1876,7 +1858,6 @@ if('serviceWorker' in navigator){
     { id: 'sp-chinDot', anim: 'pop-in' }
   ];
   
-  // Shuffle array
   function shuffle(arr){
     const a = [...arr];
     for(let i = a.length - 1; i > 0; i--){
@@ -1887,9 +1868,8 @@ if('serviceWorker' in navigator){
   }
   
   const shuffled = shuffle(parts);
-  const delay = 180; // ms mellem hver del (før: 120)
+  const delay = 180;
   
-  // Animér hver del
   shuffled.forEach((part, i) => {
     setTimeout(() => {
       const el = $(part.id);
@@ -1897,7 +1877,6 @@ if('serviceWorker' in navigator){
     }, i * delay);
   });
   
-  // Tilføj glow og fade ud
   const totalTime = shuffled.length * delay + 1000;
   setTimeout(() => {
     splash.classList.add('assembled');
