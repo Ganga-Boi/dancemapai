@@ -445,7 +445,32 @@ const FORM_VERSION = '6.9.9';
 // ═══════════════════════════════════════════════════════════
 // API URL
 // ═══════════════════════════════════════════════════════════
-const API = 'https://script.google.com/macros/s/AKfycbyNGuntMdNwytrMako2GD5QHDcwQ8JPP_YsgDy6sgLLo3dNIaZ1-gif68Af--kHS_y0/exec';
+const API = 'https://script.google.com/macros/s/AKfycbx6zN6uzmPTKiwfHmWi7XXrb9zDyYBDtbDSC-CdDGDy7vYNBvCEblLyNb39mqZuLSM8/exec';
+```
+
+---
+
+## Kort sagt - ændre fra:
+```
+...kHS_y0/exec
+```
+
+## Til:
+```
+...uZuLSM8/exec
+  const API = 'https://script.google.com/macros/s/AKfycbx6zN6uzmPTKiwfHmWi7XXrb9zDyYBDtbDSC-CdDGDy7vYNBvCEblLyNb39mqZuLSM8/exec';
+```
+
+---
+
+## Kort sagt - ændre fra:
+```
+...kHS_y0/exec
+```
+
+## Til:
+```
+...uZuLSM8/exec
 
 // Clear old form state if version changed
 (function(){try{const s=localStorage.getItem('dancemap_admin_form');if(s){const d=JSON.parse(s);if(d.formVersion!==FORM_VERSION)localStorage.removeItem('dancemap_admin_form');}}catch(e){localStorage.removeItem('dancemap_admin_form');}})();
