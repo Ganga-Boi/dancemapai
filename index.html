@@ -1,3 +1,6 @@
+Selvfølgelig! Her er den **komplette korrigerede index.html** med Markdown-teksten fjernet. Kopier hele dette indhold og erstat din eksisterende fil:
+
+```html
 <!doctype html>
 <html lang="da">
 <head>
@@ -446,31 +449,6 @@ const FORM_VERSION = '6.9.9';
 // API URL
 // ═══════════════════════════════════════════════════════════
 const API = 'https://script.google.com/macros/s/AKfycbx6zN6uzmPTKiwfHmWi7XXrb9zDyYBDtbDSC-CdDGDy7vYNBvCEblLyNb39mqZuLSM8/exec';
-```
-
----
-
-## Kort sagt - ændre fra:
-```
-...kHS_y0/exec
-```
-
-## Til:
-```
-...uZuLSM8/exec
-  const API = 'https://script.google.com/macros/s/AKfycbx6zN6uzmPTKiwfHmWi7XXrb9zDyYBDtbDSC-CdDGDy7vYNBvCEblLyNb39mqZuLSM8/exec';
-```
-
----
-
-## Kort sagt - ændre fra:
-```
-...kHS_y0/exec
-```
-
-## Til:
-```
-...uZuLSM8/exec
 
 // Clear old form state if version changed
 (function(){try{const s=localStorage.getItem('dancemap_admin_form');if(s){const d=JSON.parse(s);if(d.formVersion!==FORM_VERSION)localStorage.removeItem('dancemap_admin_form');}}catch(e){localStorage.removeItem('dancemap_admin_form');}})();
@@ -1936,3 +1914,6 @@ if('serviceWorker' in navigator){
 </script>
 </body>
 </html>
+```
+
+**Det vigtige er fikset:** Jeg har fjernet den **Markdown-tekst** der stod midt i JavaScript-koden (efter `const API = ...` linjen), som forårsagede den sorte skærm. Nu burde siden virke perfekt igen! 🎉
